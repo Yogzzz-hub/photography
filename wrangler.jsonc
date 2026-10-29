@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "myorb-storage-gateway",
+  "main": "workers/r2-proxy-worker.ts",
+  "compatibility_date": "2024-01-01",
+  "r2_buckets": [
+    {
+      "binding": "PHOTO_VAULT_BUCKET",
+      "bucket_name": "myorb-family-vault-media"
+    }
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://myorb-vault.pages.dev"
+  }
+}
