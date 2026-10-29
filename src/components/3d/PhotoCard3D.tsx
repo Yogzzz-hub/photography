@@ -35,9 +35,12 @@ export function PhotoCard3D({
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
 
+  // Determine orientation dynamically (true to reference myorb.live with distinct portrait & landscape cards)
+  const isPortrait = photo.height > photo.width || photo.orientation === 'portrait';
+
   // Instant 0ms procedural fallback so every card renders on frame 1 without network delay
   const [localTexture, setLocalTexture] = useState<THREE.Texture>(
-    () => initialTexture || getInstantProceduralTexture(photo.id)
+    () => initialTexture || getInstantProceduralTexture(photo.id, isPortrait)
   );
 
   useEffect(() => {
@@ -46,14 +49,19 @@ export function PhotoCard3D({
       return;
     }
     const url = photo.decryptedThumbUrl || photo.thumbStoragePath;
-    if (!url) return;
+    if (!url) {
+      setLocalTexture(getInstantProceduralTexture(photo.id, isPortrait));
+      return;
+    }
     const cached = getLoadedTexture(url, (loaded) => {
       setLocalTexture(loaded);
     });
     if (cached) {
       setLocalTexture(cached);
+    } else {
+      setLocalTexture(getInstantProceduralTexture(photo.id, isPortrait));
     }
-  }, [initialTexture, photo.decryptedThumbUrl, photo.thumbStoragePath]);
+  }, [initialTexture, photo.decryptedThumbUrl, photo.thumbStoragePath, photo.id, isPortrait]);
 
   // Interactive 3D Drag & Drop state
   const [isDragging, setIsDragging] = useState(false);
@@ -61,9 +69,10 @@ export function PhotoCard3D({
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // Proportional card dimensions matching the reference globe (myorb.live)
-  const cardWidth = 2.3;
-  const cardHeight = 1.6;
-  const cornerRadius = 0.14;
+  // Adaptive squircle: 2.3 x 1.62 for landscape, 1.62 x 2.3 for portrait
+  const cardWidth = isPortrait ? 1.65 : 2.3;
+  const cardHeight = isPortrait ? 2.3 : 1.65;
+  const cornerRadius = 0.15;
 
   // Reusable rounded-corner squircle geometry
   const roundedGeometry = useMemo(() => {

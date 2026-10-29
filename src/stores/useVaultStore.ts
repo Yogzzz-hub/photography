@@ -55,6 +55,10 @@ interface VaultState {
   backups: BackupArchive[];
   storageMetrics: StorageMetrics;
 
+  // Visual Filters & Orientation
+  orientationFilter: 'all' | 'landscape' | 'portrait';
+  setOrientationFilter: (filter: 'all' | 'landscape' | 'portrait') => void;
+
   // Actions
   unlockWithRecoveryCode: (code: string) => Promise<boolean>;
   unlockWithMasterKey: (key: CryptoKey) => void;
@@ -76,11 +80,13 @@ interface VaultState {
   restoreFromTrash: (photoId: string) => void;
   permanentDeletePhoto: (photoId: string) => void;
   emptyTrash: () => void;
+  setPhotoAlbum: (photoId: string, albumId: string | null) => void;
 
-  // Album CRUD
-  createAlbum: (name: string, description?: string) => Promise<Album>;
+  // Album CRUD & Photo Grouping
+  createAlbum: (name: string, description?: string, initialPhotoIds?: string[]) => Promise<Album>;
   updateAlbum: (albumId: string, name: string, description?: string) => void;
   deleteAlbum: (albumId: string) => void;
+  assignPhotosToAlbum: (albumId: string | null, photoIds: string[]) => void;
 
   // Family Administration
   inviteMember: (email: string, role: FamilyRole) => void;
@@ -234,6 +240,10 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   selectedTag: null,
   onlyFavorites: false,
   isSlideshowActive: false,
+  orientationFilter: 'all',
+  setOrientationFilter: (filter: 'all' | 'landscape' | 'portrait') => {
+    set({ orientationFilter: filter });
+  },
 
   // Data Collections
   photos: INITIAL_SAMPLE_PHOTOS,
@@ -531,8 +541,26 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     get().recalculateStorageMetrics();
   },
 
-  // Albums
-  createAlbum: async (name: string, description?: string) => {
+  setPhotoAlbum: (photoId: string, albumId: string | null) => {
+    const targetAlbumId = albumId || 'alb_heritage';
+    set((state) => ({
+      photos: state.photos.map((p) =>
+        p.id === photoId ? { ...p, albumId: targetAlbumId } : p
+      ),
+      albums: state.albums.map((alb) => {
+        const count = state.photos.filter((p) =>
+          p.id === photoId ? alb.id === targetAlbumId : p.albumId === alb.id
+        ).length;
+        return { ...alb, photoCount: count };
+      }),
+    }));
+  },
+
+  // Albums & Photo Grouping
+  createAlbum: async (name: string, description?: string, initialPhotoIds?: string[]) => {
+    const selectedIds = initialPhotoIds || [];
+    const firstPhoto = selectedIds.length > 0 ? get().photos.find((p) => selectedIds.includes(p.id)) : undefined;
+
     const newAlbum: Album = {
       id: `alb_${Date.now()}`,
       familyId: get().currentFamily.id,
@@ -540,23 +568,51 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       description,
       createdBy: get().currentMember.id,
       createdAt: new Date().toISOString(),
-      photoCount: 0,
+      photoCount: selectedIds.length,
+      coverPhotoUrl: firstPhoto?.decryptedThumbUrl || firstPhoto?.thumbStoragePath,
     };
 
     set((state) => ({
       albums: [...state.albums, newAlbum],
+      photos: state.photos.map((p) =>
+        selectedIds.includes(p.id) ? { ...p, albumId: newAlbum.id } : p
+      ),
     }));
 
     get().recordAuditEvent({
       action: 'album.created',
       resourceType: 'album',
       resourceId: newAlbum.id,
-      resourceName: name,
+      resourceName: `${name} (${selectedIds.length} memories grouped)`,
       status: 'success',
     });
 
     get().recalculateStorageMetrics();
     return newAlbum;
+  },
+
+  assignPhotosToAlbum: (albumId: string | null, photoIds: string[]) => {
+    const targetAlbumId = albumId || 'alb_heritage';
+    set((state) => ({
+      photos: state.photos.map((p) =>
+        photoIds.includes(p.id) ? { ...p, albumId: targetAlbumId } : p
+      ),
+      albums: state.albums.map((alb) => {
+        const count = state.photos.filter((p) =>
+          photoIds.includes(p.id) ? alb.id === targetAlbumId : p.albumId === alb.id
+        ).length;
+        return { ...alb, photoCount: count };
+      }),
+    }));
+
+    const albumName = albumId ? get().albums.find((a) => a.id === albumId)?.name || 'Album' : 'Vault';
+    get().recordAuditEvent({
+      action: 'album.photos_assigned',
+      resourceType: 'album',
+      resourceId: albumId || 'unassigned',
+      resourceName: `Grouped ${photoIds.length} memories into ${albumName}`,
+      status: 'success',
+    });
   },
 
   updateAlbum: (albumId: string, name: string, description?: string) => {

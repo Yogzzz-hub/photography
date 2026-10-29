@@ -102,6 +102,10 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
         : undefined,
     });
 
+    if (targetAlbumId && targetAlbumId !== photo.albumId) {
+      useVaultStore.getState().setPhotoAlbum(photo.id, targetAlbumId);
+    }
+
     setIsEditing(false);
   };
 
@@ -230,11 +234,31 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                 <h2 className="text-xl font-bold text-white leading-snug">{photo.metadata.title}</h2>
               )}
 
-              <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+              <div className="text-xs text-slate-400 mt-1 flex items-center flex-wrap gap-2">
                 <span>By {photo.uploaderName}</span>
                 <span>•</span>
-                <span>Album: {currentAlbum?.name || 'General'}</span>
-              </p>
+                {isEditing ? (
+                  <div className="flex items-center gap-1.5">
+                    <Folder className="w-3.5 h-3.5 text-vault-gold" />
+                    <select
+                      value={targetAlbumId}
+                      onChange={(e) => setTargetAlbumId(e.target.value)}
+                      className="glass-input p-1 rounded-lg text-xs bg-slate-900 border border-white/20 text-vault-gold cursor-pointer"
+                    >
+                      {albums.map((alb) => (
+                        <option key={alb.id} value={alb.id}>
+                          {alb.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <Folder className="w-3.5 h-3.5 text-vault-gold" />
+                    <span>Album: {currentAlbum?.name || 'General'}</span>
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Date & Location Badges */}

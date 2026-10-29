@@ -92,6 +92,7 @@ export interface Photo {
   mimeType: string;
   width: number;
   height: number;
+  orientation?: 'landscape' | 'portrait';
   ivHex: string;
   thumbIvHex: string;
   // Decrypted in-memory client-side

@@ -85,6 +85,8 @@ export function MemoryUniverse({
     onlyFavorites,
     setIsSlideshowActive,
     currentFamily,
+    orientationFilter,
+    setOrientationFilter,
   } = useVaultStore();
 
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -99,13 +101,18 @@ export function MemoryUniverse({
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<OrbitControlsImpl>(null);
 
-  // Filtered photos
+  // Filtered photos based on album, search, and orientation
   const visiblePhotos = useMemo(() => {
     return photos.filter((p) => {
       if (p.inTrash) return false;
       if (activeAlbumId && p.albumId !== activeAlbumId) return false;
       if (onlyFavorites && !p.isFavorite) return false;
       if (selectedTag && !p.metadata.tags.includes(selectedTag)) return false;
+
+      const isPortrait = p.height > p.width || p.orientation === 'portrait';
+      if (orientationFilter === 'landscape' && isPortrait) return false;
+      if (orientationFilter === 'portrait' && !isPortrait) return false;
+
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesTitle = p.metadata.title.toLowerCase().includes(q);
@@ -116,7 +123,24 @@ export function MemoryUniverse({
       }
       return true;
     });
-  }, [photos, activeAlbumId, onlyFavorites, selectedTag, searchQuery]);
+  }, [photos, activeAlbumId, onlyFavorites, selectedTag, searchQuery, orientationFilter]);
+
+  // Interleave landscape and portrait photos when 'all' is selected for true myorb.live mosaic
+  const interleavedPhotos = useMemo(() => {
+    if (orientationFilter !== 'all') return visiblePhotos;
+    const landscapes = visiblePhotos.filter((p) => p.width >= p.height && p.orientation !== 'portrait');
+    const portraits = visiblePhotos.filter((p) => p.height > p.width || p.orientation === 'portrait');
+    if (landscapes.length === 0) return portraits;
+    if (portraits.length === 0) return landscapes;
+
+    const result: typeof visiblePhotos = [];
+    const maxLen = Math.max(landscapes.length, portraits.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (i < landscapes.length) result.push(landscapes[i]);
+      if (i < portraits.length) result.push(portraits[i]);
+    }
+    return result;
+  }, [visiblePhotos, orientationFilter]);
 
   // Centralized texture preloading map so all 108 cards render instantly
   const [textures, setTextures] = useState<Record<string, THREE.Texture>>({});
@@ -254,12 +278,12 @@ export function MemoryUniverse({
         <Suspense fallback={null}>
           <ParticleStarfield count={1200} />
 
-          {/* Densely Populated 3D Globe Lattice */}
+          {/* Densely Populated 3D Globe Lattice (100% Filled, Zero Dummy Boxes) */}
           <group position={[0, 0, 0]}>
-            {visiblePhotos.length > 0 &&
+            {interleavedPhotos.length > 0 &&
               Array.from({ length: TOTAL_GLOBE_SLOTS }).map((_, slotIndex) => {
-                const photoIndex = slotMapping[slotIndex] % visiblePhotos.length;
-                const photo = visiblePhotos[photoIndex];
+                const photoIndex = slotMapping[slotIndex] % interleavedPhotos.length;
+                const photo = interleavedPhotos[photoIndex];
                 const transform = getLayoutTransform(
                   viewMode3D,
                   slotIndex,
@@ -322,6 +346,57 @@ export function MemoryUniverse({
             {currentFamily.name}
           </span>
         </div>
+      </div>
+
+      {/* Top Center: Separate Landscape & Portrait Memory Mode (MyOrb Mosaic) */}
+      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 hidden md:flex items-center bg-black/60 backdrop-blur-2xl border border-white/10 rounded-full p-1 shadow-2xl">
+        <button
+          onClick={() => {
+            vaultAudio.playWhoosh();
+            setOrientationFilter('all');
+          }}
+          className={`px-3.5 py-1.5 rounded-full text-xs font-sans transition-all flex items-center gap-1.5 ${
+            orientationFilter === 'all'
+              ? 'bg-vault-gold text-black font-bold shadow-md'
+              : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
+          }`}
+          title="All Memories (Interleaved Mosaic)"
+        >
+          <span>✦ All Memories</span>
+          <span className="text-[10px] opacity-80 font-mono px-1 py-0.2 rounded bg-black/20">108</span>
+        </button>
+
+        <button
+          onClick={() => {
+            vaultAudio.playWhoosh();
+            setOrientationFilter('landscape');
+          }}
+          className={`px-3.5 py-1.5 rounded-full text-xs font-sans transition-all flex items-center gap-1.5 ${
+            orientationFilter === 'landscape'
+              ? 'bg-vault-gold text-black font-bold shadow-md'
+              : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
+          }`}
+          title="Filter Landscape Widescreen Memories"
+        >
+          <span className="text-sm leading-none">▱</span>
+          <span>Landscape</span>
+        </button>
+
+        <button
+          onClick={() => {
+            vaultAudio.playWhoosh();
+            setOrientationFilter('portrait');
+          }}
+          className={`px-3.5 py-1.5 rounded-full text-xs font-sans transition-all flex items-center gap-1.5 ${
+            orientationFilter === 'portrait'
+              ? 'bg-vault-gold text-black font-bold shadow-md'
+              : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
+          }`}
+          title="Filter Portrait Vertical Memories"
+        >
+          <span className="text-sm leading-none">▯</span>
+          <span>Portrait</span>
+        </button>
       </div>
 
       {/* Top Right: Minimal Luxury Controls */}
