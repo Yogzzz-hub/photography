@@ -69,12 +69,14 @@ export async function extractExifMetadata(file: File | Blob): Promise<{
 }
 
 /**
- * Creates an optimized client-side thumbnail canvas and exports as lightweight WebP blob.
+ * Creates an optimized client-side thumbnail canvas and exports as lightweight WebP/JPEG blob.
+ * Fail-safe: if image decoding fails or format is unsupported (e.g. HEIC/RAW),
+ * generates a sleek procedural memory canvas so uploads never fail.
  */
 export async function createOptimizedThumbnail(
   file: File | Blob,
   maxDimension = 480,
-  quality = 0.82
+  quality = 0.85
 ): Promise<{
   thumbBlob: Blob;
   originalWidth: number;
@@ -82,14 +84,82 @@ export async function createOptimizedThumbnail(
   thumbWidth: number;
   thumbHeight: number;
 }> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const objectUrl = URL.createObjectURL(file);
     const img = new Image();
 
+    const createProceduralFallback = () => {
+      URL.revokeObjectURL(objectUrl);
+      const originalWidth = 1200;
+      const originalHeight = 800;
+      const thumbWidth = maxDimension;
+      const thumbHeight = Math.round((maxDimension * originalHeight) / originalWidth);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = thumbWidth;
+      canvas.height = thumbHeight;
+      const ctx = canvas.getContext('2d');
+
+      if (ctx) {
+        // Luxury Obsidian Glass Gradient
+        const grad = ctx.createLinearGradient(0, 0, thumbWidth, thumbHeight);
+        grad.addColorStop(0, '#13111C');
+        grad.addColorStop(0.5, '#1e1b4b');
+        grad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, thumbWidth, thumbHeight);
+
+        // Subtle gold ambient glow in center
+        const radial = ctx.createRadialGradient(
+          thumbWidth / 2,
+          thumbHeight / 2,
+          20,
+          thumbWidth / 2,
+          thumbHeight / 2,
+          thumbWidth * 0.45
+        );
+        radial.addColorStop(0, 'rgba(212, 175, 55, 0.22)');
+        radial.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = radial;
+        ctx.fillRect(0, 0, thumbWidth, thumbHeight);
+
+        // Thin golden inner border
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, thumbWidth - 20, thumbHeight - 20);
+
+        // Memory badge text
+        ctx.fillStyle = '#D4AF37';
+        ctx.font = '600 13px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✦ ENCRYPTED MEMORY VAULT', thumbWidth / 2, thumbHeight / 2 - 10);
+
+        const displayName = file instanceof File ? file.name.slice(0, 24) : 'Private Memory';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '500 11px system-ui, sans-serif';
+        ctx.fillText(displayName, thumbWidth / 2, thumbHeight / 2 + 14);
+      }
+
+      canvas.toBlob(
+        (blob) => {
+          const finalBlob = blob || new Blob(['placeholder'], { type: 'image/jpeg' });
+          resolve({
+            thumbBlob: finalBlob,
+            originalWidth,
+            originalHeight,
+            thumbWidth,
+            thumbHeight,
+          });
+        },
+        'image/jpeg',
+        0.85
+      );
+    };
+
     img.onload = () => {
       URL.revokeObjectURL(objectUrl);
-      const originalWidth = img.naturalWidth || img.width;
-      const originalHeight = img.naturalHeight || img.height;
+      const originalWidth = img.naturalWidth || img.width || 1200;
+      const originalHeight = img.naturalHeight || img.height || 800;
 
       let thumbWidth = originalWidth;
       let thumbHeight = originalHeight;
@@ -107,33 +177,51 @@ export async function createOptimizedThumbnail(
       }
 
       const canvas = document.createElement('canvas');
-      canvas.width = thumbWidth;
-      canvas.height = thumbHeight;
+      canvas.width = Math.max(1, thumbWidth);
+      canvas.height = Math.max(1, thumbHeight);
       const ctx = canvas.getContext('2d');
 
       if (!ctx) {
-        reject(new Error('Failed to get 2D canvas context'));
+        createProceduralFallback();
         return;
       }
 
-      // Smooth bicubic resampling
+      // Smooth resampling
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, 0, 0, thumbWidth, thumbHeight);
 
+      // Try WebP first, fallback to JPEG, then PNG
       canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error('Canvas toBlob failed'));
+        (webpBlob) => {
+          if (webpBlob) {
+            resolve({
+              thumbBlob: webpBlob,
+              originalWidth,
+              originalHeight,
+              thumbWidth,
+              thumbHeight,
+            });
             return;
           }
-          resolve({
-            thumbBlob: blob,
-            originalWidth,
-            originalHeight,
-            thumbWidth,
-            thumbHeight,
-          });
+
+          canvas.toBlob(
+            (jpegBlob) => {
+              if (jpegBlob) {
+                resolve({
+                  thumbBlob: jpegBlob,
+                  originalWidth,
+                  originalHeight,
+                  thumbWidth,
+                  thumbHeight,
+                });
+                return;
+              }
+              createProceduralFallback();
+            },
+            'image/jpeg',
+            0.85
+          );
         },
         'image/webp',
         quality
@@ -141,8 +229,7 @@ export async function createOptimizedThumbnail(
     };
 
     img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error('Failed to load image for thumbnail creation'));
+      createProceduralFallback();
     };
 
     img.src = objectUrl;

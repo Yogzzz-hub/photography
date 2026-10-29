@@ -127,7 +127,14 @@ export function App() {
 
       {/* Global Interactive Modals */}
       <Suspense fallback={null}>
-        <BulkUploadModal isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} />
+        <BulkUploadModal
+          isOpen={isUploadOpen}
+          onClose={() => setIsUploadOpen(false)}
+          onViewUniverse={() => {
+            setIsUploadOpen(false);
+            setCurrentTab('universe');
+          }}
+        />
         <PhotoDetailModal photoId={selectedPhotoId} onClose={() => setSelectedPhotoId(null)} />
         <SlideshowModal isOpen={isSlideshowActive} onClose={() => setIsSlideshowActive(false)} />
         <LockUnlockModal isOpen={isLockModalOpen} onClose={() => setIsLockModalOpen(false)} />
