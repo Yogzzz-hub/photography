@@ -174,3 +174,22 @@ export function getInstantProceduralTexture(photoId: string, isPortrait = false)
   proceduralTextureCache.set(cacheKey, tex);
   return tex;
 }
+
+const proceduralDataUrlCache = new Map<string, string>();
+
+/**
+ * Returns a base64 Data URL for a procedural instant card to serve as a fail-safe
+ * fallback for any <img> tag on the globe.
+ */
+export function getInstantProceduralDataUrl(photoId: string, isPortrait = false): string {
+  const cacheKey = `${photoId}_${isPortrait ? 'portrait' : 'landscape'}`;
+  if (proceduralDataUrlCache.has(cacheKey)) {
+    return proceduralDataUrlCache.get(cacheKey)!;
+  }
+
+  const tex = getInstantProceduralTexture(photoId, isPortrait);
+  const dataUrl = (tex.image as HTMLCanvasElement).toDataURL('image/jpeg', 0.85);
+  proceduralDataUrlCache.set(cacheKey, dataUrl);
+  return dataUrl;
+}
+

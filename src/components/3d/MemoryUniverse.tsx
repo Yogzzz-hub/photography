@@ -4,6 +4,7 @@ import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { useVaultStore } from '../../stores/useVaultStore';
+import { MyOrbDome } from './MyOrbDome';
 import { PhotoCard3D } from './PhotoCard3D';
 import { ParticleStarfield } from './ParticleStarfield';
 import { getLayoutTransform } from './layouts/layoutCalculators';
@@ -258,76 +259,90 @@ export function MemoryUniverse({
       className="fixed inset-0 w-screen h-screen bg-[#040508] overflow-hidden select-none z-0"
       style={{ width: '100vw', height: '100vh' }}
     >
-      {/* 3D WebGL Canvas */}
-      <Canvas
-        style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
-        camera={{ position: [0, 0, 21.5], fov: 55, near: 0.1, far: 1000 }}
-        dpr={[1, 2]}
-        gl={{
-          antialias: true,
-          powerPreference: 'high-performance',
-          alpha: false,
-        }}
-      >
-        <color attach="background" args={['#040508']} />
-        <ambientLight intensity={1.2} />
-        <directionalLight position={[18, 22, 24]} intensity={1.5} color="#FFFFFF" />
-        <directionalLight position={[-18, -15, -12]} intensity={0.6} color="#E5C07B" />
-        <pointLight position={[0, 0, 0]} intensity={1.0} color="#8B5CF6" />
-
-        <Suspense fallback={null}>
-          <ParticleStarfield count={1200} />
-
-          {/* Densely Populated 3D Globe Lattice (100% Filled, Zero Dummy Boxes) */}
-          <group position={[0, 0, 0]}>
-            {interleavedPhotos.length > 0 &&
-              Array.from({ length: TOTAL_GLOBE_SLOTS }).map((_, slotIndex) => {
-                const photoIndex = slotMapping[slotIndex] % interleavedPhotos.length;
-                const photo = interleavedPhotos[photoIndex];
-                const transform = getLayoutTransform(
-                  viewMode3D,
-                  slotIndex,
-                  TOTAL_GLOBE_SLOTS,
-                  isExploded
-                );
-                const url = photo.decryptedThumbUrl || photo.thumbStoragePath;
-                const cardTexture = textures[url] || null;
-
-                return (
-                  <PhotoCard3D
-                    key={`${photo.id}_slot_${slotIndex}`}
-                    slotIndex={slotIndex}
-                    photo={photo}
-                    texture={cardTexture}
-                    targetTransform={transform}
-                    isSelected={selectedPhotoId === photo.id}
-                    isHovered={hoveredPhotoId === photo.id}
-                    isMonochrome={isMonochrome}
-                    onSelect={(id) => {
-                      setSelectedPhotoId(id);
-                      onOpenPhotoDetail(id);
-                    }}
-                    onHover={(id) => setHoveredPhotoId(id)}
-                    onSwapSlots={handleSwapSlots}
-                  />
-                );
-              })}
-          </group>
-        </Suspense>
-
-        <OrbitControls
-          ref={controlsRef}
-          target={[0, 0, 0]}
-          autoRotate={isAutoRotating && !isExploded}
-          autoRotateSpeed={0.4}
-          enableDamping
-          dampingFactor={0.06}
-          rotateSpeed={0.7}
-          panSpeed={0.5}
-          minDistance={isInsideOrb ? 0.05 : 14}
-          maxDistance={isInsideOrb ? 5 : 35}
+      {/* Primary Display Mode: Authentic myorb.live CSS 3D Dome for 'orb', or WebGL Canvas for other 3D modes */}
+      {viewMode3D === 'orb' ? (
+        <MyOrbDome
+          photos={photos}
+          onOpenPhotoDetail={onOpenPhotoDetail}
+          isMonochrome={isMonochrome}
+          orientationFilter={orientationFilter}
+          currentMode={viewMode3D}
+          onSelectMode={(mode) => setViewMode3D(mode)}
+          onToggleMonochrome={() => setIsMonochrome(!isMonochrome)}
+          onSetOrientationFilter={(f) => setOrientationFilter(f)}
         />
-      </Canvas>
+      ) : (
+        /* 3D WebGL Canvas for alternative universe modes (IMAX Wall, Galaxy, DNA Helix, Tunnel, Matrix, Museum, Constellation) */
+        <Canvas
+          style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
+          camera={{ position: [0, 0, 21.5], fov: 55, near: 0.1, far: 1000 }}
+          dpr={[1, 2]}
+          gl={{
+            antialias: true,
+            powerPreference: 'high-performance',
+            alpha: false,
+          }}
+        >
+          <color attach="background" args={['#040508']} />
+          <ambientLight intensity={1.2} />
+          <directionalLight position={[18, 22, 24]} intensity={1.5} color="#FFFFFF" />
+          <directionalLight position={[-18, -15, -12]} intensity={0.6} color="#E5C07B" />
+          <pointLight position={[0, 0, 0]} intensity={1.0} color="#8B5CF6" />
+
+          <Suspense fallback={null}>
+            <ParticleStarfield count={1200} />
+
+            {/* Densely Populated 3D Globe Lattice */}
+            <group position={[0, 0, 0]}>
+              {interleavedPhotos.length > 0 &&
+                Array.from({ length: TOTAL_GLOBE_SLOTS }).map((_, slotIndex) => {
+                  const photoIndex = slotMapping[slotIndex] % interleavedPhotos.length;
+                  const photo = interleavedPhotos[photoIndex];
+                  const transform = getLayoutTransform(
+                    viewMode3D,
+                    slotIndex,
+                    TOTAL_GLOBE_SLOTS,
+                    isExploded
+                  );
+                  const url = photo.decryptedThumbUrl || photo.thumbStoragePath;
+                  const cardTexture = textures[url] || null;
+
+                  return (
+                    <PhotoCard3D
+                      key={`${photo.id}_slot_${slotIndex}`}
+                      slotIndex={slotIndex}
+                      photo={photo}
+                      texture={cardTexture}
+                      targetTransform={transform}
+                      isSelected={selectedPhotoId === photo.id}
+                      isHovered={hoveredPhotoId === photo.id}
+                      isMonochrome={isMonochrome}
+                      onSelect={(id) => {
+                        setSelectedPhotoId(id);
+                        onOpenPhotoDetail(id);
+                      }}
+                      onHover={(id) => setHoveredPhotoId(id)}
+                      onSwapSlots={handleSwapSlots}
+                    />
+                  );
+                })}
+            </group>
+          </Suspense>
+
+          <OrbitControls
+            ref={controlsRef}
+            target={[0, 0, 0]}
+            autoRotate={isAutoRotating && !isExploded}
+            autoRotateSpeed={0.4}
+            enableDamping
+            dampingFactor={0.06}
+            rotateSpeed={0.7}
+            panSpeed={0.5}
+            minDistance={isInsideOrb ? 0.05 : 14}
+            maxDistance={isInsideOrb ? 5 : 35}
+          />
+        </Canvas>
+      )}
 
       {/* ULTRA-MINIMAL LUXURY HUD */}
 
@@ -456,8 +471,8 @@ export function MemoryUniverse({
         </button>
       </div>
 
-      {/* Floating Center-Bottom Hover HUD Card (Luxury Editorial Style) */}
-      {hoveredPhoto && (
+      {/* Floating Center-Bottom Hover HUD Card (WebGL Modes only) */}
+      {viewMode3D !== 'orb' && hoveredPhoto && (
         <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-all duration-300 animate-in fade-in zoom-in-95">
           <div className="bg-[#0b0e17]/85 backdrop-blur-2xl p-4 rounded-3xl max-w-md flex items-center gap-4 shadow-2xl border border-white/15">
             <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-900 flex-shrink-0 border border-white/15 shadow-inner">
@@ -490,97 +505,99 @@ export function MemoryUniverse({
         </div>
       )}
 
-      {/* FLOATING BOTTOM DOCK (Ultra-Sleek Capsule Dock Inspired by myorb.live) */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
-        <div className="bg-[#0A0D15]/80 backdrop-blur-2xl border border-white/10 p-1.5 rounded-full flex items-center gap-1 shadow-2xl">
-          {/* Reset Camera View */}
-          <button
-            onClick={handleResetCamera}
-            title="Reset Center View"
-            className="p-2.5 rounded-full text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
+      {/* FLOATING BOTTOM DOCK for Alternative 3D Modes (IMAX Wall, Galaxy, Tunnel, etc.) */}
+      {viewMode3D !== 'orb' && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
+          <div className="bg-[#0A0D15]/80 backdrop-blur-2xl border border-white/10 p-1.5 rounded-full flex items-center gap-1 shadow-2xl">
+            {/* Reset Camera View */}
+            <button
+              onClick={handleResetCamera}
+              title="Reset Center View"
+              className="p-2.5 rounded-full text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
 
-          {/* 3D Layout Selector Modes */}
-          <div className="flex items-center gap-0.5 px-1 border-x border-white/10">
-            {MODE_CONFIGS.slice(0, 4).map(({ mode, label, icon: Icon }) => {
-              const isActive = viewMode3D === mode;
-              return (
-                <button
-                  key={mode}
-                  onClick={() => {
-                    vaultAudio.playWhoosh();
-                    setViewMode3D(mode);
-                    if (isExploded) setIsExploded(false);
-                  }}
-                  title={label}
-                  className={`p-2 rounded-full transition-all ${
-                    isActive
-                      ? 'bg-vault-gold text-black shadow-md'
-                      : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                </button>
-              );
-            })}
+            {/* 3D Layout Selector Modes */}
+            <div className="flex items-center gap-0.5 px-1 border-x border-white/10">
+              {MODE_CONFIGS.map(({ mode, label, icon: Icon }) => {
+                const isActive = viewMode3D === mode;
+                return (
+                  <button
+                    key={mode}
+                    onClick={() => {
+                      vaultAudio.playWhoosh();
+                      setViewMode3D(mode);
+                      if (isExploded) setIsExploded(false);
+                    }}
+                    title={label}
+                    className={`p-2 rounded-full transition-all ${
+                      isActive
+                        ? 'bg-vault-gold text-black shadow-md'
+                        : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Shuffle Memory Slots */}
+            <button
+              onClick={handleShuffleGlobe}
+              title="Shuffle Memory Positions"
+              className="p-2.5 rounded-full text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
+            >
+              <Shuffle className="w-4 h-4" />
+            </button>
+
+            {/* Cosmic Gravity Explode */}
+            <button
+              onClick={handleToggleExplode}
+              title={isExploded ? 'Reassemble Globe' : 'Disperse Memories (Cosmic Gravity)'}
+              className={`p-2.5 rounded-full transition-all ${
+                isExploded
+                  ? 'bg-rose-500 text-white shadow-lg'
+                  : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'
+              }`}
+            >
+              <Zap className="w-4 h-4" />
+            </button>
+
+            {/* Inside the Globe View (360° Skybox) */}
+            <button
+              onClick={handleToggleInsideOrb}
+              title={isInsideOrb ? 'Exit Inside Sphere' : 'Step Inside Globe (360° Panorama)'}
+              className={`p-2.5 rounded-full transition-all ${
+                isInsideOrb
+                  ? 'bg-purple-600 text-white shadow-lg'
+                  : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'
+              }`}
+            >
+              <Compass className="w-4 h-4" />
+            </button>
+
+            {/* Orbit Auto-Rotation Toggle */}
+            <button
+              onClick={() => setIsAutoRotating(!isAutoRotating)}
+              title={isAutoRotating ? 'Pause Orbit' : 'Resume Orbit'}
+              className="p-2.5 rounded-full text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
+            >
+              {isAutoRotating ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
+            </button>
+
+            {/* Slideshow Trigger */}
+            <button
+              onClick={() => setIsSlideshowActive(true)}
+              title="Start Slideshow"
+              className="p-2.5 rounded-full text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
+            >
+              <Play className="w-4 h-4 text-vault-gold fill-current" />
+            </button>
           </div>
-
-          {/* Shuffle Memory Slots */}
-          <button
-            onClick={handleShuffleGlobe}
-            title="Shuffle Memory Positions"
-            className="p-2.5 rounded-full text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
-          >
-            <Shuffle className="w-4 h-4" />
-          </button>
-
-          {/* Cosmic Gravity Explode */}
-          <button
-            onClick={handleToggleExplode}
-            title={isExploded ? 'Reassemble Globe' : 'Disperse Memories (Cosmic Gravity)'}
-            className={`p-2.5 rounded-full transition-all ${
-              isExploded
-                ? 'bg-rose-500 text-white shadow-lg'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'
-            }`}
-          >
-            <Zap className="w-4 h-4" />
-          </button>
-
-          {/* Inside the Globe View (360° Skybox) */}
-          <button
-            onClick={handleToggleInsideOrb}
-            title={isInsideOrb ? 'Exit Inside Sphere' : 'Step Inside Globe (360° Panorama)'}
-            className={`p-2.5 rounded-full transition-all ${
-              isInsideOrb
-                ? 'bg-purple-600 text-white shadow-lg'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'
-            }`}
-          >
-            <Compass className="w-4 h-4" />
-          </button>
-
-          {/* Orbit Auto-Rotation Toggle */}
-          <button
-            onClick={() => setIsAutoRotating(!isAutoRotating)}
-            title={isAutoRotating ? 'Pause Orbit' : 'Resume Orbit'}
-            className="p-2.5 rounded-full text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
-          >
-            {isAutoRotating ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
-          </button>
-
-          {/* Slideshow Trigger */}
-          <button
-            onClick={() => setIsSlideshowActive(true)}
-            title="Start Slideshow"
-            className="p-2.5 rounded-full text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
-          >
-            <Play className="w-4 h-4 text-vault-gold fill-current" />
-          </button>
         </div>
-      </div>
+      )}
 
       {/* QUICK SEARCH OVERLAY MODAL */}
       {isSearchOpen && (
