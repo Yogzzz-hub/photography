@@ -162,8 +162,8 @@ export function PhotoCard3D({
     const [rx, ry, rz] = targetTransform.rotation;
     const [nx, ny, nz] = targetTransform.normal;
 
-    // Normal-aligned elevation on hover / drag
-    const elevation = isDragging ? 3.6 : isHovered ? 1.1 : isSelected ? 1.8 : 0.0;
+    // Subtle normal-aligned elevation on hover / drag that prevents raycast jitter
+    const elevation = isDragging ? 3.6 : isHovered ? 0.25 : isSelected ? 1.8 : 0.0;
     const targetX = tx + nx * elevation + dragOffsetRef.current.x;
     const targetY = ty + ny * elevation + dragOffsetRef.current.y;
     const targetZ = tz + nz * elevation + dragOffsetRef.current.z;

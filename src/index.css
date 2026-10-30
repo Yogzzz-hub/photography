@@ -152,7 +152,7 @@
   cursor: pointer;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 320ms ease, border-color 320ms ease;
+  transition: box-shadow 280ms ease, border-color 280ms ease;
   pointer-events: auto;
   background-color: #0c0e16;
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -160,10 +160,9 @@
 }
 
 .sphere-item-card:hover {
-  transform: translateZ(50px) scale(1.09);
-  border-color: rgba(212, 175, 55, 0.7);
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 35px rgba(212, 175, 55, 0.4);
-  z-index: 60;
+  border-color: rgba(229, 192, 123, 0.85);
+  box-shadow: 0 0 25px rgba(229, 192, 123, 0.45), 0 16px 40px rgba(0, 0, 0, 0.95);
+  z-index: 50;
 }
 
 @media (max-width: 640px) {
