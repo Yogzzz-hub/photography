@@ -443,7 +443,7 @@ export function MemoryUniverse({
                       isMonochrome={isMonochrome}
                       onSelect={() => {
                         vaultAudio.playWhoosh();
-                        setFocusedSlotIndex(slotIndex);
+                        onOpenPhotoDetail(photo.id);
                       }}
                       onHover={(id) => setHoveredPhotoId(id)}
                       onSwapSlots={handleSwapSlots}

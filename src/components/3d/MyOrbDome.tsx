@@ -111,6 +111,8 @@ export function MyOrbDome({
   // Drag & Inertia Refs
   const isPointerDownRef = useRef(false);
   const pointerStartRef = useRef<{ x: number; y: number; rotY: number; rotX: number } | null>(null);
+  const pointerDownPosRef = useRef<{ x: number; y: number } | null>(null);
+  const isDraggingGlobeRef = useRef(false);
   const velocityRef = useRef<{ vx: number; vy: number }>({ vx: 0, vy: 0 });
   const animFrameRef = useRef<number | null>(null);
 
@@ -244,6 +246,8 @@ export function MyOrbDome({
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return;
     isPointerDownRef.current = true;
+    pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
+    isDraggingGlobeRef.current = false;
     pointerStartRef.current = {
       x: e.clientX,
       y: e.clientY,
@@ -255,6 +259,12 @@ export function MyOrbDome({
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isPointerDownRef.current || !pointerStartRef.current) return;
+    if (pointerDownPosRef.current) {
+      const dist = Math.hypot(e.clientX - pointerDownPosRef.current.x, e.clientY - pointerDownPosRef.current.y);
+      if (dist > 6) {
+        isDraggingGlobeRef.current = true;
+      }
+    }
     const dx = e.clientX - pointerStartRef.current.x;
     const dy = e.clientY - pointerStartRef.current.y;
 
@@ -280,6 +290,11 @@ export function MyOrbDome({
   const handlePointerUp = () => {
     isPointerDownRef.current = false;
     pointerStartRef.current = null;
+    // Release drag flag on next tick so card onClick handler can inspect it
+    setTimeout(() => {
+      isDraggingGlobeRef.current = false;
+      pointerDownPosRef.current = null;
+    }, 60);
   };
 
   // Wheel Zoom
@@ -425,7 +440,9 @@ export function MyOrbDome({
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleFocusSlot(slot.idx);
+                      if (isDraggingGlobeRef.current) return;
+                      vaultAudio.playWhoosh();
+                      onOpenPhotoDetail(photo.id);
                     }}
                     onMouseEnter={() => {
                       vaultAudio.playHoverChime();
