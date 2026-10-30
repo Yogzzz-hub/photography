@@ -28,8 +28,8 @@ export function LockUnlockModal({ isOpen, onClose }: { isOpen: boolean; onClose:
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in">
-      <div className="glass-panel w-full max-w-md rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl relative text-center">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-xl animate-in fade-in">
+      <div className="glass-panel w-full max-w-md rounded-3xl p-5 sm:p-8 border border-white/10 shadow-2xl relative text-center">
         <div className="w-16 h-16 rounded-full bg-purple-600/20 border border-purple-500/30 text-purple-400 mx-auto flex items-center justify-center mb-4">
           {isVaultUnlocked ? <Unlock className="w-8 h-8" /> : <Lock className="w-8 h-8" />}
         </div>

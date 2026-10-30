@@ -82,13 +82,13 @@ export function BackupCenter() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5 sm:gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-purple-600/20 border border-purple-500/30 text-purple-400">
-            <Archive className="w-6 h-6" />
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-purple-600/20 border border-purple-500/30 text-purple-400">
+            <Archive className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Disaster Recovery & Vault Backups</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-white">Disaster Recovery & Vault Backups</h2>
             <p className="text-xs text-slate-400 mt-0.5">
               Independent encrypted archives, emergency recovery key preservation, and recycle bin management.
             </p>
@@ -106,13 +106,13 @@ export function BackupCenter() {
       </div>
 
       {/* Offline Emergency Recovery Key Card */}
-      <div className="glass-panel p-6 rounded-3xl border border-purple-500/30 bg-purple-950/20 space-y-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-purple-500/30 bg-purple-950/20 space-y-3.5 sm:space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <Key className="w-5 h-5 text-purple-400" />
-            <h3 className="text-sm font-bold text-white">256-Bit Emergency Master Recovery Key</h3>
+            <Key className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+            <h3 className="text-xs sm:text-sm font-bold text-white">256-Bit Emergency Master Recovery Key</h3>
           </div>
-          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-purple-600/30 text-purple-300 border border-purple-400/30">
+          <span className="px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-mono bg-purple-600/30 text-purple-300 border border-purple-400/30">
             AIR-GAPPED
           </span>
         </div>
@@ -123,7 +123,7 @@ export function BackupCenter() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <div className="flex-1 p-3 rounded-xl bg-black/60 border border-white/10 font-mono text-xs text-purple-200 tracking-wider overflow-x-auto select-all">
+          <div className="flex-1 p-2.5 sm:p-3 rounded-xl bg-black/60 border border-white/10 font-mono text-xs text-purple-200 tracking-wider overflow-x-auto select-all">
             {recoveryCode || '1A2B-3C4D-5E6F-7890-ABCD-EF01-2345-6789-9876-5432-10FE-DCBA'}
           </div>
           <button
@@ -137,9 +137,9 @@ export function BackupCenter() {
       </div>
 
       {/* Full Encrypted Export Card */}
-      <div className="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 sm:gap-4">
         <div>
-          <h3 className="text-sm font-bold text-white">Download Complete Family Archive</h3>
+          <h3 className="text-xs sm:text-sm font-bold text-white">Download Complete Family Archive</h3>
           <p className="text-xs text-slate-400 mt-1 max-w-xl">
             Exports all encrypted photo manifests, checksums, and album relationships into an offline portable package.
           </p>
@@ -154,7 +154,7 @@ export function BackupCenter() {
       </div>
 
       {/* Recycle Bin / Trash Section */}
-      <div className="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 space-y-3.5 sm:space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Trash2 className="w-4 h-4 text-rose-400" />

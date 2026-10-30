@@ -78,7 +78,7 @@ export function App() {
           )}
 
           {currentTab === 'library' && (
-            <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6">
+            <div className="max-w-7xl mx-auto w-full px-2 sm:px-6 py-3 sm:py-6">
               <Fallback2DGallery
                 photos={photos}
                 onSelectPhoto={(id) => setSelectedPhotoId(id)}
@@ -88,37 +88,37 @@ export function App() {
           )}
 
           {currentTab === 'map' && (
-            <div className="flex-1 w-full h-[calc(100vh-80px)] p-4 sm:p-6">
+            <div className="flex-1 w-full h-[calc(100vh-56px)] sm:h-[calc(100vh-80px)] p-1.5 sm:p-6">
               <MemoryMap onOpenPhotoDetail={(id) => setSelectedPhotoId(id)} />
             </div>
           )}
 
           {currentTab === 'albums' && (
-            <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6">
+            <div className="max-w-7xl mx-auto w-full px-2.5 sm:px-6 py-3 sm:py-6">
               <AlbumsView onSelectAlbum={() => setCurrentTab('universe')} />
             </div>
           )}
 
           {currentTab === 'storage' && (
-            <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6">
+            <div className="max-w-7xl mx-auto w-full px-2.5 sm:px-6 py-3 sm:py-6">
               <StorageDashboard />
             </div>
           )}
 
           {currentTab === 'activity' && (
-            <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6">
+            <div className="max-w-7xl mx-auto w-full px-2.5 sm:px-6 py-3 sm:py-6">
               <ActivityHistory />
             </div>
           )}
 
           {currentTab === 'members' && (
-            <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6">
+            <div className="max-w-7xl mx-auto w-full px-2.5 sm:px-6 py-3 sm:py-6">
               <FamilyManagement />
             </div>
           )}
 
           {currentTab === 'backups' && (
-            <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6">
+            <div className="max-w-7xl mx-auto w-full px-2.5 sm:px-6 py-3 sm:py-6">
               <BackupCenter />
             </div>
           )}

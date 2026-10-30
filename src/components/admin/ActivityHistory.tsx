@@ -73,13 +73,13 @@ export function ActivityHistory() {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5 sm:gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-purple-600/20 border border-purple-500/30 text-purple-400">
-            <Activity className="w-6 h-6" />
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-purple-600/20 border border-purple-500/30 text-purple-400">
+            <Activity className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Family Activity & Audit Ledger</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-white">Family Activity & Audit Ledger</h2>
             <p className="text-xs text-slate-400 mt-0.5">
               Append-only tamper-evident event log. Plaintext keys and private media are never logged.
             </p>
@@ -96,7 +96,7 @@ export function ActivityHistory() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="glass-panel p-4 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-center gap-3">
+      <div className="glass-panel p-3 sm:p-4 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input

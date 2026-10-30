@@ -81,12 +81,12 @@ export function SlideshowModal({ isOpen, onClose }: { isOpen: boolean; onClose: 
       </button>
 
       {/* Main Slide Image */}
-      <div className="relative w-full h-full flex items-center justify-center p-6 md:p-12">
+      <div className="relative w-full h-full flex items-center justify-center p-3 sm:p-6 md:p-12">
         <img
           key={currentPhoto.id}
           src={photoUrl}
           alt={currentPhoto.metadata.title}
-          className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-700"
+          className="max-w-full max-h-[74vh] sm:max-h-[85vh] object-contain rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-700"
         />
 
         {/* Ambient Blurred Glow Backdrop */}
@@ -97,20 +97,20 @@ export function SlideshowModal({ isOpen, onClose }: { isOpen: boolean; onClose: 
       </div>
 
       {/* Bottom Floating Story Banner */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 w-[90vw] max-w-2xl text-center pointer-events-none">
-        <div className="glass-panel px-6 py-4 rounded-2xl border border-white/10 shadow-2xl pointer-events-auto inline-block">
-          <h3 className="text-lg md:text-xl font-bold text-white mb-1">
+      <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-40 w-[94vw] max-w-2xl text-center pointer-events-none">
+        <div className="glass-panel px-4 py-3 sm:px-6 sm:py-4 rounded-2xl border border-white/10 shadow-2xl pointer-events-auto inline-block">
+          <h3 className="text-sm sm:text-xl font-bold text-white mb-1 truncate max-w-xs sm:max-w-md">
             {currentPhoto.metadata.title}
           </h3>
-          <div className="flex items-center justify-center gap-4 text-xs text-slate-300">
+          <div className="flex items-center justify-center gap-3 sm:gap-4 text-[11px] sm:text-xs text-slate-300">
             <span className="flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5 text-purple-400" />
-              {currentPhoto.metadata.captureDate}
+              <span>{currentPhoto.metadata.captureDate}</span>
             </span>
             {currentPhoto.metadata.location?.label && (
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-                {currentPhoto.metadata.location.label}
+              <span className="flex items-center gap-1 truncate max-w-[120px] sm:max-w-none">
+                <MapPin className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                <span className="truncate">{currentPhoto.metadata.location.label}</span>
               </span>
             )}
             <span className="text-purple-400 font-mono">
@@ -118,7 +118,7 @@ export function SlideshowModal({ isOpen, onClose }: { isOpen: boolean; onClose: 
             </span>
           </div>
           {currentPhoto.metadata.story && (
-            <p className="text-xs text-slate-300 mt-2 line-clamp-2 max-w-lg mx-auto italic">
+            <p className="text-[11px] sm:text-xs text-slate-300 mt-1.5 sm:mt-2 line-clamp-1 sm:line-clamp-2 max-w-lg mx-auto italic">
               "{currentPhoto.metadata.story}"
             </p>
           )}

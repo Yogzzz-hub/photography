@@ -117,13 +117,13 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3.5 rounded-2xl bg-purple-600/20 border border-purple-500/30 text-purple-400">
-            <Folder className="w-6 h-6" />
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 sm:gap-4 shadow-xl">
+        <div className="flex items-center gap-3 sm:gap-3.5">
+          <div className="p-3 sm:p-3.5 rounded-2xl bg-purple-600/20 border border-purple-500/30 text-purple-400">
+            <Folder className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-serif font-bold text-white tracking-wide">
+            <h2 className="text-lg sm:text-xl font-serif font-bold text-white tracking-wide">
               Family Memory Albums
             </h2>
             <p className="text-xs text-slate-400 mt-0.5 font-sans">
@@ -264,8 +264,8 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
 
       {/* CREATE ALBUM MODAL WITH DEDICATED PHOTO PICKER / GROUPING */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-          <div className="bg-[#0b0e17] border border-white/15 w-full max-w-2xl rounded-3xl p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="bg-[#0b0e17] border border-white/15 w-full max-w-2xl rounded-3xl p-4 sm:p-6 shadow-2xl relative max-h-[92vh] flex flex-col">
             <button
               onClick={() => setIsCreateOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"
@@ -468,8 +468,8 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
 
       {/* MANAGE / GROUP PHOTOS MODAL FOR EXISTING ALBUMS */}
       {editingAlbum && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-          <div className="bg-[#0b0e17] border border-white/15 w-full max-w-2xl rounded-3xl p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="bg-[#0b0e17] border border-white/15 w-full max-w-2xl rounded-3xl p-4 sm:p-6 shadow-2xl relative max-h-[92vh] flex flex-col">
             <button
               onClick={() => setEditingAlbum(null)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"

@@ -388,33 +388,33 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
       <div className="glass-panel w-full max-w-4xl max-h-[92vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-white/10 bg-[#0e0c14]/95">
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="p-3.5 sm:p-5 border-b border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="p-2 sm:p-2.5 rounded-2xl bg-purple-600/30 text-purple-400 border border-purple-500/30 shadow-glow">
               <UploadCloud className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-sm sm:text-lg font-bold text-white flex items-center gap-1.5 sm:gap-2">
                 <span>Bulk Memory Uploader</span>
-                <span className="hidden sm:inline-flex text-[10px] font-mono tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 whitespace-nowrap">
+                <span className="text-[9px] sm:text-[10px] font-mono tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 whitespace-nowrap">
                   AES-256-GCM
                 </span>
               </h3>
-              <p className="text-[11px] sm:text-xs text-slate-400 line-clamp-1 sm:line-clamp-none">
+              <p className="text-[10px] sm:text-xs text-slate-400 line-clamp-1 sm:line-clamp-none">
                 End-to-end client encrypted before transmission. 100–500+ batch capacity.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+            className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Content Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5">
+        <div className="flex-1 overflow-y-auto p-3.5 sm:p-5 space-y-3.5 sm:space-y-5">
           {/* Interactive Drag & Drop Area */}
           <div
             onDragOver={handleDragOver}

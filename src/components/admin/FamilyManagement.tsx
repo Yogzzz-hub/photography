@@ -91,13 +91,13 @@ export function FamilyManagement() {
   return (
     <div className="space-y-6">
       {/* Top Banner with Governance Overview */}
-      <div className="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3.5 rounded-2xl bg-vault-gold/15 border border-vault-gold/30 text-vault-gold">
-            <Users className="w-6 h-6" />
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 sm:gap-4 shadow-xl">
+        <div className="flex items-center gap-3 sm:gap-3.5">
+          <div className="p-3 sm:p-3.5 rounded-2xl bg-vault-gold/15 border border-vault-gold/30 text-vault-gold">
+            <Users className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-serif font-bold text-white tracking-wide">
+            <h2 className="text-lg sm:text-xl font-serif font-bold text-white tracking-wide">
               Family Members & Access Governance
             </h2>
             <p className="text-xs text-slate-400 mt-0.5 font-sans">
@@ -118,9 +118,9 @@ export function FamilyManagement() {
       </div>
 
       {/* Interactive Persona / Active Identity Switcher */}
-      <div className="bg-[#0b0e17]/80 backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-lg">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
+      <div className="bg-[#0b0e17]/80 backdrop-blur-xl p-3 sm:p-4 rounded-3xl border border-white/10 shadow-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
             <UserCheck className="w-4 h-4 text-vault-gold" />
             <span className="text-xs font-bold text-slate-200">Active Test Persona:</span>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/10 text-white border border-white/15">
@@ -128,13 +128,13 @@ export function FamilyManagement() {
             </span>
           </div>
 
-          <div className="flex items-center flex-wrap gap-1.5">
+          <div className="flex items-center flex-wrap gap-1.5 w-full sm:w-auto">
             <span className="text-[11px] text-slate-400 mr-1">Switch Persona:</span>
             {allMembers.map((member) => (
               <button
                 key={member.id}
                 onClick={() => switchActiveMember(member.id)}
-                className={`px-3 py-1 rounded-xl text-xs font-medium transition-all ${
+                className={`px-2.5 py-1 rounded-xl text-xs font-medium transition-all ${
                   currentMember.id === member.id
                     ? 'bg-vault-gold text-black font-bold shadow'
                     : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'
@@ -162,16 +162,16 @@ export function FamilyManagement() {
             return (
               <div
                 key={member.id}
-                className={`glass-panel p-4 rounded-3xl border transition-all ${
+                className={`glass-panel p-3.5 sm:p-4 rounded-3xl border transition-all ${
                   isSelf ? 'border-vault-gold/40 shadow-glow' : 'border-white/5'
-                } flex flex-col sm:flex-row sm:items-center justify-between gap-4`}
+                } flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4`}
               >
-                <div className="flex items-center gap-3.5">
+                <div className="flex items-center gap-3 sm:gap-3.5">
                   <div className="relative flex-shrink-0">
                     <img
                       src={member.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}
                       alt={member.displayName}
-                      className="w-13 h-13 rounded-2xl object-cover border border-white/20 bg-slate-900"
+                      className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl object-cover border border-white/20 bg-slate-900"
                     />
                     {member.role === 'owner' && (
                       <div className="absolute -top-1 -right-1 p-1 bg-amber-400 rounded-full text-slate-950 shadow-md">
@@ -180,9 +180,9 @@ export function FamilyManagement() {
                     )}
                   </div>
 
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-bold text-white">{member.displayName}</h4>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                      <h4 className="text-sm font-bold text-white truncate">{member.displayName}</h4>
                       {isSelf && (
                         <span className="px-1.5 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/40">
                           You
@@ -194,13 +194,13 @@ export function FamilyManagement() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-400">{member.email}</p>
-                    <div className="flex items-center gap-3 mt-1 text-[11px] text-slate-500 font-sans">
+                    <p className="text-xs text-slate-400 truncate">{member.email}</p>
+                    <div className="flex items-center gap-2.5 sm:gap-3 mt-1 text-[11px] text-slate-500 font-sans">
                       <span>Joined {new Date(member.joinedAt).toLocaleDateString()}</span>
                       {member.passwordLastChanged && (
                         <span className="text-emerald-400 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" />
-                          Pass updated
+                          <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
+                          <span>Pass set</span>
                         </span>
                       )}
                     </div>
@@ -208,7 +208,7 @@ export function FamilyManagement() {
                 </div>
 
                 {/* Member Access Tools & Password Change Button */}
-                <div className="flex items-center flex-wrap gap-2 justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
+                <div className="flex items-center flex-wrap gap-2 justify-between sm:justify-end w-full sm:w-auto pt-2.5 sm:pt-0 border-t sm:border-t-0 border-white/5">
                   {/* Change Password Button (Active for all members) */}
                   <button
                     onClick={() => handleOpenPasswordModal(member)}
@@ -299,8 +299,8 @@ export function FamilyManagement() {
 
       {/* SECURE PASSWORD / PASSPHRASE CHANGE MODAL */}
       {passwordModalMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-          <div className="bg-[#0b0e17] border border-white/15 w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+          <div className="bg-[#0b0e17] border border-white/15 w-full max-w-md rounded-3xl p-4 sm:p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
             <button
               onClick={() => setPasswordModalMember(null)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"

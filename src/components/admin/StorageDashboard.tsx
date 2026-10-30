@@ -96,14 +96,14 @@ export function StorageDashboard() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5 sm:gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-purple-600/20 border border-purple-500/30 text-purple-400">
-              <HardDrive className="w-6 h-6" />
+            <div className="p-2.5 sm:p-3 rounded-2xl bg-purple-600/20 border border-purple-500/30 text-purple-400">
+              <HardDrive className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Storage Governance & Cloud Limits</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-white">Storage Governance & Cloud Limits</h2>
               <p className="text-xs text-slate-400 mt-0.5">
                 Cloudflare R2 private bucket with zero egress fees and automated quota protection.
               </p>
@@ -124,7 +124,7 @@ export function StorageDashboard() {
       </div>
 
       {/* Main Meter Card */}
-      <div className="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 space-y-3.5 sm:space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold text-slate-300">Vault Capacity Utilization</span>
           <span className="text-sm font-bold font-mono text-purple-400">
@@ -144,7 +144,7 @@ export function StorageDashboard() {
           />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 pt-2 text-xs">
           <div>
             <span className="text-slate-500 block">Available Headroom</span>
             <span className="font-semibold text-slate-200 font-mono">{formatBytes(availableBytes)}</span>
@@ -165,9 +165,9 @@ export function StorageDashboard() {
       </div>
 
       {/* Analytics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         {/* Left: Storage Distribution */}
-        <div className="glass-panel p-5 rounded-3xl border border-white/10 space-y-4">
+        <div className="glass-panel p-4 sm:p-5 rounded-3xl border border-white/10 space-y-4">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
             <Layers className="w-4 h-4 text-purple-400" />
             <span>Object Distribution</span>

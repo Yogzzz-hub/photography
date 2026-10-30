@@ -156,13 +156,13 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
           onClick={onClose}
           title="Close Photo Detail"
           aria-label="Close Photo Detail"
-          className="absolute top-4 right-4 z-40 p-2.5 rounded-full bg-black/60 text-slate-300 hover:text-white hover:bg-black/90 transition-all border border-white/10"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-40 p-2 sm:p-2.5 rounded-full bg-black/75 text-slate-300 hover:text-white hover:bg-black/90 transition-all border border-white/15 shadow-lg"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         {/* Left / Center: High-Fidelity Photo Viewer */}
-        <div className="relative flex-1 bg-black/60 flex items-center justify-center overflow-hidden min-h-[220px] sm:min-h-[350px] lg:min-h-[600px] max-h-[45vh] lg:max-h-full">
+        <div className="relative flex-1 bg-black/60 flex items-center justify-center overflow-hidden min-h-[180px] sm:min-h-[300px] lg:min-h-[600px] max-h-[35vh] sm:max-h-[44vh] lg:max-h-full">
           <img
             src={photo.decryptedFullUrl || photo.decryptedThumbUrl || photo.thumbStoragePath}
             alt={photo.metadata.title}
@@ -173,7 +173,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
           />
 
           {/* Quick Floating Overlay Toolbar */}
-          <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 flex items-center gap-1.5 sm:gap-2">
+          <div className="absolute bottom-2.5 left-2.5 sm:bottom-4 sm:left-4 flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => toggleFavorite(photo.id)}
               className={`p-2 sm:p-2.5 rounded-xl transition-all ${
@@ -203,7 +203,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
         </div>
 
         {/* Right: Memory Story & Metadata Panel */}
-        <div className="w-full lg:w-96 p-4 sm:p-6 overflow-y-auto flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10 bg-vault-card/70">
+        <div className="w-full lg:w-96 p-3.5 sm:p-6 overflow-y-auto flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10 bg-vault-card/70 max-h-[55vh] lg:max-h-none">
           <div className="space-y-5">
             {/* Header info */}
             <div>

@@ -293,12 +293,12 @@ export function MemoryMap({
       </div>
 
       {/* Top Quick Focus Region Pills */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 hidden md:flex items-center gap-1.5 p-1 bg-black/70 backdrop-blur-xl border border-white/10 rounded-full shadow-xl">
+      <div className="absolute top-3 left-3 sm:top-4 sm:left-1/2 sm:-translate-x-1/2 z-10 flex items-center gap-1 sm:gap-1.5 p-1 bg-black/80 backdrop-blur-xl border border-white/10 rounded-full shadow-xl max-w-[calc(100vw-110px)] sm:max-w-none overflow-x-auto no-scrollbar">
         {QUICK_PRESETS.map((preset) => (
           <button
             key={preset.label}
             onClick={() => handleFlyTo(preset.center, preset.zoom)}
-            className="px-3 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap"
+            className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap"
           >
             {preset.label}
           </button>
@@ -327,12 +327,12 @@ export function MemoryMap({
       </div>
 
       {/* Dedicated Zoom Controls (Zoom In / Zoom Out) */}
-      <div className="absolute right-4 bottom-24 z-10 flex flex-col gap-1.5">
+      <div className="absolute right-3 sm:right-4 bottom-24 sm:bottom-24 z-10 flex flex-col gap-1.5">
         <button
           onClick={() => handleZoom(1.0)}
           title="Zoom In"
           disabled={currentZoom >= 14.5}
-          className="glass-panel-interactive p-2.5 rounded-2xl text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+          className="glass-panel-interactive p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <ZoomIn className="w-4 h-4" />
         </button>
@@ -340,7 +340,7 @@ export function MemoryMap({
           onClick={() => handleZoom(-1.0)}
           title="Zoom Out (Explore Tamil Nadu)"
           disabled={currentZoom <= 4.5}
-          className="glass-panel-interactive p-2.5 rounded-2xl text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+          className="glass-panel-interactive p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <ZoomOut className="w-4 h-4" />
         </button>
@@ -348,10 +348,10 @@ export function MemoryMap({
 
       {/* Floating Selected Pin Photo Carousel Modal */}
       {currentPreviewPhoto && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-[94vw] max-w-md animate-in fade-in slide-in-from-bottom-4">
-          <div className="bg-[#0A0D15]/95 backdrop-blur-2xl p-4 rounded-3xl border border-vault-gold/40 shadow-2xl">
-            <div className="flex items-start gap-4">
-              <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-900 border border-white/10 flex-shrink-0 shadow-inner">
+        <div className="absolute bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 w-[94vw] max-w-md animate-in fade-in slide-in-from-bottom-4">
+          <div className="bg-[#0A0D15]/95 backdrop-blur-2xl p-3.5 sm:p-4 rounded-3xl border border-vault-gold/40 shadow-2xl">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-slate-900 border border-white/10 flex-shrink-0 shadow-inner">
                 <img
                   src={currentPreviewPhoto.decryptedThumbUrl || currentPreviewPhoto.thumbStoragePath}
                   alt={currentPreviewPhoto.metadata.title}

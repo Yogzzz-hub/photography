@@ -182,38 +182,129 @@ export function Navbar({
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden p-4 border-t border-white/10 space-y-2 bg-vault-void/95 backdrop-blur-2xl animate-in slide-in-from-top-2">
-          <div className="relative mb-3">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search memories..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="glass-input w-full pl-8 pr-3 py-2 rounded-xl text-xs"
-            />
+        <div className="fixed inset-0 z-[100] lg:hidden flex flex-col animate-in fade-in duration-200">
+          {/* Backdrop */}
+          <div
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity"
+          />
+
+          {/* Drawer Header with Close Button */}
+          <div className="relative z-10 bg-[#07090F] border-b border-white/15 px-4 h-14 sm:h-16 flex items-center justify-between">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => { onSelectTab('universe'); setIsMobileMenuOpen(false); }}>
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-purple-600 to-vault-gold p-0.5 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-serif font-bold text-sm tracking-widest text-white uppercase">
+                MYORB VAULT
+              </span>
+            </div>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-2 rounded-xl glass-panel-interactive text-slate-300 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            {navItems.map(({ tab, label, icon: Icon }) => (
+          {/* Drawer Body */}
+          <div className="relative z-10 bg-[#080B13]/98 p-4 sm:p-5 shadow-2xl backdrop-blur-2xl space-y-4 overflow-y-auto flex-1 max-w-lg w-full mx-auto">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-vault-gold absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search stories, tags, places..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="glass-input w-full pl-10 pr-9 py-2.5 rounded-2xl text-xs text-white placeholder-slate-400"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Active Kin Member Card in Mobile Menu */}
+            <div
+              onClick={() => {
+                onSelectTab('members');
+                setIsMobileMenuOpen(false);
+              }}
+              className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/10 cursor-pointer hover:bg-white/[0.06] transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <img
+                  src={currentMember.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}
+                  alt={currentMember.displayName}
+                  className="w-9 h-9 rounded-xl object-cover border border-vault-gold/40 shadow"
+                />
+                <div>
+                  <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>{currentMember.displayName}</span>
+                    <span className="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-vault-gold/20 text-vault-gold font-bold">
+                      {currentMember.role}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-400 truncate">{currentMember.email}</div>
+                </div>
+              </div>
+              <span className="text-[11px] text-vault-gold font-medium">Manage →</span>
+            </div>
+
+            {/* Navigation Grid (2-columns) */}
+            <div className="grid grid-cols-2 gap-2">
+              {navItems.map(({ tab, label, icon: Icon }) => {
+                const isActive = currentTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => {
+                      onSelectTab(tab);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`flex items-center gap-2.5 p-3 rounded-2xl text-xs font-semibold transition-all text-left ${
+                      isActive
+                        ? 'bg-vault-gold text-black shadow-md font-bold'
+                        : 'bg-white/[0.03] text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/5'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-black' : 'text-vault-gold'}`} />
+                    <span className="truncate">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Mobile Drawer Bottom Actions */}
+            <div className="pt-2 border-t border-white/10 flex items-center gap-2">
               <button
-                key={tab}
                 onClick={() => {
-                  onSelectTab(tab);
+                  setIsSlideshowActive(true);
                   setIsMobileMenuOpen(false);
                 }}
-                className={`flex items-center gap-2 p-2.5 rounded-xl text-xs font-semibold ${
-                  currentTab === tab
-                    ? 'bg-purple-600/30 text-purple-200 border border-purple-500/40'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-slate-200 text-xs font-semibold hover:bg-white/[0.08]"
               >
-                <Icon className="w-4 h-4" />
-                <span>{label}</span>
+                <Play className="w-3.5 h-3.5 text-vault-gold fill-current" />
+                <span>Slideshow</span>
               </button>
-            ))}
+              <button
+                onClick={() => {
+                  onOpenUpload();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-md transition-all"
+              >
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span>Upload</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
