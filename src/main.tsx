@@ -4,7 +4,7 @@ import App from './App';
 import './index.css';
 import { useVaultStore } from './stores/useVaultStore';
 
-if (import.meta.env.DEV) {
+if (typeof window !== 'undefined') {
   (window as unknown as { __vaultStore: typeof useVaultStore }).__vaultStore = useVaultStore;
 }
 
