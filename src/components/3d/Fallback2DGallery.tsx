@@ -70,7 +70,7 @@ export function Fallback2DGallery({
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            <span>▱ Landscape</span>
+            <span>▱ Landscape (16:9)</span>
             <span className="text-[10px] opacity-75 font-mono">({landscapeCount})</span>
           </button>
           <button
@@ -81,7 +81,7 @@ export function Fallback2DGallery({
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            <span>▯ Portrait</span>
+            <span>▯ Portrait (9:16)</span>
             <span className="text-[10px] opacity-75 font-mono">({portraitCount})</span>
           </button>
         </div>
@@ -97,8 +97,8 @@ export function Fallback2DGallery({
               onClick={() => onSelectPhoto(photo.id)}
               className="group relative rounded-2xl overflow-hidden glass-panel-interactive cursor-pointer border border-white/5 hover:border-vault-gold/40 flex flex-col justify-between"
             >
-              {/* Image Preview Container (Dynamic Aspect Ratio for Landscape vs Portrait) */}
-              <div className={`relative ${isPortrait ? 'aspect-[3/4]' : 'aspect-[4/3]'} bg-slate-950 overflow-hidden`}>
+              {/* Image Preview Container (Strict 16:9 Landscape vs 9:16 Portrait) */}
+              <div className={`relative ${isPortrait ? 'aspect-[9/16]' : 'aspect-[16/9]'} bg-slate-950 overflow-hidden`}>
                 <img
                   src={thumbUrl}
                   alt={photo.metadata.title}
@@ -111,7 +111,7 @@ export function Fallback2DGallery({
 
                 {/* Orientation Badge */}
                 <span className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-mono bg-black/70 backdrop-blur-md text-slate-300 border border-white/10">
-                  {isPortrait ? '▯ Portrait' : '▱ Landscape'}
+                  {isPortrait ? '▯ 9:16' : '▱ 16:9'}
                 </span>
 
                 {/* Favorite Badge (Always accessible on touch devices) */}

@@ -186,8 +186,14 @@ export function MyOrbDome({
     const degPerX = (360 / 35) / 2;
     const degPerY = (360 / 35) / 2;
 
-    const cardRotY = (targetSlot.offsetX + (targetSlot.sizeX - 1) / 2) * degPerY;
-    const cardRotX = (targetSlot.offsetY - (targetSlot.sizeY - 1) / 2) * degPerX;
+    const mappedIndex = slotMapping[slotIdx] !== undefined ? slotMapping[slotIdx] : slotIdx;
+    const photo = activePhotos[mappedIndex % activePhotos.length];
+    const isPortrait = photo ? (photo.height > photo.width || photo.orientation === 'portrait') : false;
+    const itemSizeX = isPortrait ? 1.08 : 1.92;
+    const itemSizeY = isPortrait ? 1.92 : 1.08;
+
+    const cardRotY = (targetSlot.offsetX + (itemSizeX - 1) / 2) * degPerY;
+    const cardRotX = (targetSlot.offsetY - (itemSizeY - 1) / 2) * degPerX;
 
     setRotY(-cardRotY);
     setRotX(cardRotX);
@@ -329,7 +335,7 @@ export function MyOrbDome({
       style={
         {
           '--radius': `${radius}px`,
-          '--tile-radius': '28px',
+          '--tile-radius': '12px',
         } as React.CSSProperties
       }
     >
@@ -366,8 +372,11 @@ export function MyOrbDome({
               const photoIndex = mappedIndex % activePhotos.length;
               const photo = activePhotos[photoIndex];
 
-              const itemSizeX = slot.sizeX;
-              const itemSizeY = slot.sizeY;
+              const isPortrait = photo.height > photo.width || photo.orientation === 'portrait';
+
+              // Strict 16:9 cinematic widescreen (Landscape) and 9:16 vertical widescreen (Portrait) with zero grid overlap
+              const itemSizeX = isPortrait ? 1.08 : 1.92;
+              const itemSizeY = isPortrait ? 1.92 : 1.08;
 
               const isDropTarget = dragOverSlot === slot.idx;
               const isBeingDragged = draggedSlot === slot.idx;
@@ -429,6 +438,7 @@ export function MyOrbDome({
                         : ''
                     }`}
                     style={{
+                      aspectRatio: isPortrait ? '9 / 16' : '16 / 9',
                       filter: isMonochrome ? 'grayscale(100%) contrast(1.15)' : 'none',
                     }}
                   >

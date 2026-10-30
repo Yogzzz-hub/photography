@@ -68,11 +68,10 @@ export function PhotoCard3D({
   const dragOffsetRef = useRef(new THREE.Vector3(0, 0, 0));
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
 
-  // Proportional card dimensions matching the reference globe (myorb.live)
-  // Adaptive squircle: 2.3 x 1.62 for landscape, 1.62 x 2.3 for portrait
-  const cardWidth = isPortrait ? 1.65 : 2.3;
-  const cardHeight = isPortrait ? 2.3 : 1.65;
-  const cornerRadius = 0.15;
+  // Strict 16:9 widescreen (Landscape) and 9:16 vertical widescreen (Portrait) card dimensions
+  const cardWidth = isPortrait ? 1.44 : 2.56;
+  const cardHeight = isPortrait ? 2.56 : 1.44;
+  const cornerRadius = 0.09;
 
   // Reusable rounded-corner squircle geometry
   const roundedGeometry = useMemo(() => {

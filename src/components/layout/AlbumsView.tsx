@@ -402,7 +402,7 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                             : 'border-white/10 hover:border-white/30 bg-white/[0.02]'
                         }`}
                       >
-                        <div className="relative aspect-[4/3] bg-slate-900 overflow-hidden">
+                        <div className={`relative ${isPortrait ? 'aspect-[9/16]' : 'aspect-[16/9]'} bg-slate-900 overflow-hidden`}>
                           <img
                             src={thumbUrl}
                             alt={photo.metadata.title}
@@ -421,7 +421,7 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                           </div>
 
                           <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-mono bg-black/75 text-slate-300">
-                            {isPortrait ? '▯ Portrait' : '▱ Landscape'}
+                            {isPortrait ? '▯ 9:16' : '▱ 16:9'}
                           </span>
                         </div>
 
@@ -507,7 +507,7 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                         : 'border-white/10 hover:border-white/30 bg-white/[0.02]'
                     }`}
                   >
-                    <div className="relative aspect-[4/3] bg-slate-900 overflow-hidden">
+                    <div className={`relative ${isPortrait ? 'aspect-[9/16]' : 'aspect-[16/9]'} bg-slate-900 overflow-hidden`}>
                       <img
                         src={thumbUrl}
                         alt={photo.metadata.title}
@@ -526,7 +526,7 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                       </div>
 
                       <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-mono bg-black/75 text-slate-300">
-                        {isPortrait ? '▯ Portrait' : '▱ Landscape'}
+                        {isPortrait ? '▯ 9:16' : '▱ 16:9'}
                       </span>
                     </div>
 

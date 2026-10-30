@@ -351,13 +351,20 @@ export function MemoryMap({
         <div className="absolute bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 w-[94vw] max-w-md animate-in fade-in slide-in-from-bottom-4">
           <div className="bg-[#0A0D15]/95 backdrop-blur-2xl p-3.5 sm:p-4 rounded-3xl border border-vault-gold/40 shadow-2xl">
             <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-slate-900 border border-white/10 flex-shrink-0 shadow-inner">
-                <img
-                  src={currentPreviewPhoto.decryptedThumbUrl || currentPreviewPhoto.thumbStoragePath}
-                  alt={currentPreviewPhoto.metadata.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              {(() => {
+                const isPortrait = currentPreviewPhoto.height > currentPreviewPhoto.width || currentPreviewPhoto.orientation === 'portrait';
+                return (
+                  <div className={`rounded-2xl overflow-hidden bg-slate-900 border border-white/10 flex-shrink-0 shadow-inner ${
+                    isPortrait ? 'w-14 h-24 aspect-[9/16]' : 'w-24 h-14 sm:w-28 sm:h-16 aspect-[16/9]'
+                  }`}>
+                    <img
+                      src={currentPreviewPhoto.decryptedThumbUrl || currentPreviewPhoto.thumbStoragePath}
+                      alt={currentPreviewPhoto.metadata.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                );
+              })()}
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
