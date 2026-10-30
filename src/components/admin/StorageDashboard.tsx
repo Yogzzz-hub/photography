@@ -111,11 +111,11 @@ export function StorageDashboard() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
           {getWarningBadge()}
           <button
             onClick={handleExportStorageReport}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl glass-panel-interactive text-xs font-medium text-slate-200"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl glass-panel-interactive text-xs font-medium text-slate-200 w-full sm:w-auto"
           >
             <Download className="w-3.5 h-3.5 text-cyan-400" />
             <span>Export Audit</span>

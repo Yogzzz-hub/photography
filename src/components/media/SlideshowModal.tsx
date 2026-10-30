@@ -48,36 +48,36 @@ export function SlideshowModal({ isOpen, onClose }: { isOpen: boolean; onClose: 
   return (
     <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center overflow-hidden animate-in fade-in select-none">
       {/* Top Controls Bar */}
-      <div className="absolute top-6 right-6 z-50 flex items-center gap-3">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 flex items-center gap-2 sm:gap-3">
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className="p-3 rounded-full bg-black/60 border border-white/20 text-white hover:bg-black/90 transition-all"
+          className="p-2.5 sm:p-3 rounded-full bg-black/60 border border-white/20 text-white hover:bg-black/90 transition-all"
           title={isPlaying ? 'Pause Slideshow (Space)' : 'Play Slideshow (Space)'}
         >
-          {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-current" />}
+          {isPlaying ? <Pause className="w-4 h-4 sm:w-5 sm:h-5" /> : <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />}
         </button>
         <button
           onClick={onClose}
-          className="p-3 rounded-full bg-black/60 border border-white/20 text-white hover:bg-black/90 transition-all"
+          className="p-2.5 sm:p-3 rounded-full bg-black/60 border border-white/20 text-white hover:bg-black/90 transition-all"
           title="Exit Slideshow (Esc)"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </div>
 
       {/* Prev / Next Chevrons */}
       <button
         onClick={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : activePhotos.length - 1))}
-        className="absolute left-6 top-1/2 -translate-y-1/2 z-40 p-4 rounded-full bg-black/50 text-white hover:bg-black/80 transition-all hover:scale-110"
+        className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-40 p-2.5 sm:p-4 rounded-full bg-black/50 text-white hover:bg-black/80 transition-all hover:scale-110"
       >
-        <ChevronLeft className="w-7 h-7" />
+        <ChevronLeft className="w-5 h-5 sm:w-7 sm:h-7" />
       </button>
 
       <button
         onClick={() => setCurrentIndex((prev) => (prev + 1) % activePhotos.length)}
-        className="absolute right-6 top-1/2 -translate-y-1/2 z-40 p-4 rounded-full bg-black/50 text-white hover:bg-black/80 transition-all hover:scale-110"
+        className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-40 p-2.5 sm:p-4 rounded-full bg-black/50 text-white hover:bg-black/80 transition-all hover:scale-110"
       >
-        <ChevronRight className="w-7 h-7" />
+        <ChevronRight className="w-5 h-5 sm:w-7 sm:h-7" />
       </button>
 
       {/* Main Slide Image */}

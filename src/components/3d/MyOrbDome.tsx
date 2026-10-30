@@ -22,6 +22,8 @@ import {
   Pause,
   Shuffle,
   Grid,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 const MODE_CONFIGS: { mode: ViewMode3D; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -93,6 +95,9 @@ export function MyOrbDome({
   // Screen and Sphere Dimensions - Responsive edge-to-edge
   const [radius, setRadius] = useState<number>(() => {
     if (typeof window === 'undefined') return 920;
+    if (window.innerWidth < 640) {
+      return Math.max(300, Math.min(window.innerWidth * 0.92, 420));
+    }
     return Math.max(540, Math.min(window.innerWidth * 0.65, window.innerHeight * 1.05));
   });
 
@@ -100,7 +105,7 @@ export function MyOrbDome({
   const [rotY, setRotY] = useState(0);
   const [rotX, setRotX] = useState(0);
   const [isAutoRotating, setIsAutoRotating] = useState(true);
-  const [enlargedPhoto, setEnlargedPhoto] = useState<Photo | null>(null);
+  const [focusedSlotIdx, setFocusedSlotIdx] = useState<number | null>(null);
   const [isModeMenuOpen, setIsModeMenuOpen] = useState(false);
 
   // Drag & Inertia Refs
@@ -117,7 +122,10 @@ export function MyOrbDome({
   // Resize Listener to keep sphere perfectly full-bleed
   useEffect(() => {
     const handleResize = () => {
-      const newRadius = Math.max(540, Math.min(window.innerWidth * 0.65, window.innerHeight * 1.05));
+      const newRadius =
+        window.innerWidth < 640
+          ? Math.max(300, Math.min(window.innerWidth * 0.92, 420))
+          : Math.max(540, Math.min(window.innerWidth * 0.65, window.innerHeight * 1.05));
       setRadius(newRadius);
     };
     window.addEventListener('resize', handleResize);
@@ -155,6 +163,50 @@ export function MyOrbDome({
     return result;
   }, [visiblePhotos, orientationFilter]);
 
+  const focusedPhoto = useMemo(() => {
+    if (focusedSlotIdx === null || activePhotos.length === 0) return null;
+    const mappedIndex = slotMapping[focusedSlotIdx] !== undefined ? slotMapping[focusedSlotIdx] : focusedSlotIdx;
+    return activePhotos[mappedIndex % activePhotos.length] || null;
+  }, [focusedSlotIdx, slotMapping, activePhotos]);
+
+  const handleFocusSlot = (slotIdx: number) => {
+    vaultAudio.playWhoosh();
+    if (focusedSlotIdx === slotIdx) {
+      setFocusedSlotIdx(null);
+      setIsAutoRotating(true);
+      return;
+    }
+    const targetSlot = SPHERE_SLOTS.find((s) => s.idx === slotIdx);
+    if (!targetSlot) return;
+
+    setFocusedSlotIdx(slotIdx);
+    setIsAutoRotating(false);
+
+    // Calculate rotation to bring card directly front and center:
+    const degPerX = (360 / 35) / 2;
+    const degPerY = (360 / 35) / 2;
+
+    const cardRotY = (targetSlot.offsetX + (targetSlot.sizeX - 1) / 2) * degPerY;
+    const cardRotX = (targetSlot.offsetY - (targetSlot.sizeY - 1) / 2) * degPerX;
+
+    setRotY(-cardRotY);
+    setRotX(cardRotX);
+  };
+
+  const handlePrevSlot = () => {
+    vaultAudio.playWhoosh();
+    const current = focusedSlotIdx ?? 0;
+    const nextIdx = (current - 1 + SPHERE_SLOTS.length) % SPHERE_SLOTS.length;
+    handleFocusSlot(nextIdx);
+  };
+
+  const handleNextSlot = () => {
+    vaultAudio.playWhoosh();
+    const current = focusedSlotIdx ?? 0;
+    const nextIdx = (current + 1) % SPHERE_SLOTS.length;
+    handleFocusSlot(nextIdx);
+  };
+
   // Inertial momentum animation loop (60-120 FPS)
   useEffect(() => {
     const loop = () => {
@@ -167,7 +219,7 @@ export function MyOrbDome({
         if (speed > 0.04) {
           setRotY((prev) => prev + velocityRef.current.vx);
           setRotX((prev) => Math.max(-62, Math.min(62, prev + velocityRef.current.vy)));
-        } else if (isAutoRotating && !enlargedPhoto) {
+        } else if (isAutoRotating && focusedSlotIdx === null) {
           // Celestial continuous auto-rotation
           setRotY((prev) => prev + 0.055);
         }
@@ -180,7 +232,7 @@ export function MyOrbDome({
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [isAutoRotating, enlargedPhoto]);
+  }, [isAutoRotating, focusedSlotIdx]);
 
   // Pointer Interaction Handlers
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -264,6 +316,8 @@ export function MyOrbDome({
 
   const resetView = () => {
     vaultAudio.playWhoosh();
+    setFocusedSlotIdx(null);
+    setIsAutoRotating(true);
     setRotY(0);
     setRotX(0);
     velocityRef.current = { vx: 0, vy: 0 };
@@ -282,6 +336,13 @@ export function MyOrbDome({
       {/* 3D Perspective Stage (Full Viewport) */}
       <div
         className="sphere-stage"
+        onClick={() => {
+          if (focusedSlotIdx !== null) {
+            vaultAudio.playWhoosh();
+            setFocusedSlotIdx(null);
+            setIsAutoRotating(true);
+          }
+        }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -292,7 +353,10 @@ export function MyOrbDome({
         <div
           className="sphere-rotator"
           style={{
-            transform: `translateZ(calc(var(--radius) * -1)) rotateX(${rotX}deg) rotateY(${rotY}deg)`,
+            transform: `translateZ(calc(var(--radius) * -1 + ${
+              focusedSlotIdx !== null ? 'var(--radius) * 0.58' : '0px'
+            })) rotateX(${rotX}deg) rotateY(${rotY}deg)`,
+            transition: isPointerDownRef.current ? 'none' : 'transform 700ms cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
           {activePhotos.length > 0 &&
@@ -352,14 +416,15 @@ export function MyOrbDome({
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      vaultAudio.playHoverChime();
-                      setEnlargedPhoto(photo);
+                      handleFocusSlot(slot.idx);
                     }}
                     onMouseEnter={() => {
                       vaultAudio.playHoverChime();
                     }}
                     className={`sphere-item-card group relative ${
-                      isDropTarget
+                      focusedSlotIdx === slot.idx
+                        ? 'ring-2 ring-vault-gold scale-110 shadow-glow z-40'
+                        : isDropTarget
                         ? 'ring-2 ring-vault-gold scale-105 shadow-glow'
                         : ''
                     }`}
@@ -406,207 +471,167 @@ export function MyOrbDome({
         </div>
       </div>
 
-      {/* Focused Memory Lightbox (Matching myorb.live) */}
-      {enlargedPhoto && (
-        <div
-          onClick={() => setEnlargedPhoto(null)}
-          className="absolute inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-black/80 backdrop-blur-md animate-in fade-in duration-300 cursor-pointer"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="relative max-w-2xl w-full bg-[#0c0e17]/95 border border-vault-gold/40 rounded-3xl p-6 shadow-2xl overflow-hidden cursor-default flex flex-col md:flex-row gap-6 animate-in zoom-in-95 duration-300"
-          >
-            {/* Close Button */}
+      {/* IN-DOME 3D FOCUS CONTROLLER (Dive-Inside Memory) */}
+      {focusedSlotIdx !== null && focusedPhoto && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[70] flex flex-col items-center gap-2.5 animate-in fade-in slide-in-from-bottom-3 duration-300 pointer-events-auto">
+          {/* Elegant Floating Memory Badge */}
+          <div className="bg-black/85 backdrop-blur-2xl border border-white/15 px-4 py-1.5 rounded-full flex items-center gap-2.5 shadow-2xl">
+            <span className="font-serif italic text-white text-sm font-medium tracking-wide">
+              {focusedPhoto.metadata.title}
+            </span>
+            <span className="text-[11px] text-vault-gold font-sans font-medium">
+              {focusedPhoto.metadata.captureDate}
+            </span>
+            {focusedPhoto.metadata.location?.label && (
+              <span className="hidden sm:inline text-[11px] text-slate-400 truncate max-w-[180px]">
+                · {focusedPhoto.metadata.location.label}
+              </span>
+            )}
+          </div>
+
+          {/* Navigation Action Bar */}
+          <div className="bg-[#0b0e17]/90 backdrop-blur-2xl border border-white/15 p-1.5 rounded-full flex items-center gap-1.5 shadow-2xl">
             <button
-              onClick={() => setEnlargedPhoto(null)}
-              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors z-20"
+              onClick={handlePrevSlot}
+              className="px-3 py-1.5 rounded-full hover:bg-white/10 text-slate-300 hover:text-white text-xs font-sans flex items-center gap-1 transition-all"
+              title="Previous Memory in Dome"
             >
-              <X className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Prev</span>
             </button>
 
-            {/* Photo Preview Container */}
-            <div className="w-full md:w-1/2 aspect-[4/3] rounded-2xl overflow-hidden border border-white/10 shadow-lg relative bg-slate-900 flex-shrink-0">
-              <img
-                src={enlargedPhoto.decryptedFullUrl || enlargedPhoto.decryptedThumbUrl || enlargedPhoto.thumbStoragePath}
-                alt={enlargedPhoto.metadata.title}
-                className="w-full h-full object-cover"
-                style={{
-                  filter: isMonochrome ? 'grayscale(100%) contrast(1.15)' : 'none',
-                }}
-              />
-              <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-mono text-emerald-400 border border-emerald-500/30">
-                AES-256-GCM
-              </div>
-            </div>
+            <button
+              onClick={() => {
+                vaultAudio.playWhoosh();
+                setFocusedSlotIdx(null);
+                setIsAutoRotating(true);
+              }}
+              className="px-4 py-1.5 rounded-full bg-vault-gold text-black font-semibold text-xs font-sans flex items-center gap-1.5 shadow-lg hover:brightness-110 transition-all"
+              title="Fly Out to Full Dome Orbit"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Fly Out (Orbit)</span>
+            </button>
 
-            {/* Photo Metadata & Actions */}
-            <div className="flex-1 flex flex-col justify-between space-y-4">
-              <div>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-vault-gold">
-                  ✦ VAULT MEMORY ARTIFACT
-                </span>
-                <h3 className="text-xl font-bold text-white tracking-wide mt-1">
-                  {enlargedPhoto.metadata.title}
-                </h3>
+            <button
+              onClick={handleNextSlot}
+              className="px-3 py-1.5 rounded-full hover:bg-white/10 text-slate-300 hover:text-white text-xs font-sans flex items-center gap-1 transition-all"
+              title="Next Memory in Dome"
+            >
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
 
-                {enlargedPhoto.metadata.story && (
-                  <p className="text-xs text-slate-300 mt-2 line-clamp-3 italic">
-                    "{enlargedPhoto.metadata.story}"
-                  </p>
-                )}
-
-                <div className="mt-4 space-y-2 text-xs text-slate-300">
-                  {enlargedPhoto.metadata.location?.label && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-vault-gold" />
-                      <span>{enlargedPhoto.metadata.location.label}</span>
-                    </div>
-                  )}
-
-                  {enlargedPhoto.metadata.captureDate && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-3.5 h-3.5 text-purple-400" />
-                      <span>{enlargedPhoto.metadata.captureDate}</span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <User className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Archived by {enlargedPhoto.uploaderName}</span>
-                  </div>
-
-                  {enlargedPhoto.metadata.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-2">
-                      {enlargedPhoto.metadata.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] text-slate-300"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-                <button
-                  onClick={() => {
-                    const id = enlargedPhoto.id;
-                    setEnlargedPhoto(null);
-                    onOpenPhotoDetail(id);
-                  }}
-                  className="flex-1 py-2.5 rounded-xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold tracking-wide transition-all shadow-glow flex items-center justify-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Inspect & Decrypt</span>
-                </button>
-                <button
-                  onClick={() => setEnlargedPhoto(null)}
-                  className="px-4 py-2.5 rounded-xl glass-panel text-slate-300 hover:text-white text-xs font-medium transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
+            <button
+              onClick={() => onOpenPhotoDetail(focusedPhoto.id)}
+              className="p-1.5 rounded-full hover:bg-white/10 text-slate-400 hover:text-vault-gold transition-all"
+              title="Open Vault Artifact Details"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       )}
 
-      {/* FLOATING CONTROLS MATCHING MYORB.LIVE */}
-
-      {/* Bottom Left: Play / Pause Auto-Rotate */}
-      <button
-        onClick={() => {
-          vaultAudio.playWhoosh();
-          setIsAutoRotating((prev) => !prev);
-        }}
-        aria-label={isAutoRotating ? 'Pause Orbit' : 'Play Orbit'}
-        className="absolute bottom-6 left-6 z-30 p-3.5 rounded-full bg-black/50 backdrop-blur-xl border border-white/10 text-white/90 hover:text-white hover:bg-black/70 hover:scale-105 transition-all shadow-2xl"
-      >
-        {isAutoRotating ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
-      </button>
-
-      {/* Bottom Center Floating Luxury Pill */}
-      <nav className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 p-1.5 rounded-full bg-black/60 backdrop-blur-2xl border border-white/10 shadow-2xl">
-        {/* Reset View */}
-        <button
-          onClick={resetView}
-          title="Reset Orbit Center"
-          className="p-2.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-        >
-          <RotateCcw className="w-4 h-4" />
-        </button>
-
-        {/* Shuffle Positions */}
-        <button
-          onClick={handleShuffleGlobe}
-          title="Shuffle Memory Positions"
-          className="p-2.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-        >
-          <Shuffle className="w-4 h-4" />
-        </button>
-
-        {/* 3D Modes Menu Trigger */}
-        <div className="relative">
+      {/* FLOATING CONTROLS MATCHING MYORB.LIVE (Only shown during Orbit overview) */}
+      {focusedSlotIdx === null && (
+        <>
+          {/* Bottom Left: Play / Pause Auto-Rotate */}
           <button
-            onClick={() => setIsModeMenuOpen((prev) => !prev)}
-            title="Switch 3D Display Mode"
-            className={`p-2.5 rounded-full transition-all flex items-center gap-1.5 ${
-              isModeMenuOpen
-                ? 'bg-vault-gold text-black font-bold shadow-glow'
-                : 'text-slate-300 hover:text-white hover:bg-white/10'
-            }`}
+            onClick={() => {
+              vaultAudio.playWhoosh();
+              setIsAutoRotating((prev) => !prev);
+            }}
+            aria-label={isAutoRotating ? 'Pause Orbit' : 'Play Orbit'}
+            className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[70] p-2.5 sm:p-3.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 text-white/90 hover:text-white hover:bg-black/80 hover:scale-105 transition-all shadow-2xl"
           >
-            <Grid className="w-4 h-4" />
+            {isAutoRotating ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
           </button>
 
-          {/* 3D Modes Dropdown Popup */}
-          {isModeMenuOpen && (
-            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-[#0c0e17]/95 border border-white/15 rounded-2xl p-2 shadow-2xl backdrop-blur-2xl w-48 flex flex-col gap-1 z-40 animate-in fade-in zoom-in-95">
-              <span className="text-[10px] font-mono uppercase text-slate-400 px-2 py-1 tracking-wider border-b border-white/10 mb-1">
-                3D Display Modes
-              </span>
-              {MODE_CONFIGS.map(({ mode, label, icon: Icon }) => (
-                <button
-                  key={mode}
-                  onClick={() => {
-                    vaultAudio.playWhoosh();
-                    onSelectMode(mode);
-                    setIsModeMenuOpen(false);
-                  }}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all text-left ${
-                    currentMode === mode
-                      ? 'bg-vault-gold text-black font-bold shadow-md'
-                      : 'text-slate-300 hover:text-white hover:bg-white/10'
-                  }`}
+          {/* Bottom Center Floating Luxury Pill */}
+          <nav className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-[70] flex items-center gap-1 sm:gap-1.5 p-1 sm:p-1.5 rounded-full bg-black/70 backdrop-blur-2xl border border-white/10 shadow-2xl max-w-[85vw] overflow-x-auto">
+            {/* Reset View */}
+            <button
+              onClick={resetView}
+              title="Reset Orbit Center"
+              className="p-2 sm:p-2.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <RotateCcw className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+            </button>
+
+            {/* Shuffle Positions */}
+            <button
+              onClick={handleShuffleGlobe}
+              title="Shuffle Memory Positions"
+              className="p-2 sm:p-2.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <Shuffle className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+            </button>
+
+            {/* 3D Modes Menu Trigger */}
+            <div className="relative">
+              <button
+                onClick={() => setIsModeMenuOpen((prev) => !prev)}
+                title="Switch 3D Display Mode"
+                className={`p-2 sm:p-2.5 rounded-full transition-all flex items-center gap-1.5 ${
+                  isModeMenuOpen
+                    ? 'bg-vault-gold text-black font-bold shadow-glow'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Grid className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+              </button>
+
+              {/* 3D Modes Dropdown Popup */}
+              {isModeMenuOpen && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-[#0c0e17]/95 border border-white/15 rounded-2xl p-2 shadow-2xl backdrop-blur-2xl w-48 flex flex-col gap-1 z-[80] animate-in fade-in zoom-in-95"
                 >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{label}</span>
-                </button>
-              ))}
+                  <span className="text-[10px] font-mono uppercase text-slate-400 px-2 py-1 tracking-wider border-b border-white/10 mb-1">
+                    3D Display Modes
+                  </span>
+                  {MODE_CONFIGS.map(({ mode, label, icon: Icon }) => (
+                    <button
+                      key={mode}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        vaultAudio.playWhoosh();
+                        onSelectMode(mode);
+                        setIsModeMenuOpen(false);
+                      }}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all text-left ${
+                        currentMode === mode
+                          ? 'bg-vault-gold text-black font-bold shadow-md'
+                          : 'text-slate-300 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Leica B&W Toggle */}
-        {onToggleMonochrome && (
-          <button
-            onClick={onToggleMonochrome}
-            title={isMonochrome ? 'Switch to Color' : 'Switch to Monochrome Leica'}
-            className={`px-3 py-1.5 rounded-full text-xs font-sans transition-all flex items-center gap-1.5 border-l border-white/10 ml-1 ${
-              isMonochrome
-                ? 'bg-white text-black font-bold shadow-md'
-                : 'text-slate-300 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span>{isMonochrome ? 'B&W' : 'Color'}</span>
-          </button>
-        )}
-      </nav>
+            {/* Leica B&W Toggle */}
+            {onToggleMonochrome && (
+              <button
+                onClick={onToggleMonochrome}
+                title={isMonochrome ? 'Switch to Color' : 'Switch to Monochrome Leica'}
+                className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs font-sans transition-all flex items-center gap-1.5 border-l border-white/10 ml-0.5 sm:ml-1 ${
+                  isMonochrome
+                    ? 'bg-white text-black font-bold shadow-md'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <SlidersHorizontal className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                <span>{isMonochrome ? 'B&W' : 'Color'}</span>
+              </button>
+            )}
+          </nav>
+        </>
+      )}
     </div>
   );
 }

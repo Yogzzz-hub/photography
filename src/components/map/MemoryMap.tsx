@@ -270,23 +270,23 @@ export function MemoryMap({
   const currentPreviewPhoto = selectedPinPhotos ? selectedPinPhotos[activePhotoIndex] : null;
 
   return (
-    <div className="relative w-full h-full min-h-[580px] bg-[#040508] rounded-3xl overflow-hidden border border-white/10 select-none shadow-2xl">
+    <div className="relative w-full h-full min-h-[400px] sm:min-h-[580px] bg-[#040508] rounded-3xl overflow-hidden border border-white/10 select-none shadow-2xl">
       {/* MapLibre Canvas Container */}
-      <div ref={mapContainerRef} className="w-full h-full min-h-[580px]" />
+      <div ref={mapContainerRef} className="w-full h-full min-h-[400px] sm:min-h-[580px]" />
 
       {/* Top Map Status Badge */}
-      <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2">
-        <div className="glass-panel px-3.5 py-1.5 rounded-full flex items-center gap-2 text-xs font-medium text-slate-200">
+      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <div className="glass-panel px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-medium text-slate-200">
           <MapPin className="w-3.5 h-3.5 text-vault-gold" />
           <span>{geotaggedPhotos.length} Tamil Nadu Memories</span>
         </div>
 
-        <div className="glass-panel px-3 py-1.5 rounded-full text-xs text-slate-300 font-mono">
+        <div className="glass-panel px-3 py-1.5 rounded-full text-xs text-slate-300 font-mono hidden sm:inline-flex">
           Zoom: {currentZoom}x
         </div>
 
         {isPickingLocation && (
-          <div className="glass-panel px-3.5 py-1.5 rounded-full text-xs font-semibold text-vault-gold border border-vault-gold/40 animate-pulse">
+          <div className="glass-panel px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold text-vault-gold border border-vault-gold/40 animate-pulse">
             Click map to pin memory
           </div>
         )}
@@ -306,23 +306,23 @@ export function MemoryMap({
       </div>
 
       {/* Top-Right Quick Map Tools & Style Toggles */}
-      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 flex items-center gap-1.5 sm:gap-2">
         {/* Reset to Chennai Default */}
         <button
           onClick={() => handleFlyTo(CHENNAI_CENTER, 11.2)}
           title="Reset to Chennai, Tamil Nadu"
-          className="glass-panel-interactive p-2.5 rounded-2xl text-vault-gold hover:text-white"
+          className="glass-panel-interactive p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-vault-gold hover:text-white"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
         </button>
 
         {/* Toggle Dark / Satellite Vector Style */}
         <button
           onClick={() => setMapStyle(mapStyle === 'dark' ? 'liberty' : 'dark')}
           title="Toggle Map Cartography Style"
-          className="glass-panel-interactive p-2.5 rounded-2xl text-purple-300 hover:text-white"
+          className="glass-panel-interactive p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-purple-300 hover:text-white"
         >
-          <Layers className="w-4 h-4" />
+          <Layers className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
         </button>
       </div>
 

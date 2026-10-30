@@ -66,24 +66,24 @@ export function Navbar({
 
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/10 select-none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
         {/* Brand Logo & Vault Name */}
-        <div className="flex items-center gap-3 flex-shrink-0 cursor-pointer" onClick={() => onSelectTab('universe')}>
-          <div className="relative w-9 h-9 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-400 p-0.5 shadow-glow flex items-center justify-center">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 cursor-pointer" onClick={() => onSelectTab('universe')}>
+          <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-400 p-0.5 shadow-glow flex items-center justify-center">
             <div className="w-full h-full bg-vault-void rounded-[14px] flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-purple-400 animate-pulse-subtle" />
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 animate-pulse-subtle" />
             </div>
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-serif font-extrabold text-sm sm:text-base tracking-wider bg-gradient-to-r from-purple-200 via-white to-slate-300 bg-clip-text text-transparent">
+              <span className="font-serif font-extrabold text-xs sm:text-base tracking-wider bg-gradient-to-r from-purple-200 via-white to-slate-300 bg-clip-text text-transparent">
                 MYORB
               </span>
-              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-purple-950/60 border border-purple-500/30 text-purple-300 hidden sm:inline">
+              <span className="text-[9px] uppercase font-mono px-1 py-0.2 rounded bg-purple-950/60 border border-purple-500/30 text-purple-300 hidden sm:inline">
                 E2EE
               </span>
             </div>
-            <div className="text-[11px] text-slate-400 truncate max-w-[130px] sm:max-w-xs">
+            <div className="text-[10px] sm:text-[11px] text-slate-400 truncate max-w-[100px] sm:max-w-xs">
               {currentFamily.name}
             </div>
           </div>
@@ -123,7 +123,7 @@ export function Navbar({
         </div>
 
         {/* Right Action Tools */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Slideshow Button */}
           <button
             onClick={() => setIsSlideshowActive(true)}
@@ -137,23 +137,23 @@ export function Navbar({
           {/* Bulk Upload Button */}
           <button
             onClick={onOpenUpload}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-glow transition-all"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-glow transition-all"
           >
-            <UploadCloud className="w-4 h-4" />
+            <UploadCloud className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
             <span className="hidden sm:inline">Upload</span>
           </button>
 
           {/* Cryptographic Key Lock / Unlock Status */}
           <button
             onClick={onOpenLockModal}
-            className={`p-2 rounded-xl border text-xs transition-all flex items-center gap-1.5 ${
+            className={`p-1.5 sm:p-2 rounded-xl border text-xs transition-all flex items-center gap-1.5 ${
               isVaultUnlocked
                 ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
                 : 'border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'
             }`}
             title={isVaultUnlocked ? 'Vault Unlocked (AES-256-GCM Active)' : 'Vault Locked'}
           >
-            {isVaultUnlocked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+            {isVaultUnlocked ? <Unlock className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> : <Lock className="w-3.5 sm:w-4 h-3.5 sm:h-4" />}
           </button>
 
           {/* User Avatar & Profile Quick Trigger */}
@@ -166,7 +166,7 @@ export function Navbar({
               <img
                 src={currentMember.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}
                 alt={currentMember.displayName}
-                className="w-8 h-8 rounded-xl object-cover border border-vault-gold/40 bg-slate-900 group-hover:scale-105 transition-all shadow"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl object-cover border border-vault-gold/40 bg-slate-900 group-hover:scale-105 transition-all shadow"
               />
               <span className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-black" />
             </div>
@@ -175,9 +175,9 @@ export function Navbar({
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 rounded-xl glass-panel-interactive text-slate-300 hover:text-white lg:hidden"
+            className="p-1.5 sm:p-2 rounded-xl glass-panel-interactive text-slate-300 hover:text-white lg:hidden"
           >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {isMobileMenuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
           </button>
         </div>
       </div>

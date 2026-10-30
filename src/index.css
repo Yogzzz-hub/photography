@@ -33,6 +33,21 @@
   }
 }
 
+@layer utilities {
+  .bg-vault-gold {
+    background-color: #E5C07B;
+  }
+  .hover\:bg-vault-gold:hover {
+    background-color: #E5C07B;
+  }
+  .text-vault-gold {
+    color: #E5C07B;
+  }
+  .border-vault-gold {
+    border-color: #E5C07B;
+  }
+}
+
 @layer components {
   /* Translucent Glassmorphism Cards */
   .glass-panel {
@@ -145,6 +160,16 @@
   border-color: rgba(212, 175, 55, 0.7);
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 35px rgba(212, 175, 55, 0.4);
   z-index: 60;
+}
+
+@media (max-width: 640px) {
+  .sphere-root {
+    --tile-radius: 14px;
+  }
+  .sphere-item-card {
+    inset: 4px;
+    border-radius: var(--tile-radius, 14px);
+  }
 }
 
 /* Reduced Motion Respect */

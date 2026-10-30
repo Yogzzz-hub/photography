@@ -88,7 +88,7 @@ export function ActivityHistory() {
 
         <button
           onClick={handleExportCSV}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl glass-panel-interactive text-xs font-semibold text-slate-200"
+          className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl glass-panel-interactive text-xs font-semibold text-slate-200"
         >
           <Download className="w-3.5 h-3.5 text-cyan-400" />
           <span>Export CSV Ledger</span>

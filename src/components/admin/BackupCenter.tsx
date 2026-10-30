@@ -98,7 +98,7 @@ export function BackupCenter() {
         <button
           onClick={handleCreateSnapshot}
           disabled={isBackingUp}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-glow transition-all disabled:opacity-50"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-glow transition-all disabled:opacity-50"
         >
           <CheckCircle2 className="w-4 h-4" />
           <span>{isBackingUp ? 'Creating Encrypted Snapshot...' : 'Create Snapshot Now'}</span>
@@ -137,7 +137,7 @@ export function BackupCenter() {
       </div>
 
       {/* Full Encrypted Export Card */}
-      <div className="glass-panel p-6 rounded-3xl border border-white/10 flex items-center justify-between">
+      <div className="glass-panel p-6 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-sm font-bold text-white">Download Complete Family Archive</h3>
           <p className="text-xs text-slate-400 mt-1 max-w-xl">
@@ -146,7 +146,7 @@ export function BackupCenter() {
         </div>
         <button
           onClick={handleDownloadFullArchive}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass-panel-interactive text-slate-200 text-xs font-semibold"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl glass-panel-interactive text-slate-200 text-xs font-semibold"
         >
           <Download className="w-4 h-4 text-cyan-400" />
           <span>Export Manifest (.json)</span>

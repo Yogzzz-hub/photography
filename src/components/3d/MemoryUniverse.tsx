@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect, Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
@@ -7,9 +7,9 @@ import { useVaultStore } from '../../stores/useVaultStore';
 import { MyOrbDome } from './MyOrbDome';
 import { PhotoCard3D } from './PhotoCard3D';
 import { ParticleStarfield } from './ParticleStarfield';
-import { getLayoutTransform } from './layouts/layoutCalculators';
+import { getLayoutTransform, type LayoutTransform } from './layouts/layoutCalculators';
 import { vaultAudio } from '../../services/audioSynthesizer';
-import type { ViewMode3D } from '../../types';
+import type { ViewMode3D, Photo } from '../../types';
 import type { NavigationTab } from '../layout/Navbar';
 import {
   Globe,
@@ -43,6 +43,9 @@ import {
   Search,
   X,
   Menu,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 
 const MODE_CONFIGS: { mode: ViewMode3D; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -57,6 +60,86 @@ const MODE_CONFIGS: { mode: ViewMode3D; label: string; icon: React.ComponentType
 ];
 
 const TOTAL_GLOBE_SLOTS = 108; // Dense spherical photo lattice matching myorb.live
+
+interface UniverseCameraControllerProps {
+  focusedSlotIndex: number | null;
+  targetTransform: LayoutTransform | null;
+  isInsideOrb: boolean;
+  isAutoRotating: boolean;
+  isExploded: boolean;
+  controlsRef: React.RefObject<OrbitControlsImpl | null>;
+}
+
+function UniverseCameraController({
+  focusedSlotIndex,
+  targetTransform,
+  isInsideOrb,
+  isAutoRotating,
+  isExploded,
+  controlsRef,
+}: UniverseCameraControllerProps) {
+  const isTransitioningRef = useRef(false);
+
+  useEffect(() => {
+    isTransitioningRef.current = true;
+    const timer = setTimeout(() => {
+      isTransitioningRef.current = false;
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [focusedSlotIndex, isInsideOrb]);
+
+  useFrame((state, delta) => {
+    if (!controlsRef.current) return;
+    const lerpSpeed = Math.min(delta * 4.5, 1);
+
+    if (focusedSlotIndex !== null && targetTransform) {
+      // Focus directly onto the target card (2.8 units in front along normal)
+      const [tx, ty, tz] = targetTransform.position;
+      const [nx, ny, nz] = targetTransform.normal;
+
+      const targetCamPos = new THREE.Vector3(
+        tx + nx * 2.8,
+        ty + ny * 2.8,
+        tz + nz * 2.8
+      );
+      const targetLookAt = new THREE.Vector3(tx, ty, tz);
+
+      state.camera.position.lerp(targetCamPos, lerpSpeed);
+      controlsRef.current.target.lerp(targetLookAt, lerpSpeed);
+      controlsRef.current.minDistance = 0.5;
+      controlsRef.current.maxDistance = 8.0;
+      controlsRef.current.update();
+    } else if (isTransitioningRef.current) {
+      if (isInsideOrb) {
+        state.camera.position.lerp(new THREE.Vector3(0, 0, 0.2), lerpSpeed);
+        controlsRef.current.target.lerp(new THREE.Vector3(0, 0, -1), lerpSpeed);
+        controlsRef.current.minDistance = 0.05;
+        controlsRef.current.maxDistance = 5;
+      } else {
+        state.camera.position.lerp(new THREE.Vector3(0, 0, 21.5), lerpSpeed);
+        controlsRef.current.target.lerp(new THREE.Vector3(0, 0, 0), lerpSpeed);
+        controlsRef.current.minDistance = 1.0;
+        controlsRef.current.maxDistance = 35;
+      }
+      controlsRef.current.update();
+    }
+  });
+
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      target={[0, 0, 0]}
+      autoRotate={isAutoRotating && !isExploded && focusedSlotIndex === null}
+      autoRotateSpeed={0.35}
+      enableDamping
+      dampingFactor={0.06}
+      rotateSpeed={0.7}
+      panSpeed={0.5}
+      minDistance={focusedSlotIndex !== null ? 0.5 : isInsideOrb ? 0.05 : 1.0}
+      maxDistance={focusedSlotIndex !== null ? 8.0 : isInsideOrb ? 5 : 35}
+    />
+  );
+}
 
 interface MemoryUniverseProps {
   onOpenPhotoDetail: (id: string) => void;
@@ -98,6 +181,9 @@ export function MemoryUniverse({
   const [isInsideOrb, setIsInsideOrb] = useState(false); // 360 Panorama from inside sphere
   const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Luxury slide-out navigation
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // In-Universe 3D Camera Flight Focus (Dive-Inside Memory)
+  const [focusedSlotIndex, setFocusedSlotIndex] = useState<number | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<OrbitControlsImpl>(null);
@@ -143,6 +229,42 @@ export function MemoryUniverse({
     return result;
   }, [visiblePhotos, orientationFilter]);
 
+  // Dynamic slot permutation map: allows dragging & dropping photos to swap fixed positions
+  const [slotMapping, setSlotMapping] = useState<number[]>(() =>
+    Array.from({ length: TOTAL_GLOBE_SLOTS }, (_, i) => i)
+  );
+
+  useEffect(() => {
+    setSlotMapping(Array.from({ length: TOTAL_GLOBE_SLOTS }, (_, i) => i));
+  }, [visiblePhotos.length]);
+
+  const focusedPhoto = useMemo(() => {
+    if (focusedSlotIndex === null || interleavedPhotos.length === 0) return null;
+    const photoIndex = slotMapping[focusedSlotIndex] % interleavedPhotos.length;
+    return interleavedPhotos[photoIndex] || null;
+  }, [focusedSlotIndex, slotMapping, interleavedPhotos]);
+
+  const focusedTransform = useMemo(() => {
+    if (focusedSlotIndex === null) return null;
+    return getLayoutTransform(viewMode3D, focusedSlotIndex, TOTAL_GLOBE_SLOTS, isExploded);
+  }, [focusedSlotIndex, viewMode3D, isExploded]);
+
+  const handlePrevMemory = () => {
+    vaultAudio.playWhoosh();
+    setFocusedSlotIndex((prev) => {
+      if (prev === null) return 0;
+      return (prev - 1 + TOTAL_GLOBE_SLOTS) % TOTAL_GLOBE_SLOTS;
+    });
+  };
+
+  const handleNextMemory = () => {
+    vaultAudio.playWhoosh();
+    setFocusedSlotIndex((prev) => {
+      if (prev === null) return 0;
+      return (prev + 1) % TOTAL_GLOBE_SLOTS;
+    });
+  };
+
   // Centralized texture preloading map so all 108 cards render instantly
   const [textures, setTextures] = useState<Record<string, THREE.Texture>>({});
 
@@ -166,15 +288,6 @@ export function MemoryUniverse({
       );
     });
   }, [visiblePhotos]);
-
-  // Dynamic slot permutation map: allows dragging & dropping photos to swap fixed positions
-  const [slotMapping, setSlotMapping] = useState<number[]>(() =>
-    Array.from({ length: TOTAL_GLOBE_SLOTS }, (_, i) => i)
-  );
-
-  useEffect(() => {
-    setSlotMapping(Array.from({ length: TOTAL_GLOBE_SLOTS }, (_, i) => i));
-  }, [visiblePhotos.length]);
 
   const handleSwapSlots = (sourceSlot: number, targetSlot: number) => {
     setSlotMapping((prev) => {
@@ -205,16 +318,19 @@ export function MemoryUniverse({
 
   const handleToggleInsideOrb = () => {
     vaultAudio.playWhoosh();
+    setFocusedSlotIndex(null);
     const nextInside = !isInsideOrb;
     setIsInsideOrb(nextInside);
     if (controlsRef.current) {
       if (nextInside) {
         controlsRef.current.object.position.set(0, 0, 0.2);
+        controlsRef.current.target.set(0, 0, -1);
         controlsRef.current.minDistance = 0.05;
         controlsRef.current.maxDistance = 5;
       } else {
         controlsRef.current.object.position.set(0, 0, 21.5);
-        controlsRef.current.minDistance = 14;
+        controlsRef.current.target.set(0, 0, 0);
+        controlsRef.current.minDistance = 1.0;
         controlsRef.current.maxDistance = 35;
       }
       controlsRef.current.update();
@@ -228,11 +344,13 @@ export function MemoryUniverse({
   };
 
   const handleResetCamera = () => {
+    vaultAudio.playWhoosh();
+    setFocusedSlotIndex(null);
+    setIsInsideOrb(false);
     if (controlsRef.current) {
-      setIsInsideOrb(false);
       controlsRef.current.object.position.set(0, 0, 21.5);
       controlsRef.current.target.set(0, 0, 0);
-      controlsRef.current.minDistance = 14;
+      controlsRef.current.minDistance = 1.0;
       controlsRef.current.maxDistance = 35;
       controlsRef.current.update();
     }
@@ -274,6 +392,12 @@ export function MemoryUniverse({
       ) : (
         /* 3D WebGL Canvas for alternative universe modes (IMAX Wall, Galaxy, DNA Helix, Tunnel, Matrix, Museum, Constellation) */
         <Canvas
+          onPointerMissed={() => {
+            if (focusedSlotIndex !== null) {
+              vaultAudio.playWhoosh();
+              setFocusedSlotIndex(null);
+            }
+          }}
           style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
           camera={{ position: [0, 0, 21.5], fov: 55, near: 0.1, far: 1000 }}
           dpr={[1, 2]}
@@ -314,12 +438,12 @@ export function MemoryUniverse({
                       photo={photo}
                       texture={cardTexture}
                       targetTransform={transform}
-                      isSelected={selectedPhotoId === photo.id}
+                      isSelected={focusedSlotIndex === slotIndex}
                       isHovered={hoveredPhotoId === photo.id}
                       isMonochrome={isMonochrome}
-                      onSelect={(id) => {
-                        setSelectedPhotoId(id);
-                        onOpenPhotoDetail(id);
+                      onSelect={() => {
+                        vaultAudio.playWhoosh();
+                        setFocusedSlotIndex(slotIndex);
                       }}
                       onHover={(id) => setHoveredPhotoId(id)}
                       onSwapSlots={handleSwapSlots}
@@ -329,17 +453,13 @@ export function MemoryUniverse({
             </group>
           </Suspense>
 
-          <OrbitControls
-            ref={controlsRef}
-            target={[0, 0, 0]}
-            autoRotate={isAutoRotating && !isExploded}
-            autoRotateSpeed={0.4}
-            enableDamping
-            dampingFactor={0.06}
-            rotateSpeed={0.7}
-            panSpeed={0.5}
-            minDistance={isInsideOrb ? 0.05 : 14}
-            maxDistance={isInsideOrb ? 5 : 35}
+          <UniverseCameraController
+            focusedSlotIndex={focusedSlotIndex}
+            targetTransform={focusedTransform}
+            isInsideOrb={isInsideOrb}
+            isAutoRotating={isAutoRotating}
+            isExploded={isExploded}
+            controlsRef={controlsRef}
           />
         </Canvas>
       )}
@@ -347,17 +467,17 @@ export function MemoryUniverse({
       {/* ULTRA-MINIMAL LUXURY HUD */}
 
       {/* Top Left: Editorial Brand Monogram */}
-      <div className="absolute top-6 left-6 z-20 flex items-center gap-3">
+      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20 flex items-center gap-2 sm:gap-3">
         <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <span className="font-serif tracking-[0.35em] text-lg font-normal text-white uppercase">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="font-serif tracking-[0.2em] sm:tracking-[0.35em] text-sm sm:text-lg font-normal text-white uppercase">
               MYORB
             </span>
-            <span className="text-[9px] tracking-[0.25em] uppercase text-vault-gold font-mono border-l border-white/20 pl-2">
-              VAULT · E2EE
+            <span className="text-[8px] sm:text-[9px] tracking-[0.15em] sm:tracking-[0.25em] uppercase text-vault-gold font-mono border-l border-white/20 pl-1.5 sm:pl-2">
+              VAULT
             </span>
           </div>
-          <span className="text-[11px] tracking-wider text-slate-400 font-sans mt-0.5">
+          <span className="hidden sm:block text-[11px] tracking-wider text-slate-400 font-sans mt-0.5">
             {currentFamily.name}
           </span>
         </div>
@@ -415,35 +535,35 @@ export function MemoryUniverse({
       </div>
 
       {/* Top Right: Minimal Luxury Controls */}
-      <div className="absolute top-6 right-6 z-20 flex items-center gap-2.5">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 flex items-center gap-1.5 sm:gap-2.5">
         {/* Quick Search Button */}
         <button
           onClick={() => setIsSearchOpen(true)}
           title="Search Memories"
-          className="p-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.1] border border-white/10 text-slate-300 hover:text-white backdrop-blur-xl transition-all"
+          className="p-2 sm:p-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.1] border border-white/10 text-slate-300 hover:text-white backdrop-blur-xl transition-all"
         >
-          <Search className="w-4 h-4" />
+          <Search className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
         </button>
 
         {/* Leica B&W / Color Filter Toggle */}
         <button
           onClick={() => setIsMonochrome(!isMonochrome)}
           title={isMonochrome ? 'Switch to Color Mode' : 'Switch to Leica B&W Mode'}
-          className={`px-3 py-1.5 rounded-full border text-xs font-medium tracking-wide backdrop-blur-xl transition-all flex items-center gap-1.5 ${
+          className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border text-[11px] sm:text-xs font-medium tracking-wide backdrop-blur-xl transition-all flex items-center gap-1.5 ${
             isMonochrome
               ? 'bg-white text-black border-white shadow-lg'
               : 'bg-white/[0.04] text-slate-300 border-white/10 hover:text-white hover:bg-white/[0.08]'
           }`}
         >
-          <SlidersHorizontal className="w-3.5 h-3.5" />
+          <SlidersHorizontal className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
           <span className="hidden sm:inline">{isMonochrome ? 'Monochrome' : 'Color'}</span>
         </button>
 
-        {/* Audio Ambient Chimes Toggle */}
+        {/* Audio Ambient Chimes Toggle (hidden on mobile, accessible via drawer) */}
         <button
           onClick={handleToggleAudio}
           title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
-          className={`p-2.5 rounded-full border text-slate-300 backdrop-blur-xl transition-all ${
+          className={`hidden sm:flex p-2.5 rounded-full border text-slate-300 backdrop-blur-xl transition-all ${
             isMuted
               ? 'bg-white/[0.02] border-white/5 text-slate-600'
               : 'bg-white/[0.04] border-white/10 hover:text-white hover:bg-white/[0.08]'
@@ -452,11 +572,11 @@ export function MemoryUniverse({
           {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
         </button>
 
-        {/* True Fullscreen Toggle */}
+        {/* True Fullscreen Toggle (hidden on mobile) */}
         <button
           onClick={toggleFullscreen}
           title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-          className="p-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.1] border border-white/10 text-slate-300 hover:text-white backdrop-blur-xl transition-all"
+          className="hidden sm:flex p-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.1] border border-white/10 text-slate-300 hover:text-white backdrop-blur-xl transition-all"
         >
           {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
         </button>
@@ -465,48 +585,75 @@ export function MemoryUniverse({
         <button
           onClick={() => setIsDrawerOpen(true)}
           title="Open Vault Menu"
-          className="p-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white backdrop-blur-xl transition-all shadow-lg"
+          className="p-2 sm:p-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white backdrop-blur-xl transition-all shadow-lg"
         >
-          <Menu className="w-4 h-4" />
+          <Menu className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
         </button>
       </div>
 
-      {/* Floating Center-Bottom Hover HUD Card (WebGL Modes only) */}
-      {viewMode3D !== 'orb' && hoveredPhoto && (
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-all duration-300 animate-in fade-in zoom-in-95">
-          <div className="bg-[#0b0e17]/85 backdrop-blur-2xl p-4 rounded-3xl max-w-md flex items-center gap-4 shadow-2xl border border-white/15">
-            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-900 flex-shrink-0 border border-white/15 shadow-inner">
-              <img
-                src={hoveredPhoto.decryptedThumbUrl || hoveredPhoto.thumbStoragePath}
-                alt={hoveredPhoto.metadata.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="font-serif italic text-base text-white truncate font-medium">
-                {hoveredPhoto.metadata.title}
-              </h4>
-              <p className="text-xs text-vault-gold flex items-center gap-1.5 mt-0.5 tracking-wide font-sans">
-                <span>{hoveredPhoto.metadata.captureDate}</span>
-                {hoveredPhoto.metadata.location?.label && (
-                  <span className="truncate text-slate-400">· {hoveredPhoto.metadata.location.label}</span>
-                )}
-              </p>
-              {hoveredPhoto.metadata.story && (
-                <p className="text-xs text-slate-400 line-clamp-1 mt-1 font-sans">
-                  {hoveredPhoto.metadata.story}
-                </p>
-              )}
-            </div>
-            <div className="flex-shrink-0 text-slate-400 pl-1">
-              <Eye className="w-4 h-4 text-vault-gold" />
-            </div>
+      {/* IN-UNIVERSE 3D FOCUS CONTROLLER (Dive-Inside Memory) */}
+      {viewMode3D !== 'orb' && focusedSlotIndex !== null && focusedPhoto && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2.5 animate-in fade-in slide-in-from-bottom-3 duration-300 pointer-events-auto">
+          {/* Elegant Floating Memory Badge */}
+          <div className="bg-black/85 backdrop-blur-2xl border border-white/15 px-4 py-1.5 rounded-full flex items-center gap-2.5 shadow-2xl">
+            <span className="font-serif italic text-white text-sm font-medium tracking-wide">
+              {focusedPhoto.metadata.title}
+            </span>
+            <span className="text-[11px] text-vault-gold font-sans font-medium">
+              {focusedPhoto.metadata.captureDate}
+            </span>
+            {focusedPhoto.metadata.location?.label && (
+              <span className="hidden sm:inline text-[11px] text-slate-400 truncate max-w-[180px]">
+                · {focusedPhoto.metadata.location.label}
+              </span>
+            )}
+          </div>
+
+          {/* Navigation Action Bar */}
+          <div className="bg-[#0b0e17]/90 backdrop-blur-2xl border border-white/15 p-1.5 rounded-full flex items-center gap-1.5 shadow-2xl">
+            <button
+              onClick={handlePrevMemory}
+              className="px-3 py-1.5 rounded-full hover:bg-white/10 text-slate-300 hover:text-white text-xs font-sans flex items-center gap-1 transition-all"
+              title="Previous Memory in Orbit"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Prev</span>
+            </button>
+
+            <button
+              onClick={() => {
+                vaultAudio.playWhoosh();
+                setFocusedSlotIndex(null);
+              }}
+              className="px-4 py-1.5 rounded-full bg-vault-gold text-black font-semibold text-xs font-sans flex items-center gap-1.5 shadow-lg hover:brightness-110 transition-all"
+              title="Fly Out to Full Universe Orbit"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Fly Out (Orbit)</span>
+            </button>
+
+            <button
+              onClick={handleNextMemory}
+              className="px-3 py-1.5 rounded-full hover:bg-white/10 text-slate-300 hover:text-white text-xs font-sans flex items-center gap-1 transition-all"
+              title="Next Memory in Orbit"
+            >
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={() => onOpenPhotoDetail(focusedPhoto.id)}
+              className="p-1.5 rounded-full hover:bg-white/10 text-slate-400 hover:text-vault-gold transition-all"
+              title="Open Vault Artifact Details"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       )}
 
       {/* FLOATING BOTTOM DOCK for Alternative 3D Modes (IMAX Wall, Galaxy, Tunnel, etc.) */}
-      {viewMode3D !== 'orb' && (
+      {viewMode3D !== 'orb' && focusedSlotIndex === null && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
           <div className="bg-[#0A0D15]/80 backdrop-blur-2xl border border-white/10 p-1.5 rounded-full flex items-center gap-1 shadow-2xl">
             {/* Reset Camera View */}
@@ -695,6 +842,23 @@ export function MemoryUniverse({
 
             {/* Bottom Actions in Drawer */}
             <div className="border-t border-white/10 pt-4 flex flex-col gap-2 font-sans">
+              <div className="grid grid-cols-2 gap-2 mb-1">
+                <button
+                  onClick={handleToggleAudio}
+                  className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 text-xs border border-white/10 transition-all"
+                >
+                  {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-vault-gold" />}
+                  <span>{isMuted ? 'Muted' : 'Audio On'}</span>
+                </button>
+                <button
+                  onClick={toggleFullscreen}
+                  className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 text-xs border border-white/10 transition-all"
+                >
+                  {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                  <span>{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
+                </button>
+              </div>
+
               {onOpenUpload && (
                 <button
                   onClick={() => {

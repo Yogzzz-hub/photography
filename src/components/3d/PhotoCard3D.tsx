@@ -253,12 +253,12 @@ export function PhotoCard3D({
         onHover(null);
       }}
     >
-      {/* Front Photographic Card Surface (Real Rounded Squircle) */}
+      {/* Front Photographic Card Surface (Visible from outside) */}
       <mesh ref={meshRef} geometry={roundedGeometry}>
         {activeTexture ? (
           <meshBasicMaterial
             map={activeTexture}
-            side={THREE.DoubleSide}
+            side={THREE.FrontSide}
             toneMapped={false}
             color={isMonochrome ? '#C0C0C0' : '#FFFFFF'}
           />
@@ -267,7 +267,26 @@ export function PhotoCard3D({
             color="#141822"
             roughness={0.25}
             metalness={0.5}
-            side={THREE.DoubleSide}
+            side={THREE.FrontSide}
+          />
+        )}
+      </mesh>
+
+      {/* Back Photographic Card Surface (Visible from inside the 3D sphere/planetarium, unmirrored) */}
+      <mesh position={[0, 0, -0.005]} scale={[-1, 1, 1]} geometry={roundedGeometry}>
+        {activeTexture ? (
+          <meshBasicMaterial
+            map={activeTexture}
+            side={THREE.FrontSide}
+            toneMapped={false}
+            color={isMonochrome ? '#C0C0C0' : '#FFFFFF'}
+          />
+        ) : (
+          <meshStandardMaterial
+            color="#141822"
+            roughness={0.25}
+            metalness={0.5}
+            side={THREE.FrontSide}
           />
         )}
       </mesh>
@@ -279,24 +298,16 @@ export function PhotoCard3D({
             isDragging
               ? '#E5C07B'
               : isSelected
-              ? '#A855F7'
+              ? '#E5C07B'
               : isHovered
               ? '#F8FAFC'
-              : 'rgba(255, 255, 255, 0.22)'
+              : 'rgba(255, 255, 255, 0.28)'
           }
-          linewidth={isDragging || isHovered ? 2 : 1}
+          linewidth={isDragging || isHovered || isSelected ? 2 : 1}
           transparent
-          opacity={isDragging ? 1.0 : isHovered ? 0.95 : 0.35}
+          opacity={isDragging ? 1.0 : isSelected ? 1.0 : isHovered ? 0.95 : 0.35}
         />
       </lineLoop>
-
-      {/* Subtle Backplate Depth (Obsidian Glass) */}
-      <mesh position={[0, 0, -0.015]} geometry={backplateGeometry}>
-        <meshBasicMaterial
-          color="#06080D"
-          side={THREE.DoubleSide}
-        />
-      </mesh>
     </group>
   );
 }

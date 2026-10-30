@@ -385,22 +385,22 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-      <div className="glass-panel w-full max-w-4xl max-h-[90vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-white/10 bg-[#0e0c14]/95">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+      <div className="glass-panel w-full max-w-4xl max-h-[92vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-white/10 bg-[#0e0c14]/95">
         {/* Modal Header */}
-        <div className="p-5 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-purple-600/30 text-purple-400 border border-purple-500/30 shadow-glow">
-              <UploadCloud className="w-5 h-5" />
+        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-purple-600/30 text-purple-400 border border-purple-500/30 shadow-glow">
+              <UploadCloud className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <span>Bulk Memory Uploader</span>
-                <span className="text-[10px] font-mono tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <span className="hidden sm:inline-flex text-[10px] font-mono tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 whitespace-nowrap">
                   AES-256-GCM
                 </span>
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-[11px] sm:text-xs text-slate-400 line-clamp-1 sm:line-clamp-none">
                 End-to-end client encrypted before transmission. 100–500+ batch capacity.
               </p>
             </div>
@@ -414,14 +414,14 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
         </div>
 
         {/* Modal Content Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5">
           {/* Interactive Drag & Drop Area */}
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-3xl p-8 text-center transition-all cursor-pointer group ${
+            className={`border-2 border-dashed rounded-3xl p-4 sm:p-8 text-center transition-all cursor-pointer group ${
               isDragging
                 ? 'border-purple-400 bg-purple-900/30 scale-[0.99] shadow-glow'
                 : 'border-white/15 bg-white/[0.03] hover:border-purple-500/50 hover:bg-white/[0.05]'
@@ -452,18 +452,18 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
               }}
             />
 
-            <div className="w-16 h-16 rounded-full bg-purple-600/20 border border-purple-500/30 text-purple-400 mx-auto flex items-center justify-center mb-3 group-hover:scale-105 group-hover:bg-purple-600/30 transition-all shadow-glow">
-              <ImageIcon className="w-8 h-8" />
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-purple-600/20 border border-purple-500/30 text-purple-400 mx-auto flex items-center justify-center mb-3 group-hover:scale-105 group-hover:bg-purple-600/30 transition-all shadow-glow">
+              <ImageIcon className="w-6 h-6 sm:w-8 sm:h-8" />
             </div>
 
-            <h4 className="text-base font-semibold text-white group-hover:text-purple-200 transition-colors">
+            <h4 className="text-sm sm:text-base font-semibold text-white group-hover:text-purple-200 transition-colors">
               Click to choose photos or drag & drop anywhere
             </h4>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1 mb-5">
+            <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1 mb-4 sm:mb-5">
               Supports JPEG, PNG, WebP, AVIF, HEIC. EXIF timestamps and Tamil Nadu coordinates automatically preserved.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={(e) => {
@@ -480,7 +480,7 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
                   e.stopPropagation();
                   folderInputRef.current?.click();
                 }}
-                className="px-4 py-2 rounded-xl glass-panel-interactive text-slate-200 text-xs font-semibold flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl glass-panel-interactive text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5"
               >
                 <FolderPlus className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Upload Folder</span>
@@ -492,10 +492,10 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
                   e.stopPropagation();
                   handleLoadSamples();
                 }}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-600/30 border border-amber-500/50 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-600/30 border border-amber-500/50 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition-all"
               >
                 <Zap className="w-3.5 h-3.5 fill-current text-amber-400" />
-                <span>{isLoadingSamples ? 'Generating...' : '⚡ Try Sample Photos (Instant Demo)'}</span>
+                <span>{isLoadingSamples ? 'Generating...' : 'Try Sample Photos (Instant Demo)'}</span>
               </button>
             </div>
           </div>
@@ -687,8 +687,8 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-white/10 flex items-center justify-between bg-black/40">
-          <div className="text-xs text-slate-400">
+        <div className="p-4 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-black/40">
+          <div className="text-xs text-slate-400 text-center sm:text-left">
             {items.length > 0 ? (
               <span className="text-slate-300">
                 <strong className="text-white">{items.length}</strong> {items.length === 1 ? 'item' : 'items'} ready for encryption
@@ -698,12 +698,12 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={onClose}
               disabled={isUploading}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white"
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white"
             >
               Cancel
             </button>
@@ -711,7 +711,7 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
               type="button"
               onClick={startBatchUpload}
               disabled={items.length === 0 || isUploading}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-glow transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-glow transition-all ${
                 items.length === 0 || isUploading
                   ? 'bg-purple-800/40 text-purple-300/40 cursor-not-allowed'
                   : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white cursor-pointer'

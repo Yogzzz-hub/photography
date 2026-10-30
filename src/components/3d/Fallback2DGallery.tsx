@@ -44,17 +44,17 @@ export function Fallback2DGallery({
   return (
     <div className="space-y-4">
       {/* Aspect Ratio & Orientation Controls */}
-      <div className="flex items-center justify-between flex-wrap gap-3 px-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 px-2 sm:px-4">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-slate-300 font-serif">Vault Gallery</span>
           <span className="text-xs text-slate-500">•</span>
           <span className="text-xs text-slate-400 font-sans">{filteredPhotos.length} Memories</span>
         </div>
 
-        <div className="flex items-center bg-black/40 backdrop-blur-md p-1 rounded-2xl border border-white/10 text-xs font-sans">
+        <div className="flex items-center bg-black/40 backdrop-blur-md p-1 rounded-2xl border border-white/10 text-xs font-sans max-w-full overflow-x-auto">
           <button
             onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded-xl transition-all ${
+            className={`px-3 py-1 rounded-xl transition-all whitespace-nowrap ${
               filter === 'all'
                 ? 'bg-vault-gold text-black font-bold shadow'
                 : 'text-slate-400 hover:text-white'
@@ -64,7 +64,7 @@ export function Fallback2DGallery({
           </button>
           <button
             onClick={() => setFilter('landscape')}
-            className={`px-3 py-1 rounded-xl transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
               filter === 'landscape'
                 ? 'bg-vault-gold text-black font-bold shadow'
                 : 'text-slate-400 hover:text-white'
@@ -75,7 +75,7 @@ export function Fallback2DGallery({
           </button>
           <button
             onClick={() => setFilter('portrait')}
-            className={`px-3 py-1 rounded-xl transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
               filter === 'portrait'
                 ? 'bg-vault-gold text-black font-bold shadow'
                 : 'text-slate-400 hover:text-white'
@@ -87,7 +87,7 @@ export function Fallback2DGallery({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 p-2 sm:p-4">
         {filteredPhotos.map((photo) => {
           const isPortrait = photo.height > photo.width || photo.orientation === 'portrait';
           const thumbUrl = photo.decryptedThumbUrl || photo.thumbStoragePath;

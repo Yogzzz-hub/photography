@@ -162,48 +162,48 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
         </button>
 
         {/* Left / Center: High-Fidelity Photo Viewer */}
-        <div className="relative flex-1 bg-black/60 flex items-center justify-center overflow-hidden min-h-[350px] lg:min-h-[600px]">
+        <div className="relative flex-1 bg-black/60 flex items-center justify-center overflow-hidden min-h-[220px] sm:min-h-[350px] lg:min-h-[600px] max-h-[45vh] lg:max-h-full">
           <img
             src={photo.decryptedFullUrl || photo.decryptedThumbUrl || photo.thumbStoragePath}
             alt={photo.metadata.title}
-            className={`max-w-full max-h-[75vh] object-contain transition-all duration-300 ${
+            className={`max-w-full max-h-full object-contain transition-all duration-300 ${
               isZoomed ? 'scale-150 cursor-zoom-out' : 'scale-100 cursor-zoom-in'
             }`}
             onClick={() => setIsZoomed(!isZoomed)}
           />
 
           {/* Quick Floating Overlay Toolbar */}
-          <div className="absolute bottom-4 left-4 flex items-center gap-2">
+          <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => toggleFavorite(photo.id)}
-              className={`p-2.5 rounded-xl transition-all ${
+              className={`p-2 sm:p-2.5 rounded-xl transition-all ${
                 photo.isFavorite
                   ? 'bg-rose-600 text-white shadow-lg'
                   : 'glass-panel-interactive text-slate-300 hover:text-white'
               }`}
               title="Toggle Favorite"
             >
-              <Heart className={`w-4 h-4 ${photo.isFavorite ? 'fill-current' : ''}`} />
+              <Heart className={`w-3.5 sm:w-4 h-3.5 sm:h-4 ${photo.isFavorite ? 'fill-current' : ''}`} />
             </button>
             <button
               onClick={handleDownload}
-              className="glass-panel-interactive p-2.5 rounded-xl text-slate-300 hover:text-white"
+              className="glass-panel-interactive p-2 sm:p-2.5 rounded-xl text-slate-300 hover:text-white"
               title="Download Decrypted Original"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
             </button>
             <button
               onClick={() => setIsZoomed(!isZoomed)}
-              className="glass-panel-interactive p-2.5 rounded-xl text-slate-300 hover:text-white"
+              className="glass-panel-interactive p-2 sm:p-2.5 rounded-xl text-slate-300 hover:text-white"
               title={isZoomed ? 'Zoom Out' : 'Zoom In'}
             >
-              <Maximize2 className="w-4 h-4" />
+              <Maximize2 className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
             </button>
           </div>
         </div>
 
         {/* Right: Memory Story & Metadata Panel */}
-        <div className="w-full lg:w-96 p-6 overflow-y-auto flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10 bg-vault-card/70">
+        <div className="w-full lg:w-96 p-4 sm:p-6 overflow-y-auto flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10 bg-vault-card/70">
           <div className="space-y-5">
             {/* Header info */}
             <div>

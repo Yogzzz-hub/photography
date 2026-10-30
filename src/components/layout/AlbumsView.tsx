@@ -137,7 +137,7 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
             setSelectedPhotoIds(new Set());
             setIsCreateOpen(true);
           }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-lg transition-all"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-lg transition-all"
         >
           <FolderPlus className="w-4 h-4" />
           <span>Create New Album</span>
@@ -440,22 +440,22 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-                <span className="text-xs text-slate-400">
+              <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <span className="text-xs text-slate-400 text-center sm:text-left">
                   {selectedPhotoIds.size} of {availablePhotos.length} memories grouped
                 </span>
 
-                <div className="flex gap-2.5">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={() => setIsCreateOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white"
+                    className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-2xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-lg transition-all"
+                    className="flex-1 sm:flex-initial px-6 py-2.5 rounded-2xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-lg transition-all"
                   >
                     Create & Group {selectedPhotoIds.size > 0 ? `(${selectedPhotoIds.size})` : ''}
                   </button>
@@ -543,23 +543,23 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
               })}
             </div>
 
-            <div className="pt-4 mt-3 border-t border-white/10 flex items-center justify-between">
-              <span className="text-xs text-slate-400">
+            <div className="pt-4 mt-3 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <span className="text-xs text-slate-400 text-center sm:text-left">
                 {editSelectedPhotoIds.size} memories assigned to this album
               </span>
 
-              <div className="flex gap-2.5">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setEditingAlbum(null)}
-                  className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white"
+                  className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveGroupedPhotos}
-                  className="px-6 py-2.5 rounded-2xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-lg transition-all"
+                  className="flex-1 sm:flex-initial px-6 py-2.5 rounded-2xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-lg transition-all"
                 >
                   Save Grouped Memories
                 </button>

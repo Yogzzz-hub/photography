@@ -109,7 +109,7 @@ export function FamilyManagement() {
         {isOwnerOrAdmin && (
           <button
             onClick={() => setIsInviteOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-lg transition-all"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-lg transition-all"
           >
             <UserPlus className="w-4 h-4" />
             <span>Invite Family Member</span>
@@ -379,17 +379,17 @@ export function FamilyManagement() {
                   </p>
                 </div>
 
-                <div className="pt-2 flex justify-end gap-2.5">
+                <div className="pt-2 flex flex-col sm:flex-row justify-end gap-2 sm:gap-2.5">
                   <button
                     type="button"
                     onClick={() => setPasswordModalMember(null)}
-                    className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white"
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2.5 rounded-2xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-lg transition-all"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-lg transition-all"
                   >
                     Update Password & Save
                   </button>
@@ -402,8 +402,8 @@ export function FamilyManagement() {
 
       {/* INVITE KIN MODAL */}
       {isInviteOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-          <div className="bg-[#0b0e17] border border-white/15 w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+          <div className="bg-[#0b0e17] border border-white/15 w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl relative">
             <button
               onClick={() => setIsInviteOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"
@@ -442,17 +442,17 @@ export function FamilyManagement() {
                 </select>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2.5">
+              <div className="pt-2 flex flex-col sm:flex-row justify-end gap-2 sm:gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsInviteOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white"
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-2xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-lg transition-all"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold shadow-lg transition-all"
                 >
                   Issue Invitation Link
                 </button>
