@@ -523,7 +523,12 @@ export function MemoryUniverse({
       />
 
       {/* Primary Display Mode: Solar System Galaxy Overview or Planet Photo Dome */}
-      {viewTier === 'galaxy' ? (
+      {/* 1. Solar System 3D Galaxy Overview */}
+      <div
+        className={`absolute inset-0 transition-opacity duration-500 ${
+          viewTier === 'galaxy' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+        }`}
+      >
         <SolarSystemGalaxy
           globes={globes}
           activeGlobeId={activeGlobeId}
@@ -535,95 +540,104 @@ export function MemoryUniverse({
           onOpenCreatePlanet={() => setIsCreatePlanetOpen(true)}
           theme={theme}
         />
-      ) : viewMode3D === 'orb' ? (
-        <MyOrbDome
-          photos={photos}
-          onOpenPhotoDetail={onOpenPhotoDetail}
-          onOpenSlotUpload={(slotIdx) => {
-            vaultAudio.playWhoosh();
-            setSelectedSlotForUpload(slotIdx);
-          }}
-          isMonochrome={isMonochrome}
-          orientationFilter={orientationFilter}
-          currentMode={viewMode3D}
-          onSelectMode={(mode) => setViewMode3D(mode)}
-          onToggleMonochrome={() => setIsMonochrome(!isMonochrome)}
-          onSetOrientationFilter={(f) => setOrientationFilter(f)}
-          isDrawerOpen={isDrawerOpen}
-        />
-      ) : (
-        /* 3D WebGL Canvas for alternative universe modes (IMAX Wall, Galaxy, DNA Helix, Tunnel, Matrix, Museum, Constellation) */
-        <Canvas
-          onPointerMissed={() => {
-            if (focusedSlotIndex !== null) {
+      </div>
+
+      {/* 2. Planet Photo Dome / Alternative 3D Views */}
+      <div
+        className={`absolute inset-0 transition-opacity duration-500 ${
+          viewTier === 'dome' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+        }`}
+      >
+        {viewMode3D === 'orb' ? (
+          <MyOrbDome
+            photos={photos}
+            onOpenPhotoDetail={onOpenPhotoDetail}
+            onOpenSlotUpload={(slotIdx) => {
               vaultAudio.playWhoosh();
-              setFocusedSlotIndex(null);
-            }
-          }}
-          style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
-          camera={{ position: [0, 0, 21.5], fov: 55, near: 0.1, far: 1000 }}
-          dpr={[1, 2]}
-          gl={{
-            antialias: true,
-            powerPreference: 'high-performance',
-            alpha: false,
-          }}
-        >
-          <color attach="background" args={[theme === 'light' ? '#F6F5F0' : '#040508']} />
-          <ambientLight intensity={theme === 'light' ? 1.6 : 1.2} />
-          <directionalLight position={[18, 22, 24]} intensity={theme === 'light' ? 1.7 : 1.5} color="#FFFFFF" />
-          <directionalLight position={[-18, -15, -12]} intensity={theme === 'light' ? 0.8 : 0.6} color="#E5C07B" />
-          <pointLight position={[0, 0, 0]} intensity={1.0} color="#8B5CF6" />
+              setSelectedSlotForUpload(slotIdx);
+            }}
+            isMonochrome={isMonochrome}
+            orientationFilter={orientationFilter}
+            currentMode={viewMode3D}
+            onSelectMode={(mode) => setViewMode3D(mode)}
+            onToggleMonochrome={() => setIsMonochrome(!isMonochrome)}
+            onSetOrientationFilter={(f) => setOrientationFilter(f)}
+            isDrawerOpen={isDrawerOpen}
+          />
+        ) : (
+          /* 3D WebGL Canvas for alternative universe modes (IMAX Wall, Galaxy, DNA Helix, Tunnel, Matrix, Museum, Constellation) */
+          <Canvas
+            onPointerMissed={() => {
+              if (focusedSlotIndex !== null) {
+                vaultAudio.playWhoosh();
+                setFocusedSlotIndex(null);
+              }
+            }}
+            style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
+            camera={{ position: [0, 0, 21.5], fov: 55, near: 0.1, far: 1000 }}
+            dpr={[1, 2]}
+            gl={{
+              antialias: true,
+              powerPreference: 'high-performance',
+              alpha: false,
+            }}
+          >
+            <color attach="background" args={[theme === 'light' ? '#F6F5F0' : '#040508']} />
+            <ambientLight intensity={theme === 'light' ? 1.6 : 1.2} />
+            <directionalLight position={[18, 22, 24]} intensity={theme === 'light' ? 1.7 : 1.5} color="#FFFFFF" />
+            <directionalLight position={[-18, -15, -12]} intensity={theme === 'light' ? 0.8 : 0.6} color="#E5C07B" />
+            <pointLight position={[0, 0, 0]} intensity={1.0} color="#8B5CF6" />
 
-          <Suspense fallback={null}>
-            <ParticleStarfield count={1200} />
+            <Suspense fallback={null}>
+              <ParticleStarfield count={1200} />
 
-            {/* Densely Populated 3D Globe Lattice (Zero Duplicates) */}
-            <group position={[0, 0, 0]}>
-              {Array.from({ length: TOTAL_GLOBE_SLOTS }).map((_, slotIndex) => {
-                const photo = globePhotosBySlot[slotIndex] || null;
-                if (!photo) return null;
-                const transform = getLayoutTransform(
-                  viewMode3D,
-                  slotIndex,
-                  TOTAL_GLOBE_SLOTS,
-                  isExploded
-                );
-                const url = photo.decryptedThumbUrl || photo.thumbStoragePath;
-                const cardTexture = textures[url] || null;
+              {/* Densely Populated 3D Globe Lattice (Zero Duplicates) */}
+              <group position={[0, 0, 0]}>
+                {Array.from({ length: TOTAL_GLOBE_SLOTS }).map((_, slotIndex) => {
+                  const photo = globePhotosBySlot[slotIndex] || null;
+                  if (!photo) return null;
+                  const transform = getLayoutTransform(
+                    viewMode3D,
+                    slotIndex,
+                    TOTAL_GLOBE_SLOTS,
+                    isExploded
+                  );
+                  const url = photo.decryptedThumbUrl || photo.thumbStoragePath;
+                  const cardTexture = textures[url] || null;
 
-                return (
-                  <PhotoCard3D
-                    key={`${photo.id}_slot_${slotIndex}`}
-                    slotIndex={slotIndex}
-                    photo={photo}
-                    texture={cardTexture}
-                    targetTransform={transform}
-                    isSelected={focusedSlotIndex === slotIndex}
-                    isHovered={hoveredPhotoId === photo.id}
-                    isMonochrome={isMonochrome}
-                    onSelect={() => {
-                      vaultAudio.playWhoosh();
-                      onOpenPhotoDetail(photo.id);
-                    }}
+                  return (
+                    <PhotoCard3D
+                      key={`${photo.id}_slot_${slotIndex}`}
+                      slotIndex={slotIndex}
+                      photo={photo}
+                      texture={cardTexture}
+                      targetTransform={transform}
+                      isSelected={focusedSlotIndex === slotIndex}
+                      isHovered={hoveredPhotoId === photo.id}
+                      isMonochrome={isMonochrome}
+                      onSelect={() => {
+                        vaultAudio.playWhoosh();
+                        onOpenPhotoDetail(photo.id);
+                      }}
                       onHover={(id) => setHoveredPhotoId(id)}
                       onSwapSlots={handleSwapSlots}
                     />
                   );
                 })}
-            </group>
-          </Suspense>
+              </group>
+            </Suspense>
 
-          <UniverseCameraController
-            focusedSlotIndex={focusedSlotIndex}
-            targetTransform={focusedTransform}
-            isInsideOrb={isInsideOrb}
-            isAutoRotating={isAutoRotating}
-            isExploded={isExploded}
-            controlsRef={controlsRef}
-          />
-        </Canvas>
-      )}
+            <UniverseCameraController
+              focusedSlotIndex={focusedSlotIndex}
+              targetTransform={focusedTransform}
+              isInsideOrb={isInsideOrb}
+              isAutoRotating={isAutoRotating}
+              isExploded={isExploded}
+              controlsRef={controlsRef}
+            />
+          </Canvas>
+        )}
+      </div>
 
       {/* ULTRA-MINIMAL LUXURY HUD */}
 
