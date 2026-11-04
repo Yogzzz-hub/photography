@@ -671,23 +671,6 @@ export function MemoryUniverse({
 
           {/* Top Right: Minimal Luxury Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2.5">
-            {/* Quick Upload Button (Directly Accessible in Universe HUD) */}
-            {onOpenUpload && (
-              <button
-                id="universe-upload-btn"
-                onClick={() => {
-                  vaultAudio.playWhoosh();
-                  onOpenUpload();
-                }}
-                title="Upload Memories to Vault"
-                aria-label="Upload Memories"
-                className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full flex items-center gap-1.5 bg-vault-gold hover:bg-amber-400 active:bg-amber-500 text-black text-xs font-bold shadow-md hover:shadow-glow transition-all cursor-pointer active:scale-95"
-              >
-                <UploadCloud className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Upload</span>
-              </button>
-            )}
-
             {/* Quick Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
