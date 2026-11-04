@@ -287,6 +287,10 @@ const getInitialTheme = (): 'dark' | 'light' => {
   } catch {
     // Ignore storage errors
   }
+  if (typeof document !== 'undefined') {
+    document.documentElement.classList.add('dark');
+    document.documentElement.classList.remove('light');
+  }
   return 'dark';
 };
 

@@ -1054,38 +1054,39 @@ export function MemoryUniverse({
 
       {/* SLIDE-OUT LUXURY NAVIGATION DRAWER */}
       {isDrawerOpen && (
-        <div className="fixed inset-0 z-[90] overflow-hidden">
+        <div className="fixed inset-0 z-[90] overflow-hidden select-none">
           {/* Backdrop */}
           <div
             onClick={() => setIsDrawerOpen(false)}
-            className="absolute inset-0 bg-stone-900/35 dark:bg-black/75 backdrop-blur-md transition-opacity z-[90]"
+            className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity z-[90]"
           />
 
-          {/* Slide-out Panel */}
-          <div className="absolute right-0 top-0 bottom-0 w-full sm:max-w-[330px] sm:w-[330px] bg-[#FAF9F6] dark:bg-[#070912] text-slate-900 dark:text-white backdrop-blur-2xl border-l border-stone-200/90 dark:border-white/10 p-4 sm:p-5 flex flex-col h-full shadow-2xl animate-in slide-in-from-right duration-300 z-[95]">
+          {/* Slide-out Luxury Panel */}
+          <div className="absolute right-0 top-0 bottom-0 w-full sm:w-[410px] md:w-[450px] max-w-[94vw] bg-[#0A0D16]/98 text-white backdrop-blur-3xl border-l border-white/15 p-5 sm:p-7 flex flex-col h-full shadow-[0_0_80px_rgba(0,0,0,0.85)] animate-in slide-in-from-right duration-300 z-[95]">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-stone-200/90 dark:border-white/10 pb-3 flex-shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8.5 h-8.5 rounded-xl bg-vault-gold/15 border border-vault-gold/30 flex items-center justify-center shadow-glow">
-                  <Globe className="w-4 h-4 text-vault-gold" />
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-500/20 via-vault-gold/10 to-transparent border border-vault-gold/40 flex items-center justify-center shadow-glow">
+                  <Globe className="w-5 h-5 text-vault-gold" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="font-serif tracking-[0.25em] text-slate-900 dark:text-white text-xs sm:text-sm font-semibold uppercase">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-serif tracking-[0.3em] text-white text-sm sm:text-base font-semibold uppercase">
                       MYORB VAULT
                     </h3>
                   </div>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 tracking-wide mt-0.5 font-sans">
-                    Private Family Archive
+                  <p className="text-[11px] text-slate-400 tracking-wider mt-0.5 font-sans flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-vault-gold animate-pulse" />
+                    <span>Private Family Archive</span>
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsDrawerOpen(false)}
                 title="Close Navigation (Esc)"
-                className="p-1.5 rounded-full hover:bg-stone-200/60 dark:hover:bg-white/10 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white transition-all cursor-pointer border border-transparent hover:border-stone-300/80 dark:hover:border-white/10"
+                className="p-2 rounded-full hover:bg-white/10 text-stone-400 hover:text-white transition-all cursor-pointer border border-white/10 hover:border-white/20 flex items-center justify-center"
               >
-                <X className="w-4.5 h-4.5" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -1096,38 +1097,41 @@ export function MemoryUniverse({
                 if (onOpenProfile) onOpenProfile();
                 else if (onNavigateTab) onNavigateTab('members');
               }}
-              className="mt-2 p-2 rounded-xl bg-white dark:bg-white/[0.04] border border-stone-200/90 dark:border-white/10 flex items-center justify-between cursor-pointer hover:bg-stone-50 dark:hover:bg-white/[0.08] hover:border-amber-400/50 dark:hover:border-vault-gold/40 transition-all group flex-shrink-0 shadow-[0_2px_8px_rgba(40,30,20,0.03)] dark:shadow-none"
+              className="mt-3.5 p-3.5 sm:p-4 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-between cursor-pointer hover:bg-white/[0.08] hover:border-vault-gold/40 transition-all group flex-shrink-0 shadow-lg"
               title="Click to manage personal profile, change photo & passwords"
             >
-              <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex items-center gap-3 min-w-0">
                 <div className="relative flex-shrink-0">
                   <img
                     src={currentMember.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}
                     alt={currentMember.displayName}
-                    className="w-8 h-8 rounded-lg object-cover border border-vault-gold/40 shadow group-hover:scale-105 transition-transform"
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover border-2 border-vault-gold/50 shadow group-hover:scale-105 transition-transform"
                   />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-white dark:border-black" />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-black" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                  <div className="text-sm font-bold text-white truncate">
                     {currentMember.displayName}
                   </div>
-                  <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 dark:text-emerald-400 font-mono mt-0.5">
+                  <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-mono mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="truncate">E2EE Master Key Active</span>
                   </div>
                 </div>
               </div>
-              <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-amber-500/10 dark:bg-vault-gold/15 text-amber-900 dark:text-vault-gold border border-amber-500/25 dark:border-vault-gold/30 ml-2 flex-shrink-0">
-                {currentMember.role}
-              </span>
+              <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-1 rounded-full bg-vault-gold/15 text-vault-gold border border-vault-gold/30 tracking-wider">
+                  {currentMember.role}
+                </span>
+                <ChevronRight className="w-4 h-4 text-white/40 group-hover:text-vault-gold group-hover:translate-x-0.5 transition-all" />
+              </div>
             </div>
 
-            {/* Universe Planets Selector in Drawer (Horizontal Compact Bar saves 60px of vertical space) */}
-            <div className="mt-1.5 p-1.5 rounded-xl bg-white dark:bg-white/[0.03] border border-stone-200/90 dark:border-white/10 flex flex-col gap-1 flex-shrink-0 shadow-sm">
-              <div className="flex items-center justify-between px-1.5 py-0.5">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-stone-500 dark:text-slate-400 font-semibold flex items-center gap-1">
-                  <Globe className="w-3 h-3 text-vault-gold" />
+            {/* Universe Planets Selector in Drawer (Full Unclipped Names & Colors) */}
+            <div className="mt-3 p-3 sm:p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col gap-2 flex-shrink-0 shadow-sm">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-vault-gold" />
                   <span>Memory Planets ({globes.length})</span>
                 </span>
                 <button
@@ -1135,18 +1139,19 @@ export function MemoryUniverse({
                     setIsDrawerOpen(false);
                     setIsCreatePlanetOpen(true);
                   }}
-                  className="text-[10px] font-semibold text-vault-gold hover:underline flex items-center gap-0.5 cursor-pointer"
+                  className="text-xs font-semibold text-vault-gold hover:text-amber-300 flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded-lg bg-vault-gold/10 hover:bg-vault-gold/20 border border-vault-gold/30 transition-all"
                 >
-                  <Plus className="w-3 h-3" />
-                  <span>New</span>
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ New Planet</span>
                 </button>
               </div>
-              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
                 {globes.map((g) => {
                   const isAct = g.id === activeGlobeId;
                   const gCount = photos.filter(
                     (p) => !p.inTrash && (p.globeId === g.id || (!p.globeId && g.id === 'globe_main'))
                   ).length;
+                  const planetDotColor = g.customColor || '#E5C07B';
                   return (
                     <button
                       key={g.id}
@@ -1155,15 +1160,19 @@ export function MemoryUniverse({
                         setActiveGlobeId(g.id);
                         setIsDrawerOpen(false);
                       }}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] whitespace-nowrap transition-all cursor-pointer flex-shrink-0 ${
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap transition-all cursor-pointer flex-shrink-0 border ${
                         isAct
-                          ? 'bg-amber-500/15 dark:bg-vault-gold/20 text-amber-950 dark:text-vault-gold font-bold border border-vault-gold/40'
-                          : 'text-stone-700 dark:text-stone-300 hover:bg-black/5 dark:hover:bg-white/5 border border-transparent'
+                          ? 'bg-vault-gold/20 text-vault-gold font-bold border-vault-gold shadow-[0_0_15px_rgba(229,192,123,0.3)] ring-1 ring-vault-gold/50'
+                          : 'text-stone-300 hover:text-white bg-white/[0.03] hover:bg-white/[0.08] border-white/10'
                       }`}
-                      title={`${g.name} (${gCount}/108)`}
+                      title={`${g.name} (${gCount}/108 Memories)`}
                     >
-                      <span className="truncate max-w-[110px]">{g.name}</span>
-                      <span className="text-[9px] font-mono opacity-60">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-sm"
+                        style={{ backgroundColor: planetDotColor }}
+                      />
+                      <span className="truncate max-w-[140px] font-medium">{g.name}</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-black/40 text-vault-gold border border-white/10 font-bold">
                         {gCount}/108
                       </span>
                     </button>
@@ -1172,8 +1181,8 @@ export function MemoryUniverse({
               </div>
             </div>
 
-            {/* Navigation Links with Refined Ergonomic Spacing & Full Visibility */}
-            <div className="flex-1 min-h-0 overflow-y-auto py-1 space-y-0.5 font-sans pr-1 pb-6 overscroll-contain scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-white/10">
+            {/* Navigation Links with Luxury Spacing & Full Visibility */}
+            <div className="flex-1 min-h-0 overflow-y-auto py-3 space-y-1 font-sans pr-1 overscroll-contain scrollbar-thin scrollbar-thumb-white/10">
               {[
                 { tab: 'universe' as NavigationTab, label: '3D Memory Universe', icon: Globe, count: null },
                 { tab: 'library' as NavigationTab, label: 'Photo Library', icon: Grid, count: photos.filter(p => !p.inTrash).length },
@@ -1192,20 +1201,20 @@ export function MemoryUniverse({
                       setIsDrawerOpen(false);
                       if (onNavigateTab) onNavigateTab(tab);
                     }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1 rounded-lg text-xs font-medium transition-all text-left cursor-pointer border ${
+                    className={`w-full flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-medium transition-all text-left cursor-pointer border ${
                       isActive
-                        ? 'bg-amber-500/15 dark:bg-vault-gold/20 text-amber-950 dark:text-vault-gold border-amber-500/35 dark:border-vault-gold/40 font-semibold shadow-sm'
-                        : 'text-stone-700 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-white/[0.06] border-transparent hover:border-stone-200/80 dark:hover:border-white/5'
+                        ? 'bg-gradient-to-r from-vault-gold/25 via-vault-gold/10 to-transparent text-vault-gold border-l-4 border-l-vault-gold border-vault-gold/30 font-semibold shadow-sm'
+                        : 'text-stone-300 hover:text-white hover:bg-white/[0.06] border-transparent hover:border-white/10'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-amber-700 dark:text-vault-gold' : 'text-stone-400 dark:text-stone-500'}`} />
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Icon className={`w-4.5 h-4.5 flex-shrink-0 ${isActive ? 'text-vault-gold' : 'text-stone-400 group-hover:text-white'}`} />
                       <span className="truncate">{label}</span>
                     </div>
                     {isActive ? (
-                      <span className="w-1.5 h-1.5 rounded-full bg-vault-gold shadow-glow flex-shrink-0" />
+                      <span className="w-2 h-2 rounded-full bg-vault-gold shadow-glow flex-shrink-0" />
                     ) : count !== null ? (
-                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-stone-200/60 dark:bg-white/10 text-stone-600 dark:text-stone-300 flex-shrink-0 font-medium">
+                      <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-stone-300 flex-shrink-0 font-medium border border-white/5">
                         {count}
                       </span>
                     ) : null}
@@ -1215,18 +1224,18 @@ export function MemoryUniverse({
             </div>
 
             {/* Bottom Actions in Drawer */}
-            <div className="border-t border-stone-200/90 dark:border-white/10 pt-1.5 flex flex-col gap-1.5 font-sans flex-shrink-0 pb-3 pb-safe">
+            <div className="border-t border-white/10 pt-3 flex flex-col gap-2.5 font-sans flex-shrink-0 pb-2 pb-safe">
               {/* Quick Actions Segmented Row (Audio, Guide, Theme, Fullscreen) */}
-              <div className="grid grid-cols-4 gap-1 p-1 rounded-2xl bg-white dark:bg-white/[0.03] border border-stone-200/90 dark:border-white/10 shadow-[0_2px_8px_rgba(40,30,20,0.03)]">
+              <div className="grid grid-cols-4 gap-1.5 p-1.5 rounded-2xl bg-white/[0.03] border border-white/10 shadow-lg">
                 <button
                   onClick={() => {
                     setIsDrawerOpen(false);
                     setIsAudioModalOpen(true);
                   }}
-                  className="flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.08] text-stone-700 dark:text-stone-300 text-[10px] font-medium transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl hover:bg-white/[0.08] text-stone-300 hover:text-white text-[11px] font-medium transition-all cursor-pointer"
                   title="Open Celestial Audio Studio"
                 >
-                  <Music className="w-3.5 h-3.5 text-purple-600 dark:text-vault-gold" />
+                  <Music className="w-4 h-4 text-vault-gold" />
                   <span>Audio</span>
                 </button>
 
@@ -1235,10 +1244,10 @@ export function MemoryUniverse({
                     setIsDrawerOpen(false);
                     setIsGuideOpen(true);
                   }}
-                  className="flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.08] text-stone-700 dark:text-stone-300 text-[10px] font-medium transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl hover:bg-white/[0.08] text-stone-300 hover:text-white text-[11px] font-medium transition-all cursor-pointer"
                   title="Open Interactive Vault Guide"
                 >
-                  <BookOpen className="w-3.5 h-3.5 text-amber-600 dark:text-vault-gold" />
+                  <BookOpen className="w-4 h-4 text-vault-gold" />
                   <span>Guide</span>
                 </button>
 
@@ -1247,27 +1256,27 @@ export function MemoryUniverse({
                     vaultAudio.playWhoosh();
                     toggleTheme();
                   }}
-                  className="flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.08] text-stone-700 dark:text-stone-300 text-[10px] font-medium transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl hover:bg-white/[0.08] text-stone-300 hover:text-white text-[11px] font-medium transition-all cursor-pointer"
                   title="Toggle Light / Dark Mode"
                 >
                   {theme === 'dark' ? (
-                    <Sun className="w-3.5 h-3.5 text-amber-400" />
+                    <Sun className="w-4 h-4 text-amber-400" />
                   ) : (
-                    <Moon className="w-3.5 h-3.5 text-indigo-600" />
+                    <Moon className="w-4 h-4 text-indigo-400" />
                   )}
                   <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
                 </button>
 
                 <button
                   onClick={toggleFullscreen}
-                  className={`flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
+                  className={`flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl text-[11px] font-medium transition-all cursor-pointer ${
                     isEffectiveFullscreen
                       ? 'bg-vault-gold text-black font-semibold shadow-sm'
-                      : 'hover:bg-stone-100 dark:hover:bg-white/[0.08] text-stone-700 dark:text-stone-300'
+                      : 'hover:bg-white/[0.08] text-stone-300 hover:text-white'
                   }`}
                   title="Toggle Fullscreen"
                 >
-                  {isEffectiveFullscreen ? <Minimize2 className="w-3.5 h-3.5 text-black" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                  {isEffectiveFullscreen ? <Minimize2 className="w-4 h-4 text-black" /> : <Maximize2 className="w-4 h-4" />}
                   <span>{isEffectiveFullscreen ? 'Exit' : 'Full'}</span>
                 </button>
               </div>
@@ -1278,9 +1287,9 @@ export function MemoryUniverse({
                     setIsDrawerOpen(false);
                     if (onOpenUpload) onOpenUpload();
                   }}
-                  className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-gradient-to-r from-amber-400 via-vault-gold to-amber-500 hover:brightness-105 text-black text-xs font-bold tracking-wide shadow-md hover:shadow-glow active:scale-98 transition-all cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-amber-400 via-vault-gold to-amber-500 hover:brightness-105 active:scale-98 text-black text-xs sm:text-sm font-bold tracking-wide shadow-lg hover:shadow-[0_0_25px_rgba(229,192,123,0.4)] transition-all cursor-pointer"
                 >
-                  <UploadCloud className="w-4 h-4" />
+                  <UploadCloud className="w-4.5 h-4.5 text-black" />
                   <span>Upload Memories</span>
                 </button>
               )}
@@ -1292,9 +1301,9 @@ export function MemoryUniverse({
                     lockVault();
                     onOpenLockModal();
                   }}
-                  className="w-full flex items-center justify-center gap-2 py-1.5 rounded-xl bg-white hover:bg-stone-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-stone-700 hover:text-stone-900 dark:text-stone-300 dark:hover:text-white text-xs font-semibold transition-all border border-stone-200/90 dark:border-white/10 active:scale-98 cursor-pointer shadow-sm"
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] text-stone-300 hover:text-white text-xs font-semibold transition-all border border-white/10 hover:border-white/20 active:scale-98 cursor-pointer shadow-sm"
                 >
-                  <Lock className="w-3.5 h-3.5 text-stone-400" />
+                  <Lock className="w-3.5 h-3.5 text-vault-gold" />
                   <span>Lock Vault</span>
                 </button>
               )}
@@ -1305,7 +1314,7 @@ export function MemoryUniverse({
 
       {/* 24-Hour Ephemeral Stories Floating Stack (Available across phone & desktop with luxury 3D fanned deck) */}
       <div
-        className="absolute bottom-20 sm:bottom-6 right-3 sm:right-40 md:right-44 lg:right-48 z-30 flex flex-col items-end group cursor-pointer select-none active:scale-95 transition-transform duration-200"
+        className="absolute bottom-24 sm:bottom-8 right-4 sm:right-32 md:right-36 lg:right-40 z-30 flex flex-col items-end group cursor-pointer select-none active:scale-95 transition-transform duration-200"
         onClick={() => {
           vaultAudio.playWhoosh();
           setIsStoryViewerOpen(true);

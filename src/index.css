@@ -264,3 +264,20 @@ html.light .sphere-item-card:hover {
     scroll-behavior: auto !important;
   }
 }
+
+/* Netlify Injected Badge De-confliction: ensures zero interference with 3D controls & story stack */
+.netlify-badge,
+#netlify-badge,
+[data-netlify-badge],
+iframe[src*="netlify"] {
+  z-index: 10 !important;
+  opacity: 0.65 !important;
+  transform: scale(0.85);
+  transform-origin: bottom right;
+  transition: opacity 0.2s ease;
+}
+.netlify-badge:hover,
+#netlify-badge:hover,
+[data-netlify-badge]:hover {
+  opacity: 1 !important;
+}

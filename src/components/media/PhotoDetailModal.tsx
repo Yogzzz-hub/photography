@@ -298,22 +298,22 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
               stiffness: 360,
               mass: 0.7,
             }}
-            className="w-full max-w-5xl h-[90vh] max-h-[840px] rounded-3xl overflow-hidden flex flex-col shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] border border-stone-200/80 dark:border-white/10 relative my-auto bg-[#FAF9F6] dark:bg-[#0c0f18] text-slate-900 dark:text-slate-100"
+            className="w-full max-w-5xl h-[90vh] max-h-[840px] rounded-3xl overflow-hidden flex flex-col shadow-[0_25px_80px_rgba(0,0,0,0.95)] border border-white/15 relative my-auto bg-[#0A0D16] text-white"
           >
             {/* Dedicated Top Gallery Header Bar - Close button NEVER overlaps the photo */}
-            <div className="flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-stone-200/80 dark:border-white/10 flex-shrink-0 z-30 bg-[#FAF9F6] dark:bg-[#0c0f18]/95 backdrop-blur-md">
+            <div className="flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-white/10 flex-shrink-0 z-30 bg-[#0A0D16]/98 backdrop-blur-md">
               {/* Left: Memory Breadcrumb & Index Pill */}
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider bg-vault-gold/15 text-vault-gold border border-vault-gold/30 flex-shrink-0">
                   {currentIndex >= 0 ? `${currentIndex + 1} / ${photos.length}` : 'Memory'}
                 </span>
-                <div className="flex items-center gap-1.5 min-w-0 text-xs text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-1.5 min-w-0 text-xs text-slate-400">
                   <Folder className="w-3.5 h-3.5 text-vault-gold flex-shrink-0" />
-                  <span className="truncate font-medium text-slate-700 dark:text-slate-300">
+                  <span className="truncate font-medium text-slate-300">
                     {currentAlbum?.name || 'General Vault'}
                   </span>
-                  <span className="hidden sm:inline text-slate-400">•</span>
-                  <span className="hidden sm:inline truncate max-w-[240px] text-slate-800 dark:text-slate-200 font-medium">
+                  <span className="hidden sm:inline text-slate-500">•</span>
+                  <span className="hidden sm:inline truncate max-w-[240px] text-white font-medium">
                     {photo.metadata.title}
                   </span>
                 </div>
@@ -322,7 +322,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
               {/* Right: Gallery Controls + Dedicated Safe Close Button */}
               <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                 {/* Desktop Keyboard Hints */}
-                <div className="hidden md:flex items-center gap-1 text-[10px] text-slate-400 font-mono px-2 py-1 rounded-lg bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
+                <div className="hidden md:flex items-center gap-1 text-[10px] text-slate-400 font-mono px-2 py-1 rounded-lg bg-white/5 border border-white/10">
                   <span>←</span>
                   <span>→</span>
                   <span>keys</span>
@@ -333,7 +333,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                   <button
                     disabled={!hasPrev}
                     onClick={handlePrev}
-                    className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 disabled:opacity-25 disabled:pointer-events-none hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                    className="p-1.5 rounded-lg text-slate-300 disabled:opacity-25 disabled:pointer-events-none hover:bg-white/10 transition-colors"
                     title="Previous Photo"
                     aria-label="Previous Photo"
                   >
@@ -342,7 +342,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                   <button
                     disabled={!hasNext}
                     onClick={handleNext}
-                    className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 disabled:opacity-25 disabled:pointer-events-none hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                    className="p-1.5 rounded-lg text-slate-300 disabled:opacity-25 disabled:pointer-events-none hover:bg-white/10 transition-colors"
                     title="Next Photo"
                     aria-label="Next Photo"
                   >
@@ -360,7 +360,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                   }}
                   title="Close Gallery (Esc)"
                   aria-label="Close Photo Detail"
-                  className="p-1.5 sm:p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/15 text-slate-600 hover:text-black dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer border border-stone-200 dark:border-white/10 shadow-sm"
+                  className="p-1.5 sm:p-2 rounded-full hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer border border-white/15 shadow-sm"
                 >
                   <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </motion.button>
@@ -369,8 +369,8 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
 
             {/* Split Content: Left High-Fidelity Photo Viewer & Right Memory Narrative */}
             <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
-              {/* Left Photo Viewer Area (Museum Theater Framing) */}
-              <div className="relative flex-1 bg-black/95 dark:bg-[#06080F] flex items-center justify-center overflow-hidden min-h-[200px] h-[36vh] sm:h-[42vh] lg:h-auto lg:min-h-0 p-3 sm:p-6 lg:p-8 select-none">
+              {/* Left Photo Viewer Area (Museum Theater Framing - Solid Opaque stops 3D card bleed) */}
+              <div className="relative flex-1 bg-[#05070B] flex items-center justify-center overflow-hidden min-h-[200px] h-[36vh] sm:h-[42vh] lg:h-auto lg:min-h-0 p-3 sm:p-6 lg:p-8 select-none">
                 {/* Desktop Floating Previous Navigation Arrow */}
                 {hasPrev && (
                   <motion.button
@@ -545,7 +545,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
               </div>
 
               {/* Right Memory Story & Metadata Panel: Fixed footer, scrollable narrative */}
-              <div className="w-full lg:w-[390px] xl:w-[430px] flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-stone-200/80 dark:border-white/10 bg-[#FAF9F6] dark:bg-[#0c0f18] text-slate-900 dark:text-white min-h-0 h-full flex-1 overflow-hidden">
+              <div className="w-full lg:w-[390px] xl:w-[430px] flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-white/10 bg-[#0D101A] text-white min-h-0 h-full flex-1 overflow-hidden">
                 {/* Scrollable Story & Details Area */}
                 <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 no-scrollbar min-h-0">
                   {/* Saved Confirmation Toast Banner */}
@@ -554,9 +554,9 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                       initial={{ opacity: 0, y: -6 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
-                      className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/35 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2 shadow-sm"
+                      className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 text-xs font-semibold flex items-center gap-2 shadow-sm"
                     >
-                      <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                      <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                       <span>Memory & Photo Updated Successfully!</span>
                     </motion.div>
                   )}
@@ -573,8 +573,8 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                       {/* Header info */}
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-                            <Sparkles className="w-3.5 h-3.5" />
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
                             <span>Family Memory Story</span>
                           </span>
                           {!isEditing ? (
@@ -583,13 +583,13 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                                 vaultAudio.playWhoosh();
                                 setIsEditing(true);
                               }}
-                              className="text-xs text-purple-700 dark:text-vault-gold hover:underline flex items-center gap-1 transition-colors cursor-pointer py-1 px-2.5 rounded-lg bg-purple-500/10 dark:bg-vault-gold/15 font-semibold"
+                              className="text-xs text-vault-gold hover:text-amber-300 flex items-center gap-1.5 transition-colors cursor-pointer py-1 px-3 rounded-lg bg-vault-gold/15 hover:bg-vault-gold/25 border border-vault-gold/30 font-semibold"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
                               <span>Edit Memory & Photo</span>
                             </button>
                           ) : (
-                            <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-900 dark:text-vault-gold border border-amber-500/30 font-bold">
+                            <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-vault-gold border border-amber-500/30 font-bold">
                               Editing Mode Active
                             </span>
                           )}
@@ -597,7 +597,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
 
                         {isEditing ? (
                           <div className="space-y-1 mb-2">
-                            <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                            <label className="block text-[11px] font-semibold text-slate-300">
                               Memory Title *
                             </label>
                             <input
@@ -606,16 +606,16 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                               value={title}
                               onChange={(e) => setTitle(e.target.value)}
                               placeholder="Title of this memory..."
-                              className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-white/[0.05] border border-slate-300 dark:border-white/15 text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-vault-gold shadow-sm"
+                              className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.05] border border-white/15 text-sm font-bold text-white placeholder-slate-500 focus:outline-none focus:border-vault-gold shadow-inner"
                             />
                           </div>
                         ) : (
-                          <h2 className="text-xl sm:text-2xl font-serif font-bold text-slate-900 dark:text-white leading-snug tracking-tight mb-2">
+                          <h2 className="text-xl sm:text-2xl font-serif font-bold text-white leading-snug tracking-tight mb-2">
                             {photo.metadata.title}
                           </h2>
                         )}
 
-                        <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center flex-wrap gap-2">
+                        <div className="text-xs text-slate-400 flex items-center flex-wrap gap-2">
                           <span>By {photo.uploaderName?.replace(/Elena Vanderbilt/gi, 'Vault Curator') || 'Vault Curator'}</span>
                           <span>•</span>
                           {isEditing ? (
@@ -624,10 +624,10 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                               <select
                                 value={targetAlbumId}
                                 onChange={(e) => setTargetAlbumId(e.target.value)}
-                                className="p-1.5 rounded-lg text-xs bg-slate-50 dark:bg-black/50 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-vault-gold cursor-pointer"
+                                className="p-1.5 rounded-lg text-xs bg-[#141824] border border-white/20 text-vault-gold cursor-pointer"
                               >
                                 {albums.map((alb) => (
-                                  <option key={alb.id} value={alb.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                                  <option key={alb.id} value={alb.id} className="bg-slate-900 text-white">
                                     {alb.name}
                                   </option>
                                 ))}
@@ -636,7 +636,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                           ) : (
                             <span className="flex items-center gap-1">
                               <Folder className="w-3.5 h-3.5 text-vault-gold" />
-                              <span>Album: {currentAlbum?.name || 'General'}</span>
+                              <span className="text-slate-300">Album: {currentAlbum?.name || 'General'}</span>
                             </span>
                           )}
                         </div>
@@ -644,13 +644,13 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
 
                       {/* Photo Image Editing & Crop Suite (Active in Edit Mode) */}
                       {isEditing && (
-                        <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-vault-gold/10 border border-amber-500/30 dark:border-vault-gold/30 space-y-3">
+                        <div className="p-3.5 rounded-2xl bg-vault-gold/10 border border-vault-gold/30 space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-amber-950 dark:text-vault-gold flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-vault-gold flex items-center gap-1.5">
                               <Crop className="w-3.5 h-3.5" />
                               <span>Photo Image & Crop Tools</span>
                             </span>
-                            <span className="text-[10px] font-mono text-amber-800 dark:text-amber-200/80">
+                            <span className="text-[10px] font-mono text-amber-200/80">
                               {photo.width} × {photo.height}
                             </span>
                           </div>
@@ -670,7 +670,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                             <button
                               type="button"
                               onClick={handleRotate90}
-                              className="px-2.5 py-2 rounded-xl bg-white dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/20 text-slate-800 dark:text-white text-xs font-medium flex items-center justify-center gap-1.5 border border-stone-200 dark:border-white/15 transition-all cursor-pointer"
+                              className="px-2.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-medium flex items-center justify-center gap-1.5 border border-white/15 transition-all cursor-pointer"
                               title="Rotate 90 degrees"
                             >
                               <RotateCw className="w-3.5 h-3.5 text-vault-gold" />
@@ -679,7 +679,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
 
                             <label
                               htmlFor="detail-modal-replace-photo"
-                              className="px-2.5 py-2 rounded-xl bg-white dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/20 text-slate-800 dark:text-white text-xs font-medium flex items-center justify-center gap-1.5 border border-stone-200 dark:border-white/15 transition-all cursor-pointer"
+                              className="px-2.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-medium flex items-center justify-center gap-1.5 border border-white/15 transition-all cursor-pointer"
                               title="Upload new image to replace photo"
                             >
                               <Upload className="w-3.5 h-3.5 text-vault-gold" />
@@ -688,13 +688,13 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                           </div>
 
                           {/* Color Mood / Visual Presets */}
-                          <div className="space-y-1.5 pt-1 border-t border-amber-500/20 dark:border-vault-gold/20">
-                            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                          <div className="space-y-1.5 pt-1 border-t border-vault-gold/20">
+                            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-300">
                               <span className="flex items-center gap-1">
-                                <Palette className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                                <Palette className="w-3 h-3 text-purple-400" />
                                 <span>Photo Mood Grading:</span>
                               </span>
-                              <span className="text-[10px] font-mono text-purple-700 dark:text-purple-300">
+                              <span className="text-[10px] font-mono text-purple-300">
                                 {activeMood.label}
                               </span>
                             </div>
@@ -712,7 +712,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                                     className={`px-2 py-1.5 rounded-xl text-[10px] font-medium transition-all truncate cursor-pointer ${
                                       isSelected
                                         ? 'bg-purple-600 text-white font-bold shadow-sm'
-                                        : 'bg-white/90 dark:bg-black/30 hover:bg-white dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-stone-200/80 dark:border-white/10'
+                                        : 'bg-black/40 hover:bg-white/10 text-slate-300 border border-white/10'
                                     }`}
                                   >
                                     {item.label}
@@ -725,30 +725,30 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                       )}
 
                       {/* Date & Location Badges */}
-                      <div className="space-y-2.5 p-3.5 rounded-2xl bg-white dark:bg-white/[0.03] border border-stone-200/80 dark:border-white/5 shadow-sm">
-                        <div className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300">
-                          <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                      <div className="space-y-2.5 p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 shadow-sm">
+                        <div className="flex items-center gap-2.5 text-xs text-slate-300">
+                          <Calendar className="w-4 h-4 text-purple-400 flex-shrink-0" />
                           {isEditing ? (
                             <input
                               type="date"
                               value={captureDate}
                               onChange={(e) => setCaptureDate(e.target.value)}
-                              className="px-2.5 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-white/[0.05] border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white"
+                              className="px-2.5 py-1.5 rounded-xl text-xs bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-vault-gold"
                             />
                           ) : (
                             <span className="font-medium">{photo.metadata.captureDate}</span>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-2.5 text-xs text-amber-700 dark:text-cyan-300">
-                          <MapPin className="w-4 h-4 text-amber-600 dark:text-cyan-400 flex-shrink-0" />
+                        <div className="flex items-center gap-2.5 text-xs text-cyan-300">
+                          <MapPin className="w-4 h-4 text-cyan-400 flex-shrink-0" />
                           {isEditing ? (
                             <input
                               type="text"
                               placeholder="Location label (e.g. Marina Beach, Chennai)"
                               value={locationLabel}
                               onChange={(e) => setLocationLabel(e.target.value)}
-                              className="px-2.5 py-1.5 rounded-xl text-xs w-full bg-slate-50 dark:bg-white/[0.05] border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white placeholder-slate-400"
+                              className="px-2.5 py-1.5 rounded-xl text-xs w-full bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-vault-gold"
                             />
                           ) : (
                             <span className="font-medium">{photo.metadata.location?.label || 'No location specified'}</span>
@@ -758,7 +758,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
 
                       {/* Story / Detailed Memory Notes */}
                       <div className="space-y-2">
-                        <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-300 flex items-center gap-1.5">
+                        <h4 className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                           <span>The Memory Story</span>
                         </h4>
                         {isEditing ? (
@@ -767,10 +767,10 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                             value={story}
                             onChange={(e) => setStory(e.target.value)}
                             placeholder="Tell the story behind this memory for future generations..."
-                            className="w-full p-3 rounded-xl text-xs bg-white dark:bg-white/[0.05] border border-slate-300 dark:border-white/15 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-vault-gold shadow-sm"
+                            className="w-full p-3.5 rounded-xl text-xs bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-vault-gold shadow-inner leading-relaxed"
                           />
                         ) : (
-                          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap bg-white dark:bg-white/[0.03] p-4 rounded-2xl border border-stone-200/80 dark:border-white/5 shadow-sm">
+                          <p className="text-xs sm:text-sm text-stone-300 leading-relaxed whitespace-pre-wrap bg-white/[0.03] p-4 rounded-2xl border border-white/10 shadow-sm">
                             {photo.metadata.story ||
                               photo.metadata.notes ||
                               'No written narrative recorded yet. Tap edit to preserve the story.'}
@@ -780,8 +780,8 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
 
                       {/* Tags */}
                       <div className="space-y-2 pb-2">
-                        <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-300 flex items-center gap-1.5">
-                          <Tag className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                        <h4 className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                          <Tag className="w-3.5 h-3.5 text-purple-400" />
                           <span>Tags</span>
                         </h4>
                         {isEditing ? (
@@ -790,7 +790,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                             placeholder="triplicane, temple, stone, chola"
                             value={tagsInput}
                             onChange={(e) => setTagsInput(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-white/[0.05] border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white"
+                            className="w-full px-3 py-2 rounded-xl text-xs bg-white/[0.05] border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-vault-gold"
                           />
                         ) : (
                           <div className="flex flex-wrap gap-2">
@@ -798,7 +798,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                               photo.metadata.tags.map((tag) => (
                                 <span
                                   key={tag}
-                                  className="px-2.5 py-1 rounded-xl bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-500/20 text-[11px] sm:text-xs text-purple-900 dark:text-purple-300 font-medium"
+                                  className="px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-[11px] sm:text-xs text-purple-300 font-medium"
                                 >
                                   #{tag}
                                 </span>
@@ -814,7 +814,7 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                 </div>
 
                 {/* Dedicated Action Footer: Fixed, unclipped, always visible with ample padding */}
-                <div className="flex-shrink-0 px-6 sm:px-8 py-4 sm:py-5 pb-5 sm:pb-6 border-t border-stone-200/80 dark:border-white/10 bg-[#FAF9F6] dark:bg-[#090c14]/95 backdrop-blur-md flex items-center justify-between gap-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-20 min-h-[64px]">
+                <div className="flex-shrink-0 px-6 sm:px-8 py-4 sm:py-5 pb-5 sm:pb-6 border-t border-white/10 bg-[#090C14]/98 backdrop-blur-md flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] z-20 min-h-[64px]">
                   {isEditing ? (
                     <div className="flex items-center gap-2.5 w-full">
                       <button
@@ -822,13 +822,13 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                           vaultAudio.playWhoosh();
                           setIsEditing(false);
                         }}
-                        className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer"
+                        className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-stone-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer border border-transparent hover:border-white/10"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSave}
-                        className="flex-1 py-2.5 rounded-xl bg-vault-gold hover:bg-amber-400 active:scale-98 text-black text-xs font-bold shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                        className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-vault-gold to-amber-500 hover:brightness-105 active:scale-98 text-black text-xs font-bold shadow-lg hover:shadow-[0_0_20px_rgba(229,192,123,0.4)] flex items-center justify-center gap-1.5 cursor-pointer transition-all"
                       >
                         <Check className="w-4 h-4" />
                         <span>Save Memory & Photo</span>
@@ -843,14 +843,14 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                           vaultAudio.playSnap();
                           handleDelete();
                         }}
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/25 border border-rose-500/20 hover:border-rose-500/30 transition-all cursor-pointer shadow-sm select-none"
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-400 bg-rose-500/15 hover:bg-rose-500/25 active:bg-rose-500/30 border border-rose-500/30 transition-all cursor-pointer shadow-sm select-none"
                         title="Move this memory to Family Trash"
                       >
                         <Trash2 className="w-3.5 h-3.5 text-rose-500" />
                         <span>Move to Trash</span>
                       </motion.button>
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 text-[11px] text-slate-600 dark:text-slate-400 font-mono">
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[11px] text-stone-300 font-mono">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                         <span>{(photo.fileSizeBytes / (1024 * 1024)).toFixed(2)} MB • E2EE</span>
                       </div>
                     </>
