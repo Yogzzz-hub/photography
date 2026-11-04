@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useVaultStore } from '../../stores/useVaultStore';
 import { processPhotoLocally } from '../../services/imageProcessor';
+import { vaultAudio } from '../../services/audioSynthesizer';
 import {
   encryptBinaryData,
   encryptJsonMetadata,
@@ -16,6 +17,10 @@ import {
   Play,
   Sparkles,
   Zap,
+  ShieldCheck,
+  Loader2,
+  ArrowRight,
+  Globe,
 } from 'lucide-react';
 
 interface BulkUploadModalProps {
@@ -33,13 +38,39 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
     masterVaultKey,
     photos,
     addPhoto,
+    activeGlobeId,
+    globes,
   } = useVaultStore();
+
+  const activeGlobe = globes.find((g) => g.id === activeGlobeId) || globes[0];
 
   const [items, setItems] = useState<UploadBatchItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [overallProgress, setOverallProgress] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [currentProcessingIndex, setCurrentProcessingIndex] = useState(0);
+  const [currentProcessingName, setCurrentProcessingName] = useState('');
+  const redirectTimerRef = useRef<any>(null);
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleViewUniverse = () => {
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+    }
+    vaultAudio.playWhoosh();
+    onClose();
+    if (onViewUniverse) {
+      onViewUniverse();
+    }
+  };
 
   // Common Batch Applied Metadata
   const [batchAlbumId, setBatchAlbumId] = useState(albums[0]?.id || '');
@@ -159,6 +190,9 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
+      setCurrentProcessingIndex(i + 1);
+      setCurrentProcessingName(item.file.name);
+
       if (item.state === 'saved') {
         completedCount++;
         continue;
@@ -259,15 +293,103 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
 
     if (createdPhotos.length > 0) {
       useVaultStore.getState().bulkAddPhotosToGlobe(createdPhotos);
+      vaultAudio.playWhoosh();
     }
 
     setIsUploading(false);
     setIsSuccess(true);
+
+    // Auto-redirect to 3D Memory Universe so the user is never stuck
+    redirectTimerRef.current = setTimeout(() => {
+      handleViewUniverse();
+    }, 1250);
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/60 dark:bg-black/85 backdrop-blur-md animate-in fade-in">
-      <div className="w-full max-w-4xl max-h-[92vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0c14]/95 text-slate-900 dark:text-white">
+      <div className="w-full max-w-4xl max-h-[92vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0c14]/95 text-slate-900 dark:text-white relative">
+        {/* Real-Time Encryption & Redirection Overlay */}
+        {(isUploading || isSuccess) && (
+          <div className="absolute inset-0 z-50 bg-[#080B13]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-200">
+            {isUploading ? (
+              <div className="max-w-md w-full flex flex-col items-center">
+                {/* Animated Orbital Radar / Hologram Spinner */}
+                <div className="relative w-24 h-24 mb-6 flex items-center justify-center">
+                  <div
+                    className="absolute inset-0 rounded-full border-2 border-dashed border-vault-gold/50 animate-spin"
+                    style={{ animationDuration: '6s' }}
+                  />
+                  <div
+                    className="absolute inset-2 rounded-full border-2 border-purple-500/60 animate-spin"
+                    style={{ animationDuration: '3s', animationDirection: 'reverse' }}
+                  />
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600/30 via-vault-gold/25 to-emerald-500/20 border border-vault-gold/50 flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.35)]">
+                    <ShieldCheck className="w-7 h-7 text-vault-gold animate-pulse" />
+                  </div>
+                </div>
+
+                <span className="text-[11px] font-mono uppercase tracking-widest text-emerald-400 font-bold px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 mb-2">
+                  AES-256-GCM Hardware Encrypting
+                </span>
+                <h4 className="text-xl font-serif font-bold text-white tracking-wide">
+                  Encrypting Memories into 3D Orbit
+                </h4>
+                <p className="text-xs text-slate-400 font-sans mt-1 truncate max-w-xs">
+                  {currentProcessingName ? `Processing: ${currentProcessingName}` : 'Preparing encryption buffers...'}
+                </p>
+
+                {/* Progress Bar & Percentage */}
+                <div className="w-full mt-6 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-mono text-slate-300">
+                    <span>Item {currentProcessingIndex} of {items.length}</span>
+                    <span className="text-vault-gold font-bold">{overallProgress}%</span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden border border-white/10">
+                    <div
+                      className="h-full bg-gradient-to-r from-purple-500 via-vault-gold to-emerald-400 transition-all duration-300 shadow-[0_0_12px_rgba(245,158,11,0.5)]"
+                      style={{ width: `${Math.max(5, overallProgress)}%` }}
+                    />
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-500 font-mono mt-4">
+                  Zero-Knowledge Client-Side Encryption • Direct 3D World Injection
+                </p>
+              </div>
+            ) : (
+              <div className="max-w-md w-full flex flex-col items-center animate-in zoom-in-95 duration-300">
+                {/* Success Burst Icon */}
+                <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-emerald-500/25 via-vault-gold/20 to-purple-500/25 border-2 border-emerald-400/80 flex items-center justify-center mb-5 shadow-[0_0_40px_rgba(16,185,129,0.35)]">
+                  <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+                </div>
+
+                <h4 className="text-2xl font-serif font-bold text-white tracking-wide">
+                  Memories Successfully Encrypted!
+                </h4>
+                <p className="text-xs text-slate-300 font-sans mt-1.5 max-w-sm">
+                  {items.filter((i) => i.state === 'saved').length} photos encrypted & placed onto <strong>{activeGlobe?.name || '3D Planet'}</strong> cards.
+                </p>
+
+                <div className="mt-5 p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2.5 text-xs text-vault-gold font-mono">
+                  <Loader2 className="w-4 h-4 animate-spin text-vault-gold" />
+                  <span>Transporting to 3D Memory World...</span>
+                </div>
+
+                {/* Immediate Enter Button */}
+                <button
+                  type="button"
+                  onClick={handleViewUniverse}
+                  className="mt-6 px-7 py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-vault-gold to-amber-500 hover:brightness-110 active:scale-95 text-black font-sans font-bold text-xs uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(245,158,11,0.4)] flex items-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 fill-current" />
+                  <span>Enter 3D World Now</span>
+                  <ArrowRight className="w-4 h-4 ml-0.5" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Modal Header */}
         <div className="p-3.5 sm:p-5 border-b border-black/10 dark:border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -387,11 +509,8 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  onClose();
-                  onViewUniverse?.();
-                }}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                onClick={handleViewUniverse}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
               >
                 <Sparkles className="w-4 h-4 fill-current" />
                 <span>View in 3D Universe</span>

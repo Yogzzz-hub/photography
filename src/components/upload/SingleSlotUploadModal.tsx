@@ -19,6 +19,7 @@ import {
   Globe,
   Palette,
   Crop,
+  Loader2,
 } from 'lucide-react';
 import { ImageCropperModal } from '../media/ImageCropperModal';
 
@@ -221,6 +222,37 @@ export function SingleSlotUploadModal({
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-xl animate-in fade-in">
       <div className="bg-[#FAF9F6] dark:bg-[#080B13] border border-stone-300 dark:border-white/15 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative text-stone-900 dark:text-white transition-all font-sans max-h-[92vh] overflow-y-auto">
+        {/* Real-Time Processing & Placement Feedback */}
+        {(isSubmitting || success) && (
+          <div className="absolute inset-0 z-30 bg-[#080B13]/95 backdrop-blur-xl rounded-3xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-150">
+            {isSubmitting ? (
+              <div className="flex flex-col items-center">
+                <div className="w-14 h-14 rounded-2xl bg-vault-gold/15 border border-vault-gold/40 flex items-center justify-center mb-4">
+                  <Loader2 className="w-7 h-7 text-vault-gold animate-spin" />
+                </div>
+                <h4 className="text-base font-serif font-bold text-white">
+                  Encrypting & Placing Memory...
+                </h4>
+                <p className="text-xs text-slate-400 mt-1 font-mono">
+                  AES-256-GCM Secure Encryption for Slot #{slotIndex + 1}
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center animate-in zoom-in-95 duration-200">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+                </div>
+                <h4 className="text-lg font-serif font-bold text-white">
+                  Card #{slotIndex + 1} Placed in 3D Orbit!
+                </h4>
+                <p className="text-xs text-emerald-300/80 mt-1 font-mono">
+                  Returning to {globe.name}...
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Close Button */}
         <button
           onClick={onClose}

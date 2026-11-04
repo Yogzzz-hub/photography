@@ -221,6 +221,16 @@ export function MemoryUniverse({
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<OrbitControlsImpl>(null);
 
+  // Auto-switch viewTier to 'dome' whenever photos are added so user lands inside the 3D world
+  const prevPhotoCountRef = useRef(photos.length);
+  useEffect(() => {
+    if (photos.length > prevPhotoCountRef.current) {
+      setViewTier('dome');
+      setFocusedSlotIndex(null);
+    }
+    prevPhotoCountRef.current = photos.length;
+  }, [photos.length]);
+
   // Synchronize fullscreen state across native browser events and keyboard (Esc / F11)
   useEffect(() => {
     const handleFullscreenChange = () => {
