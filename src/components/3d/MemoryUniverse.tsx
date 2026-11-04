@@ -1297,58 +1297,61 @@ export function MemoryUniverse({
         </div>
       )}
 
-      {/* 24-Hour Ephemeral Stories Floating Stack (Interactive on Phone & Laptop) */}
+      {/* 24-Hour Ephemeral Stories Floating Stack (Positioned with safe clearance from bottom corner badges) */}
       {/* Laptop / Desktop Hover-to-Fan Stack */}
       <div
-        className="absolute bottom-6 right-8 sm:right-10 z-30 hidden sm:flex flex-col items-end group cursor-pointer select-none"
+        className="absolute bottom-6 right-36 sm:right-44 lg:right-48 z-30 hidden sm:flex flex-col items-end group cursor-pointer select-none"
         onClick={() => {
           vaultAudio.playWhoosh();
           setIsStoryViewerOpen(true);
         }}
         title="Explore & Publish 24-Hour Family Stories"
       >
-        {/* Stack of fanned cards that expand widely on hover */}
-        <div className="relative w-36 h-24 mb-3 transition-transform duration-300 ease-out group-hover:scale-105">
-          {stories.slice(0, 3).map((item, idx) => {
-            const rotClass =
-              idx === 0
-                ? '-rotate-6 group-hover:-translate-x-8 group-hover:-translate-y-4 group-hover:-rotate-12 group-hover:scale-105'
-                : idx === 1
-                ? 'rotate-0 group-hover:-translate-y-6 group-hover:scale-110 group-hover:z-20'
-                : 'rotate-6 group-hover:translate-x-8 group-hover:-translate-y-4 group-hover:rotate-12 group-hover:scale-105';
+        {/* Stack of fanned cards that expand widely on hover (shown when stories exist) */}
+        {stories.length > 0 && (
+          <div className="relative w-36 h-24 mb-3 transition-transform duration-300 ease-out group-hover:scale-105">
+            {stories.slice(0, 3).map((item, idx) => {
+              const rotClass =
+                idx === 0
+                  ? '-rotate-6 group-hover:-translate-x-8 group-hover:-translate-y-4 group-hover:-rotate-12 group-hover:scale-105'
+                  : idx === 1
+                  ? 'rotate-0 group-hover:-translate-y-6 group-hover:scale-110 group-hover:z-20'
+                  : 'rotate-6 group-hover:translate-x-8 group-hover:-translate-y-4 group-hover:rotate-12 group-hover:scale-105';
 
-            return (
-              <div
-                key={item.id}
-                className={`absolute inset-0 rounded-2xl overflow-hidden border border-white/25 group-hover:border-vault-gold/70 shadow-2xl transition-all duration-300 ease-out origin-bottom bg-gradient-to-br from-slate-900 via-slate-800 to-black ${rotClass}`}
-                style={{ zIndex: idx }}
-              >
-                <img
-                  aria-hidden="true" src={item.imgUrl || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80'}
-                  alt=""
-                  onError={(e) => {
-                    const img = e.currentTarget;
-                    img.onerror = null;
-                    img.src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80';
-                  }}
-                  className="w-full h-full object-cover brightness-95 group-hover:brightness-110 transition-all pointer-events-none"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                <div className="absolute bottom-1.5 left-2 right-2 flex items-center justify-between text-[10px] text-white">
-                  <span className="font-semibold truncate max-w-[85px] drop-shadow-md">{item.authorName}</span>
-                  <span className="text-[9px] font-mono text-vault-gold bg-black/70 px-1 py-0.2 rounded border border-vault-gold/40">24h</span>
+              return (
+                <div
+                  key={item.id}
+                  className={`absolute inset-0 rounded-2xl overflow-hidden border border-white/25 group-hover:border-vault-gold/70 shadow-2xl transition-all duration-300 ease-out origin-bottom bg-gradient-to-br from-slate-900 via-slate-800 to-black ${rotClass}`}
+                  style={{ zIndex: idx }}
+                >
+                  <img
+                    aria-hidden="true"
+                    src={item.imgUrl || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80'}
+                    alt=""
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      img.onerror = null;
+                      img.src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80';
+                    }}
+                    className="w-full h-full object-cover brightness-95 group-hover:brightness-110 transition-all pointer-events-none"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+                  <div className="absolute bottom-1.5 left-2 right-2 flex items-center justify-between text-[10px] text-white">
+                    <span className="font-semibold truncate max-w-[85px] drop-shadow-md">{item.authorName}</span>
+                    <span className="text-[9px] font-mono text-vault-gold bg-black/70 px-1 py-0.2 rounded border border-vault-gold/40">24h</span>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Floating Pill Label */}
         <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/85 backdrop-blur-xl border border-white/15 text-xs text-white/90 shadow-xl group-hover:border-vault-gold/60 group-hover:shadow-[0_0_20px_rgba(229,192,123,0.35)] transition-all">
           <Sparkles className="w-3.5 h-3.5 text-vault-gold animate-pulse" />
           <span className="font-serif italic tracking-wide">24h Stories</span>
           <span className="text-[10px] font-mono bg-vault-gold/20 text-vault-gold font-semibold px-2 py-0.2 rounded-full border border-vault-gold/30">
-            {stories.length} Active
+            {stories.length > 0 ? `${stories.length} Active` : '+ Add'}
           </span>
         </div>
       </div>
