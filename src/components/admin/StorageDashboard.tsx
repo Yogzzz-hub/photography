@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useVaultStore } from '../../stores/useVaultStore';
 import {
   HardDrive,
@@ -10,10 +11,15 @@ import {
   Users,
   ShieldCheck,
   TrendingUp,
+  Clock,
+  Sparkles,
+  RefreshCw,
 } from 'lucide-react';
+import { vaultAudio } from '../../services/audioSynthesizer';
 
 export function StorageDashboard() {
-  const { storageMetrics, photos, trashPhotos, emptyTrash } = useVaultStore();
+  const { storageMetrics, photos, trashPhotos, emptyTrash, stories, pruneExpiredStories } = useVaultStore();
+  const [pruneNotice, setPruneNotice] = useState<string | null>(null);
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 B';
@@ -21,6 +27,13 @@ export function StorageDashboard() {
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+  };
+
+  const handleManualPrune = () => {
+    vaultAudio.playSnap();
+    const count = pruneExpiredStories();
+    setPruneNotice(`Pruned ${count} expired stories from ephemeral bucket.`);
+    setTimeout(() => setPruneNotice(null), 3500);
   };
 
   const usedPercent = Math.min(
@@ -79,6 +92,8 @@ export function StorageDashboard() {
         originalBytesFormatted: formatBytes(storageMetrics.originalBytes),
         thumbBytesFormatted: formatBytes(storageMetrics.thumbBytes),
         trashBytesFormatted: formatBytes(storageMetrics.trashBytes),
+        storyBytesFormatted: formatBytes(storageMetrics.storyBytes || 0),
+        activeStoriesCount: storageMetrics.storyCount || 0,
         usedBytesFormatted: formatBytes(storageMetrics.usedBytes),
         budgetBytesFormatted: formatBytes(storageMetrics.budgetBytes),
       },
@@ -144,7 +159,7 @@ export function StorageDashboard() {
           />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 pt-2 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-4 pt-2 text-xs">
           <div>
             <span className="text-slate-500 block">Available Headroom</span>
             <span className="font-semibold text-slate-800 dark:text-slate-200 font-mono">{formatBytes(availableBytes)}</span>
@@ -158,8 +173,140 @@ export function StorageDashboard() {
             <span className="font-semibold text-slate-800 dark:text-slate-200 font-mono">{formatBytes(storageMetrics.thumbBytes)}</span>
           </div>
           <div>
+            <span className="text-slate-500 block">24h Stories Bucket</span>
+            <span className="font-semibold text-amber-600 dark:text-vault-gold font-mono">
+              {formatBytes(storageMetrics.storyBytes || 0)} ({storageMetrics.storyCount || 0})
+            </span>
+          </div>
+          <div>
             <span className="text-slate-500 block">Estimated Cloud Cost</span>
             <span className="font-semibold text-emerald-600 dark:text-emerald-400 font-mono">$0.00 / mo (Free Tier)</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Storage Buckets Breakdown & Optimization Architecture */}
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-black/10 dark:border-white/10 space-y-4 bg-white dark:glass-panel text-slate-900 dark:text-white shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-black/10 dark:border-white/10 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-vault-gold/15 text-vault-gold border border-vault-gold/30">
+              <Database className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                Multi-Bucket Storage Architecture & Quota Optimization
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Segmented buckets isolate permanent vault assets from ephemeral media to prevent quota bloat.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={handleManualPrune}
+              className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-vault-gold border border-amber-500/30 text-xs font-semibold transition-all cursor-pointer w-full sm:w-auto"
+              title="Scan and immediately purge any expired 24-hour story from storage"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Purge Expired Stories</span>
+            </button>
+          </div>
+        </div>
+
+        {pruneNotice && (
+          <div className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-vault-gold text-xs flex items-center gap-2 animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <span>{pruneNotice}</span>
+          </div>
+        )}
+
+        {/* 4 Storage Buckets */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Bucket 1: permanent-vault */}
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-black/5 dark:border-white/10 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="font-mono text-purple-600 dark:text-purple-400 font-semibold uppercase tracking-wider text-[10px]">
+                  Bucket: permanent-vault
+                </span>
+                <span className="text-[10px] font-mono text-slate-400">AES-256</span>
+              </div>
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white">Permanent Family Memories</h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                Full-resolution master photographs and WebP thumbnails preserved indefinitely across memory planets.
+              </p>
+            </div>
+            <div className="pt-3 mt-3 border-t border-black/5 dark:border-white/10 flex items-center justify-between font-mono text-xs">
+              <span className="text-slate-500">{storageMetrics.photoCount} photos</span>
+              <span className="font-semibold text-purple-600 dark:text-purple-400">
+                {formatBytes(storageMetrics.originalBytes + storageMetrics.thumbBytes)}
+              </span>
+            </div>
+          </div>
+
+          {/* Bucket 2: ephemeral-stories */}
+          <div className="p-3.5 rounded-2xl bg-amber-500/[0.04] dark:bg-vault-gold/[0.04] border border-amber-500/25 dark:border-vault-gold/30 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="font-mono text-amber-700 dark:text-vault-gold font-semibold uppercase tracking-wider text-[10px]">
+                  Bucket: ephemeral-stories
+                </span>
+                <span className="text-[9px] font-mono text-amber-600 dark:text-vault-gold bg-amber-500/15 px-1.5 py-0.2 rounded-full border border-amber-500/30">
+                  24h TTL
+                </span>
+              </div>
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white">24-Hour Ephemeral Stories</h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                Optimized web-compressed snapshots. Automatically purged exactly after 24 hours to reclaim 100% of storage.
+              </p>
+            </div>
+            <div className="pt-3 mt-3 border-t border-amber-500/15 dark:border-vault-gold/20 flex items-center justify-between font-mono text-xs">
+              <span className="text-amber-700 dark:text-amber-300">{storageMetrics.storyCount || 0} active</span>
+              <span className="font-semibold text-amber-600 dark:text-vault-gold">
+                {formatBytes(storageMetrics.storyBytes || 0)}
+              </span>
+            </div>
+          </div>
+
+          {/* Bucket 3: trash-staging */}
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-black/5 dark:border-white/10 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="font-mono text-rose-500 font-semibold uppercase tracking-wider text-[10px]">
+                  Bucket: trash-staging
+                </span>
+                <span className="text-[10px] font-mono text-slate-400">30d Purge</span>
+              </div>
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white">Recycle Bin Staging</h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                Soft-deleted memories held for 30 days before permanent zero-trace deletion.
+              </p>
+            </div>
+            <div className="pt-3 mt-3 border-t border-black/5 dark:border-white/10 flex items-center justify-between font-mono text-xs">
+              <span className="text-slate-500">{trashPhotos.length} items</span>
+              <span className="font-semibold text-rose-500">{formatBytes(storageMetrics.trashBytes)}</span>
+            </div>
+          </div>
+
+          {/* Bucket 4: vault-backups */}
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-black/5 dark:border-white/10 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="font-mono text-cyan-600 dark:text-cyan-400 font-semibold uppercase tracking-wider text-[10px]">
+                  Bucket: vault-backups
+                </span>
+                <span className="text-[10px] font-mono text-slate-400">Cold Store</span>
+              </div>
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white">Encrypted Snapshots</h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                Cryptographically sealed full-vault disaster recovery archives with SHA-256 integrity validation.
+              </p>
+            </div>
+            <div className="pt-3 mt-3 border-t border-black/5 dark:border-white/10 flex items-center justify-between font-mono text-xs">
+              <span className="text-slate-500">Immutable</span>
+              <span className="font-semibold text-cyan-600 dark:text-cyan-400">{formatBytes(storageMetrics.backupBytes)}</span>
+            </div>
           </div>
         </div>
       </div>

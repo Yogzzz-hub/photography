@@ -15,6 +15,7 @@ import type {
   GlobeType,
   CelestialTheme,
   GlobeBgmTrackId,
+  VaultStory,
 } from '../types';
 import { vaultAudio } from '../services/audioSynthesizer';
 import {
@@ -156,6 +157,16 @@ interface VaultState {
 
   // Storage Reconciliation
   recalculateStorageMetrics: () => void;
+
+  // 24-Hour Ephemeral Stories Bucket (Auto-Purging & Storage-Optimized)
+  stories: VaultStory[];
+  addStory: (
+    story: Omit<VaultStory, 'id' | 'bucket' | 'sizeBytes' | 'createdAt' | 'expiresAt' | 'authorName' | 'authorRole'> &
+      Partial<Pick<VaultStory, 'id' | 'bucket' | 'sizeBytes' | 'createdAt' | 'expiresAt' | 'authorName' | 'authorRole'>>
+  ) => VaultStory;
+  deleteStory: (storyId: string) => void;
+  pruneExpiredStories: () => number;
+  saveStoryToVault: (storyId: string, albumId?: string) => Promise<Photo | null>;
 }
 
 // Initial Family & User Session for immediate out-of-the-box operation
@@ -277,6 +288,45 @@ const getInitialTheme = (): 'dark' | 'light' => {
     // Ignore storage errors
   }
   return 'dark';
+};
+
+const STORIES_BUCKET_KEY = 'myorb_vault_stories_bucket';
+
+const loadStoriesFromBucket = (): VaultStory[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const saved = localStorage.getItem(STORIES_BUCKET_KEY);
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) return [];
+    const now = Date.now();
+    // Auto-pruning: any story where expiresAt <= now is automatically excluded and purged
+    const valid: VaultStory[] = parsed
+      .filter((s: any) => s && s.id && typeof s.expiresAt === 'number' && s.expiresAt > now)
+      .map((s: any) => ({
+        ...s,
+        bucket: 'ephemeral-stories',
+        sizeBytes: s.sizeBytes || 180000,
+      }));
+
+    if (valid.length !== parsed.length) {
+      localStorage.setItem(STORIES_BUCKET_KEY, JSON.stringify(valid));
+    }
+    return valid;
+  } catch {
+    return [];
+  }
+};
+
+const saveStoriesToBucket = (stories: VaultStory[]) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const now = Date.now();
+    const valid = stories.filter((s) => s && s.id && typeof s.expiresAt === 'number' && s.expiresAt > now);
+    localStorage.setItem(STORIES_BUCKET_KEY, JSON.stringify(valid));
+  } catch {
+    // Ignore storage quota errors
+  }
 };
 
 export const useVaultStore = create<VaultState>((set, get) => ({
@@ -426,14 +476,17 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       status: 'completed',
     },
   ],
+  stories: loadStoriesFromBucket(),
   storageMetrics: {
     budgetBytes: 10 * 1024 * 1024 * 1024,
-    usedBytes: 22580000,
-    originalBytes: 22180000,
-    thumbBytes: 400000,
+    usedBytes: 0,
+    originalBytes: 0,
+    thumbBytes: 0,
     trashBytes: 0,
-    backupBytes: 142857140,
-    photoCount: 8,
+    backupBytes: 0,
+    storyBytes: 0,
+    storyCount: 0,
+    photoCount: 0,
     albumCount: 3,
     memberCount: 4,
     warningLevel: 'normal',
@@ -1442,14 +1495,18 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     return true;
   },
 
-  // Storage
+  // Storage Reconciliation
   recalculateStorageMetrics: () => {
     const state = get();
+    const now = Date.now();
+    // Exclude any expired stories from active ephemeral bucket usage
+    const activeStories = state.stories.filter((s) => s.expiresAt > now);
+    const storyBytes = activeStories.reduce((acc, s) => acc + (s.sizeBytes || 180000), 0);
     const originalBytes = state.photos.reduce((acc, p) => acc + p.fileSizeBytes, 0);
     const thumbBytes = state.photos.reduce((acc, p) => acc + p.thumbSizeBytes, 0);
     const trashBytes = state.trashPhotos.reduce((acc, p) => acc + p.fileSizeBytes + p.thumbSizeBytes, 0);
     const backupBytes = state.backups.reduce((acc, b) => acc + b.totalSizeBytes, 0);
-    const usedBytes = originalBytes + thumbBytes + trashBytes;
+    const usedBytes = originalBytes + thumbBytes + trashBytes + storyBytes;
 
     const ratio = usedBytes / state.currentFamily.storageBudgetBytes;
     let warningLevel: StorageMetrics['warningLevel'] = 'normal';
@@ -1465,6 +1522,8 @@ export const useVaultStore = create<VaultState>((set, get) => ({
         thumbBytes,
         trashBytes,
         backupBytes,
+        storyBytes,
+        storyCount: activeStories.length,
         photoCount: state.photos.length,
         albumCount: state.albums.length,
         memberCount: state.allMembers.length,
@@ -1472,5 +1531,165 @@ export const useVaultStore = create<VaultState>((set, get) => ({
         estimatedCostMonthly: 0, // Within 10GB free tier
       },
     });
+  },
+
+  // 24-Hour Ephemeral Stories Bucket Database Logic
+  addStory: (storyData) => {
+    const now = Date.now();
+    // Calculate storage footprint in the ephemeral-stories bucket
+    let sizeBytes = storyData.sizeBytes || 0;
+    if (!sizeBytes && storyData.imgUrl) {
+      if (storyData.imgUrl.startsWith('data:')) {
+        sizeBytes = Math.round((storyData.imgUrl.length * 3) / 4);
+      } else {
+        sizeBytes = 180000; // ~180KB web-optimized average
+      }
+    }
+
+    const newStory: VaultStory = {
+      id: storyData.id || `story_${now}_${Math.random().toString(36).slice(2, 7)}`,
+      bucket: 'ephemeral-stories',
+      authorName: storyData.authorName || get().currentMember.displayName,
+      authorRole: storyData.authorRole || get().currentMember.role,
+      authorAvatar: storyData.authorAvatar || get().currentMember.avatarUrl,
+      title: storyData.title,
+      location: storyData.location || 'Family Sanctuary',
+      date: storyData.date || 'Just now',
+      imgUrl: storyData.imgUrl,
+      quote: storyData.quote,
+      story: storyData.story,
+      sizeBytes,
+      createdAt: storyData.createdAt || now,
+      expiresAt: storyData.expiresAt || now + 24 * 3600 * 1000, // Strictly 24h lifespan
+    };
+
+    const updated = [newStory, ...get().stories.filter((s) => s.expiresAt > now)];
+    saveStoriesToBucket(updated);
+    set({ stories: updated });
+
+    get().recordAuditEvent({
+      action: 'story.created',
+      resourceType: 'story',
+      resourceId: newStory.id,
+      resourceName: newStory.title,
+      status: 'success',
+      details: {
+        bucket: 'ephemeral-stories',
+        expiresAt: new Date(newStory.expiresAt).toISOString(),
+        sizeBytes,
+      },
+    });
+
+    get().recalculateStorageMetrics();
+    return newStory;
+  },
+
+  deleteStory: (storyId: string) => {
+    const target = get().stories.find((s) => s.id === storyId);
+    const updated = get().stories.filter((s) => s.id !== storyId);
+    saveStoriesToBucket(updated);
+    set({ stories: updated });
+
+    if (target) {
+      get().recordAuditEvent({
+        action: 'story.deleted',
+        resourceType: 'story',
+        resourceId: storyId,
+        resourceName: target.title,
+        status: 'success',
+        details: {
+          bucket: 'ephemeral-stories',
+          freedBytes: target.sizeBytes,
+        },
+      });
+    }
+
+    get().recalculateStorageMetrics();
+  },
+
+  pruneExpiredStories: () => {
+    const now = Date.now();
+    const currentStories = get().stories;
+    const expired = currentStories.filter((s) => s.expiresAt <= now);
+    if (expired.length === 0) return 0;
+
+    const valid = currentStories.filter((s) => s.expiresAt > now);
+    saveStoriesToBucket(valid);
+    set({ stories: valid });
+
+    const freedBytes = expired.reduce((acc, s) => acc + (s.sizeBytes || 0), 0);
+    get().recordAuditEvent({
+      action: 'story.expired_purged',
+      resourceType: 'storage',
+      resourceId: 'ephemeral-stories',
+      resourceName: `Auto-purged ${expired.length} expired 24h stories`,
+      status: 'success',
+      details: {
+        bucket: 'ephemeral-stories',
+        purgedCount: expired.length,
+        freedBytes,
+        purgedTitles: expired.map((s) => s.title),
+      },
+    });
+
+    get().recalculateStorageMetrics();
+    return expired.length;
+  },
+
+  saveStoryToVault: async (storyId: string, albumId?: string) => {
+    const story = get().stories.find((s) => s.id === storyId);
+    if (!story) return null;
+
+    const newPhoto: Photo = {
+      id: `photo_story_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      familyId: get().currentFamily.id,
+      albumId: albumId || get().activeAlbumId || 'alb_moments',
+      globeId: get().activeGlobeId || 'globe_main',
+      uploaderId: get().currentMember.id,
+      uploaderName: story.authorName,
+      storagePath: story.imgUrl,
+      thumbStoragePath: story.imgUrl,
+      fileSizeBytes: story.sizeBytes || 220000,
+      thumbSizeBytes: 45000,
+      mimeType: 'image/jpeg',
+      width: 1200,
+      height: 1200,
+      ivHex: 'e3b0c44298fc1c149afbf4c8',
+      thumbIvHex: 'e3b0c44298fc1c149afbf4c8',
+      isFavorite: false,
+      inTrash: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      metadata: {
+        title: story.title,
+        description: story.quote || story.story,
+        story: story.story,
+        captureDate: new Date(story.createdAt).toISOString().split('T')[0],
+        location: {
+          latitude: 13.0524,
+          longitude: 80.2512,
+          label: story.location || 'Tamil Nadu',
+        },
+        photographer: story.authorName,
+        eventName: '24h Story Vault Archival',
+        tags: ['story', 'archived', 'family-memory'],
+      },
+    };
+
+    get().addPhoto(newPhoto);
+    get().recordAuditEvent({
+      action: 'story.promoted_to_vault',
+      resourceType: 'photo',
+      resourceId: newPhoto.id,
+      resourceName: newPhoto.metadata.title,
+      status: 'success',
+      details: {
+        fromBucket: 'ephemeral-stories',
+        toBucket: 'permanent-vault',
+        storyId: story.id,
+      },
+    });
+
+    return newPhoto;
   },
 }));

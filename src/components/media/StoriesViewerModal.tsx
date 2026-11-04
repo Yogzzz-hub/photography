@@ -20,27 +20,57 @@ import {
   Camera,
   Trash2,
   Crop,
+  BookmarkCheck,
+  Archive,
 } from 'lucide-react';
 import { vaultAudio } from '../../services/audioSynthesizer';
 import { useVaultStore } from '../../stores/useVaultStore';
 import { ImageCropperModal } from './ImageCropperModal';
+import type { VaultStory } from '../../types';
 
-export interface VaultStory {
-  id: string;
-  authorName: string;
-  authorRole: string;
-  authorAvatar?: string;
-  title: string;
-  location: string;
-  date: string;
-  imgUrl: string;
-  quote?: string;
-  story?: string;
-  createdAt: number; // timestamp
-  expiresAt: number; // createdAt + 24 * 3600 * 1000
-}
-
+export type { VaultStory };
 export const INITIAL_24H_STORIES: VaultStory[] = [];
+
+// Storage Bucket Optimization: compress image dataURL to web-ready lightweight bytes (max 1280px, ~150-250KB)
+const optimizeStoryImage = async (file: File): Promise<string> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 1280;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.82));
+        } else {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    };
+    reader.onerror = () => resolve('');
+    reader.readAsDataURL(file);
+  });
+};
 
 interface StoriesViewerModalProps {
   isOpen: boolean;
@@ -48,6 +78,8 @@ interface StoriesViewerModalProps {
   onExplorePhotoDetail?: (id: string) => void;
   stories: VaultStory[];
   onAddStory: (newStory: VaultStory) => void;
+  onDeleteStory?: (storyId: string) => void;
+  onSaveToVault?: (storyId: string) => Promise<any>;
 }
 
 export function StoriesViewerModal({
@@ -56,6 +88,8 @@ export function StoriesViewerModal({
   onExplorePhotoDetail,
   stories,
   onAddStory,
+  onDeleteStory,
+  onSaveToVault,
 }: StoriesViewerModalProps) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -79,11 +113,16 @@ export function StoriesViewerModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { recordAuditEvent, currentMember, photos } = useVaultStore();
 
-  const currentStory = stories[activeIdx] || stories[0];
+  const [archivedSuccessId, setArchivedSuccessId] = useState<string | null>(null);
+
+  // Storage Bucket Lifecycle: Exclude expired stories from playback
+  const now = Date.now();
+  const activeStories = stories.filter((s) => s.expiresAt > now);
+  const currentStory = activeStories[activeIdx] || activeStories[0];
 
   // Auto-advance timer (5 seconds per story)
   useEffect(() => {
-    if (!isOpen || isPaused || isAddingStory || stories.length === 0) return;
+    if (!isOpen || isPaused || isAddingStory || activeStories.length === 0) return;
 
     const intervalMs = 50;
     const step = (intervalMs / 5000) * 100;
@@ -99,20 +138,20 @@ export function StoriesViewerModal({
     }, intervalMs);
 
     return () => clearInterval(timer);
-  }, [isOpen, isPaused, activeIdx, isAddingStory, stories.length]);
+  }, [isOpen, isPaused, activeIdx, isAddingStory, activeStories.length]);
 
   if (!isOpen) return null;
 
   const handleNext = () => {
     vaultAudio.playWhoosh();
     setProgress(0);
-    setActiveIdx((prev) => (prev + 1) % stories.length);
+    setActiveIdx((prev) => (prev + 1) % activeStories.length);
   };
 
   const handlePrev = () => {
     vaultAudio.playWhoosh();
     setProgress(0);
-    setActiveIdx((prev) => (prev - 1 + stories.length) % stories.length);
+    setActiveIdx((prev) => (prev - 1 + activeStories.length) % activeStories.length);
   };
 
   const calculateHoursLeft = (expiresAt: number) => {
@@ -123,38 +162,32 @@ export function StoriesViewerModal({
     return `${hours}h ${mins}m left`;
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setPreviewFilename(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        setNewImgUrl(result);
-        vaultAudio.playSnap();
-      }
-    };
-    reader.readAsDataURL(file);
+    // Compress and downsample for lightweight ephemeral-stories bucket
+    const optimized = await optimizeStoryImage(file);
+    if (optimized) {
+      setNewImgUrl(optimized);
+      vaultAudio.playSnap();
+    }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
 
     setPreviewFilename(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        setNewImgUrl(result);
-        vaultAudio.playSnap();
-      }
-    };
-    reader.readAsDataURL(file);
+    // Compress and downsample for lightweight ephemeral-stories bucket
+    const optimized = await optimizeStoryImage(file);
+    if (optimized) {
+      setNewImgUrl(optimized);
+      vaultAudio.playSnap();
+    }
   };
 
   const handlePublishStory = (e: React.FormEvent) => {
@@ -167,28 +200,37 @@ export function StoriesViewerModal({
       'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&h=800&q=85',
     ];
 
+    const imgToUse = newImgUrl.trim() || defaultImages[Math.floor(Math.random() * defaultImages.length)];
+    const sizeBytes = imgToUse.startsWith('data:') ? Math.round((imgToUse.length * 3) / 4) : 180000;
+
     const storyObj: VaultStory = {
       id: `story_${Date.now()}`,
+      bucket: 'ephemeral-stories',
       authorName: currentMember?.displayName || 'Family Member',
       authorRole: currentMember?.role || 'Member',
       authorAvatar: currentMember?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
       title: newTitle.trim(),
       location: newLocation.trim() || 'Family Sanctuary',
       date: 'Just now',
-      imgUrl: newImgUrl.trim() || defaultImages[Math.floor(Math.random() * defaultImages.length)],
+      imgUrl: imgToUse,
       story: newStoryText.trim() || 'A precious family memory captured for 24 hours.',
+      sizeBytes,
       createdAt: Date.now(),
       expiresAt: Date.now() + 24 * 3600 * 1000,
     };
 
     onAddStory(storyObj);
     recordAuditEvent({
-      action: 'create',
-      resourceType: 'photo',
+      action: 'story.created',
+      resourceType: 'story',
       resourceId: storyObj.id,
       status: 'success',
       resourceName: storyObj.title,
-      details: { info: `Published 24-hour family story: ${storyObj.title}` },
+      details: {
+        bucket: 'ephemeral-stories',
+        sizeBytes,
+        expiresAt: new Date(storyObj.expiresAt).toISOString(),
+      },
     });
 
     vaultAudio.playChime(659.25);
@@ -199,14 +241,17 @@ export function StoriesViewerModal({
     setNewImgUrl('');
     setPreviewFilename('');
     setShowVaultPicker(false);
-    setActiveIdx(stories.length); // jump to newly added story
+    setActiveIdx(activeStories.length); // jump to newly added story
     setProgress(0);
   };
 
   const publishStoryWithImage = (imageUrl: string, customTitle?: string) => {
     const titleToUse = customTitle || newTitle.trim() || 'Precious Family Memory';
+    const sizeBytes = imageUrl.startsWith('data:') ? Math.round((imageUrl.length * 3) / 4) : 180000;
+
     const storyObj: VaultStory = {
       id: `story_${Date.now()}`,
+      bucket: 'ephemeral-stories',
       authorName: currentMember?.displayName || 'Family Member',
       authorRole: currentMember?.role || 'Member',
       authorAvatar: currentMember?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
@@ -215,18 +260,23 @@ export function StoriesViewerModal({
       date: 'Just now',
       imgUrl: imageUrl,
       story: newStoryText.trim() || 'A precious family memory captured for 24 hours.',
+      sizeBytes,
       createdAt: Date.now(),
       expiresAt: Date.now() + 24 * 3600 * 1000,
     };
 
     onAddStory(storyObj);
     recordAuditEvent({
-      action: 'create',
-      resourceType: 'photo',
+      action: 'story.created',
+      resourceType: 'story',
       resourceId: storyObj.id,
       status: 'success',
       resourceName: storyObj.title,
-      details: { info: `Published 24-hour family story with crop: ${storyObj.title}` },
+      details: {
+        bucket: 'ephemeral-stories',
+        sizeBytes,
+        expiresAt: new Date(storyObj.expiresAt).toISOString(),
+      },
     });
 
     vaultAudio.playChime(659.25);
@@ -237,8 +287,29 @@ export function StoriesViewerModal({
     setNewImgUrl('');
     setPreviewFilename('');
     setShowVaultPicker(false);
-    setActiveIdx(stories.length);
+    setActiveIdx(activeStories.length);
     setProgress(0);
+  };
+
+  const handleDeleteStory = (storyId: string) => {
+    if (window.confirm('Delete this 24-hour story immediately? This will free its storage from the ephemeral bucket.')) {
+      vaultAudio.playSnap();
+      if (onDeleteStory) {
+        onDeleteStory(storyId);
+      }
+      if (activeIdx >= activeStories.length - 1) {
+        setActiveIdx(Math.max(0, activeStories.length - 2));
+      }
+    }
+  };
+
+  const handleSaveStoryToVault = async (storyId: string) => {
+    if (onSaveToVault) {
+      vaultAudio.playChime(784);
+      await onSaveToVault(storyId);
+      setArchivedSuccessId(storyId);
+      setTimeout(() => setArchivedSuccessId(null), 3500);
+    }
   };
 
   return (
@@ -254,7 +325,7 @@ export function StoriesViewerModal({
       >
         {/* Story Body View */}
         {!isAddingStory ? (
-          stories.length === 0 ? (
+          activeStories.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center min-h-[380px] max-w-md mx-auto">
               <div className="w-16 h-16 rounded-full bg-vault-gold/15 border border-vault-gold/30 flex items-center justify-center mb-4 shadow-glow">
                 <Sparkles className="w-8 h-8 text-vault-gold animate-pulse" />
@@ -433,11 +504,25 @@ export function StoriesViewerModal({
                   </div>
                 </div>
 
-                <div className="md:hidden flex items-center gap-1.5 text-amber-700 dark:text-vault-gold text-[11px] font-mono uppercase tracking-widest font-semibold pt-1">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>24h Ephemeral Story</span>
+                <div className="md:hidden flex items-center justify-between pt-1 border-b border-black/10 dark:border-white/10 pb-2">
+                  <div className="flex items-center gap-1.5 text-amber-700 dark:text-vault-gold text-[11px] font-mono uppercase tracking-widest font-semibold">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>24h Story</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] font-mono text-amber-600 dark:text-vault-gold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/25">
+                    <Clock className="w-3 h-3" />
+                    <span>{calculateHoursLeft(currentStory.expiresAt)}</span>
+                  </div>
                 </div>
-                  <span>24h Ephemeral Story</span>
+
+                <div className="hidden md:flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-[11px] font-mono text-amber-600 dark:text-vault-gold bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/25">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Ephemeral: {calculateHoursLeft(currentStory.expiresAt)}</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    Bucket: ephemeral-stories
+                  </span>
                 </div>
 
                 <h3 className="text-xl sm:text-2xl font-serif text-slate-900 dark:text-white font-normal leading-snug">
@@ -464,15 +549,36 @@ export function StoriesViewerModal({
                     {currentStory.story}
                   </p>
                 )}
+
+                {/* Permanent Save Toast Notification */}
+                {archivedSuccessId === currentStory.id && (
+                  <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2 animate-in fade-in">
+                    <BookmarkCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <span>Saved permanently to Vault Photos & Dome lattice!</span>
+                  </div>
+                )}
               </div>
 
               {/* Bottom Actions */}
-              <div className="pt-4 mt-4 border-t border-black/10 dark:border-white/10 flex items-center justify-between gap-2">
+              <div className="pt-4 mt-4 border-t border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                  <span>{activeIdx + 1} of {stories.length}</span>
+                  <span>{activeIdx + 1} of {activeStories.length}</span>
+                  <span>•</span>
+                  <span>Auto-purges at 24h</span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center flex-wrap gap-1.5">
+                  {/* Delete Story Early */}
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteStory(currentStory.id)}
+                    className="p-2 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-all cursor-pointer"
+                    title="Delete Story Immediately (Free Ephemeral Bucket Storage)"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+
+                  {/* Crop Photo */}
                   <button
                     type="button"
                     onClick={() => {
@@ -481,11 +587,22 @@ export function StoriesViewerModal({
                       setIsCroppingActiveStory(true);
                       setIsCropperOpen(true);
                     }}
-                    className="px-3 py-1.5 rounded-full bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border border-black/10 dark:border-white/15 shadow-sm"
+                    className="px-2.5 py-1.5 rounded-full bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer border border-black/10 dark:border-white/15 shadow-sm"
                     title="Crop and re-frame this story photo"
                   >
                     <Crop className="w-3.5 h-3.5 text-vault-gold" />
-                    <span>Crop Photo</span>
+                    <span>Crop</span>
+                  </button>
+
+                  {/* Save Permanently to Vault Before 24h Expiry */}
+                  <button
+                    type="button"
+                    onClick={() => handleSaveStoryToVault(currentStory.id)}
+                    className="px-3 py-1.5 rounded-full bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-900 dark:text-vault-gold text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                    title="Promote and save permanently to Vault Photos before 24h expiration"
+                  >
+                    <Archive className="w-3.5 h-3.5 text-vault-gold" />
+                    <span>Keep in Vault</span>
                   </button>
 
                   {onExplorePhotoDetail && (
@@ -494,15 +611,16 @@ export function StoriesViewerModal({
                         onClose();
                         onExplorePhotoDetail(currentStory.id);
                       }}
-                      className="px-4 py-2 rounded-full bg-vault-gold text-black font-semibold text-xs flex items-center gap-1.5 hover:brightness-110 shadow-lg cursor-pointer"
+                      className="px-3 py-1.5 rounded-full bg-vault-gold text-black font-semibold text-xs flex items-center gap-1 hover:brightness-110 shadow-md cursor-pointer"
                     >
-                      <span>View In Vault</span>
+                      <span>Explore</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
               </div>
             </div>
+          </div>
           )
         ) : (
           /* Add 24h Story Creation Panel (Clean Header, Multiple Upload Options) */

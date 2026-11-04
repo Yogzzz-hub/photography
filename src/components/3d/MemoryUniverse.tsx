@@ -196,6 +196,11 @@ export function MemoryUniverse({
     globes,
     activeGlobeId,
     setActiveGlobeId,
+    stories,
+    addStory,
+    deleteStory,
+    pruneExpiredStories,
+    saveStoryToVault,
   } = useVaultStore();
 
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -208,12 +213,20 @@ export function MemoryUniverse({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Luxury slide-out navigation
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
-  const [stories, setStories] = useState<VaultStory[]>(INITIAL_24H_STORIES);
   const [isStoryViewerOpen, setIsStoryViewerOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [selectedSlotForUpload, setSelectedSlotForUpload] = useState<number | null>(null);
   const [isCreatePlanetOpen, setIsCreatePlanetOpen] = useState(false);
   const [viewTier, setViewTier] = useState<'galaxy' | 'dome'>('dome');
+
+  // Periodic 24-hour expiration pruner: auto-purges any story older than 24h from storage bucket
+  useEffect(() => {
+    pruneExpiredStories();
+    const interval = setInterval(() => {
+      pruneExpiredStories();
+    }, 30000); // Re-check every 30 seconds
+    return () => clearInterval(interval);
+  }, [pruneExpiredStories]);
 
   // In-Universe 3D Camera Flight Focus (Dive-Inside Memory)
   const [focusedSlotIndex, setFocusedSlotIndex] = useState<number | null>(null);
@@ -1353,7 +1366,9 @@ export function MemoryUniverse({
         isOpen={isStoryViewerOpen}
         onClose={() => setIsStoryViewerOpen(false)}
         stories={stories}
-        onAddStory={(newStory) => setStories([newStory, ...stories])}
+        onAddStory={(newStory) => addStory(newStory)}
+        onDeleteStory={(storyId) => deleteStory(storyId)}
+        onSaveToVault={(storyId) => saveStoryToVault(storyId)}
         onExplorePhotoDetail={(id) => onOpenPhotoDetail(id)}
       />
 

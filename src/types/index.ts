@@ -169,6 +169,25 @@ export interface UploadBatchItem {
   fileSizeBytes: number;
 }
 
+export type StorageBucketType = 'permanent-vault' | 'ephemeral-stories' | 'trash-staging' | 'vault-backups';
+
+export interface VaultStory {
+  id: string;
+  bucket: 'ephemeral-stories';
+  authorName: string;
+  authorRole: string;
+  authorAvatar?: string;
+  title: string;
+  location: string;
+  date: string;
+  imgUrl: string;
+  quote?: string;
+  story?: string;
+  sizeBytes: number; // Storage footprint in ephemeral-stories bucket
+  createdAt: number; // timestamp ms
+  expiresAt: number; // createdAt + 24 * 3600 * 1000
+}
+
 export interface AuditEvent {
   id: string;
   familyId: string;
@@ -176,7 +195,7 @@ export interface AuditEvent {
   actorName: string;
   actorRole: FamilyRole;
   action: string;
-  resourceType: 'photo' | 'album' | 'member' | 'invitation' | 'backup' | 'storage' | 'security' | 'globe';
+  resourceType: 'photo' | 'album' | 'member' | 'invitation' | 'backup' | 'storage' | 'security' | 'globe' | 'story';
   resourceId: string;
   resourceName?: string;
   status: 'success' | 'failure';
@@ -191,6 +210,8 @@ export interface StorageMetrics {
   thumbBytes: number;
   trashBytes: number;
   backupBytes: number;
+  storyBytes: number;
+  storyCount: number;
   photoCount: number;
   albumCount: number;
   memberCount: number;
