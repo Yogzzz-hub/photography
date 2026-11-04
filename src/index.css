@@ -4,16 +4,42 @@
 
 @layer base {
   :root {
-    --vault-bg: #07090D;
-    --vault-card: #121622;
-    --vault-border: rgba(255, 255, 255, 0.08);
+    --vault-bg: #040508;
+    --vault-card: #0c0e16;
+    --vault-surface: #121622;
+    --vault-border: rgba(255, 255, 255, 0.10);
+    --vault-text: #F8FAFC;
+    --vault-text-muted: #94A3B8;
+    --vault-gold: #E5C07B;
+    --tile-bg: #0c0e16;
+    --tile-border: rgba(255, 255, 255, 0.14);
+    --tile-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+  }
+
+  html.light {
+    --vault-bg: #F6F5F0;
+    --vault-card: #FFFFFF;
+    --vault-surface: #EDEAE2;
+    --vault-border: rgba(0, 0, 0, 0.08);
+    --vault-text: #17191E;
+    --vault-text-muted: #5C6470;
+    --vault-gold: #B48328;
+    --tile-bg: #FFFFFF;
+    --tile-border: rgba(180, 131, 40, 0.28);
+    --tile-shadow: 0 8px 24px rgba(28, 25, 23, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
   }
 
   body {
-    background-color: #040508;
-    color: #F8FAFC;
+    background-color: var(--vault-bg);
+    color: var(--vault-text);
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     letter-spacing: -0.01em;
+    transition: background-color 300ms ease, color 300ms ease;
+  }
+
+  html.light body {
+    background-color: #F6F5F0;
+    color: #17191E;
   }
 
   /* Custom subtle scrollbar */
@@ -22,14 +48,20 @@
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #07090D;
+    background: var(--vault-bg);
   }
   ::-webkit-scrollbar-thumb {
     background: #1E293B;
     border-radius: 3px;
   }
+  html.light ::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+  }
   ::-webkit-scrollbar-thumb:hover {
     background: #334155;
+  }
+  html.light ::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
   }
 }
 
@@ -58,12 +90,26 @@
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
 
+  html.light .glass-panel {
+    background: rgba(255, 255, 255, 0.90);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 12px 32px 0 rgba(28, 25, 23, 0.08);
+    color: #17191E;
+  }
+
   .glass-panel-interactive {
     background: rgba(20, 24, 38, 0.75);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  html.light .glass-panel-interactive {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 24px rgba(28, 25, 23, 0.06);
+    color: #17191E;
   }
 
   .glass-panel-interactive:hover {
@@ -73,11 +119,23 @@
     transform: translateY(-2px);
   }
 
+  html.light .glass-panel-interactive:hover {
+    background: #FFFFFF;
+    border-color: rgba(180, 131, 40, 0.4);
+    box-shadow: 0 12px 32px -4px rgba(28, 25, 23, 0.12);
+  }
+
   .glass-input {
     background: rgba(10, 13, 20, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: #F8FAFC;
     transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  html.light .glass-input {
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    color: #17191E;
   }
 
   .glass-input:focus {
@@ -116,7 +174,7 @@
   position: absolute;
   inset: 0px;
   margin: auto;
-  perspective: calc(var(--radius, 900px) * 2);
+  perspective: calc(var(--radius, 900px) * 1.85);
   perspective-origin: 50% 50%;
   overflow: hidden;
   user-select: none;
@@ -134,13 +192,19 @@
   inset: -999px;
   margin: auto;
   transform-origin: 50% 50%;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform-style: preserve-3d;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  transform-style: flat;
   transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.sphere-item-card,
+.sphere-item-card * {
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
 }
 
 .sphere-item-card {
@@ -150,25 +214,45 @@
   border-radius: var(--tile-radius, 12px);
   overflow: hidden;
   cursor: pointer;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transition: box-shadow 280ms ease, border-color 280ms ease;
+  transition: box-shadow 280ms ease, border-color 280ms ease, background-color 280ms ease;
   pointer-events: auto;
-  background-color: #0c0e16;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+  background-color: var(--tile-bg, #0c0e16);
+  border: 1px solid var(--tile-border, rgba(255, 255, 255, 0.14));
+  box-shadow: var(--tile-shadow, 0 10px 30px rgba(0, 0, 0, 0.65));
+}
+
+html.light .sphere-item-card {
+  background-color: #FFFFFF;
+  border-color: rgba(180, 131, 40, 0.28);
+  box-shadow: 0 8px 24px rgba(28, 25, 23, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .sphere-item-card:hover {
-  border-color: rgba(229, 192, 123, 0.85);
+  border-color: var(--vault-gold, rgba(229, 192, 123, 0.85));
   box-shadow: 0 0 25px rgba(229, 192, 123, 0.45), 0 16px 40px rgba(0, 0, 0, 0.95);
   z-index: 50;
+}
+
+html.light .sphere-item-card:hover {
+  border-color: #B48328;
+  box-shadow: 0 0 25px rgba(180, 131, 40, 0.35), 0 16px 32px rgba(28, 25, 23, 0.14);
 }
 
 @media (max-width: 640px) {
   .sphere-root {
     --tile-radius: 8px;
   }
+}
+
+/* Cross-browser utility to completely hide scrollbars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 /* Reduced Motion Respect */

@@ -27,6 +27,7 @@ export function BackupCenter() {
     recoveryCode,
     photos,
     albums,
+    currentFamily,
   } = useVaultStore();
 
   const [isBackingUp, setIsBackingUp] = useState(false);
@@ -51,7 +52,7 @@ export function BackupCenter() {
   const handleDownloadFullArchive = () => {
     const manifest = {
       archiveVersion: '1.0',
-      vaultName: 'Vanderbilt Family Vault',
+      vaultName: currentFamily.name || 'MyOrb Memory Vault',
       createdAt: new Date().toISOString(),
       cryptoStandard: 'AES-256-GCM / PBKDF2-SHA256',
       totalPhotos: photos.length,
@@ -82,14 +83,14 @@ export function BackupCenter() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5 sm:gap-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-black/10 dark:border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5 sm:gap-4 bg-white dark:glass-panel text-slate-900 dark:text-white shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 sm:p-3 rounded-2xl bg-purple-600/20 border border-purple-500/30 text-purple-400">
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-purple-600/15 border border-purple-500/30 text-purple-600 dark:text-purple-400">
             <Archive className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl font-bold text-white">Disaster Recovery & Vault Backups</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Disaster Recovery & Vault Backups</h2>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
               Independent encrypted archives, emergency recovery key preservation, and recycle bin management.
             </p>
           </div>
@@ -98,7 +99,7 @@ export function BackupCenter() {
         <button
           onClick={handleCreateSnapshot}
           disabled={isBackingUp}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-glow transition-all disabled:opacity-50"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-glow transition-all disabled:opacity-50 cursor-pointer"
         >
           <CheckCircle2 className="w-4 h-4" />
           <span>{isBackingUp ? 'Creating Encrypted Snapshot...' : 'Create Snapshot Now'}</span>
@@ -106,29 +107,29 @@ export function BackupCenter() {
       </div>
 
       {/* Offline Emergency Recovery Key Card */}
-      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-purple-500/30 bg-purple-950/20 space-y-3.5 sm:space-y-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-purple-300 dark:border-purple-500/30 bg-purple-50/60 dark:bg-purple-950/20 space-y-3.5 sm:space-y-4 shadow-sm text-slate-900 dark:text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <Key className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
-            <h3 className="text-xs sm:text-sm font-bold text-white">256-Bit Emergency Master Recovery Key</h3>
+            <Key className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400" />
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">256-Bit Emergency Master Recovery Key</h3>
           </div>
-          <span className="px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-mono bg-purple-600/30 text-purple-300 border border-purple-400/30">
+          <span className="px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-mono bg-purple-200 dark:bg-purple-600/30 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-400/30 font-semibold">
             AIR-GAPPED
           </span>
         </div>
 
-        <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
+        <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed max-w-2xl">
           Write down or print this 256-bit recovery code and store it in a physical fireproof vault.
           Even if Supabase or Cloudflare were lost, this key restores full cryptographic access to all family memories.
         </p>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <div className="flex-1 p-2.5 sm:p-3 rounded-xl bg-black/60 border border-white/10 font-mono text-xs text-purple-200 tracking-wider overflow-x-auto select-all">
+          <div className="flex-1 p-2.5 sm:p-3 rounded-xl bg-white dark:bg-black/60 border border-slate-300 dark:border-white/10 font-mono text-xs text-purple-900 dark:text-purple-200 tracking-wider overflow-x-auto select-all shadow-inner">
             {recoveryCode || '1A2B-3C4D-5E6F-7890-ABCD-EF01-2345-6789-9876-5432-10FE-DCBA'}
           </div>
           <button
             onClick={handleCopyRecoveryKey}
-            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-glow"
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-glow cursor-pointer"
           >
             {copiedKey ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             <span>{copiedKey ? 'Copied' : 'Copy Key'}</span>
@@ -137,28 +138,28 @@ export function BackupCenter() {
       </div>
 
       {/* Full Encrypted Export Card */}
-      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 sm:gap-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 sm:gap-4 bg-white dark:glass-panel text-slate-900 dark:text-white shadow-sm">
         <div>
-          <h3 className="text-xs sm:text-sm font-bold text-white">Download Complete Family Archive</h3>
-          <p className="text-xs text-slate-400 mt-1 max-w-xl">
+          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Download Complete Family Archive</h3>
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-xl">
             Exports all encrypted photo manifests, checksums, and album relationships into an offline portable package.
           </p>
         </div>
         <button
           onClick={handleDownloadFullArchive}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl glass-panel-interactive text-slate-200 text-xs font-semibold"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all cursor-pointer"
         >
-          <Download className="w-4 h-4 text-cyan-400" />
+          <Download className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
           <span>Export Manifest (.json)</span>
         </button>
       </div>
 
       {/* Recycle Bin / Trash Section */}
-      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 space-y-3.5 sm:space-y-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-black/10 dark:border-white/10 space-y-3.5 sm:space-y-4 bg-white dark:glass-panel text-slate-900 dark:text-white shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Trash2 className="w-4 h-4 text-rose-400" />
-            <h3 className="text-sm font-bold text-white">
+            <Trash2 className="w-4 h-4 text-rose-500 dark:text-rose-400" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Family Trash & Recycle Bin ({trashPhotos.length} items)
             </h3>
           </div>

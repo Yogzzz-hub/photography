@@ -14,16 +14,15 @@ export interface LayoutTransform {
  * 108 cards arranged in 9 latitude bands from -58° to +58°, tangent to the sphere.
  */
 export function calculateOrbLayout(index: number, _total: number, radius = 10.5): LayoutTransform {
+  // Balanced 6-ring lattice (108 slots) from -35° to +35°
+  // Guarantees generous spacing between rows with zero card collisions or polar distortion
   const rings = [
-    { lat: -58, count: 8 },
-    { lat: -44, count: 12 },
-    { lat: -30, count: 16 },
-    { lat: -15, count: 18 },
-    { lat: 0, count: 20 },
-    { lat: 15, count: 18 },
-    { lat: 30, count: 16 },
-    { lat: 44, count: 12 },
-    { lat: 58, count: 8 },
+    { lat: -35, count: 12, shift: 0.0 },
+    { lat: -21, count: 18, shift: 0.5 },
+    { lat:  -7, count: 24, shift: 0.0 },
+    { lat:   7, count: 24, shift: 0.5 },
+    { lat:  21, count: 18, shift: 0.0 },
+    { lat:  35, count: 12, shift: 0.5 },
   ];
 
   const totalSlots = 108;
@@ -44,7 +43,7 @@ export function calculateOrbLayout(index: number, _total: number, radius = 10.5)
 
   const latRad = (targetRing.lat * Math.PI) / 180;
   // Interlocking brick offset on alternating rings
-  const ringOffset = (targetRing.lat % 2 === 0 ? 0 : 0.5) * ((2 * Math.PI) / targetRing.count);
+  const ringOffset = targetRing.shift * ((2 * Math.PI) / targetRing.count);
   const lonRad = (indexInRing * 2 * Math.PI) / targetRing.count + ringOffset;
 
   const cosLat = Math.cos(latRad);

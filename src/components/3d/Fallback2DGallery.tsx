@@ -46,28 +46,28 @@ export function Fallback2DGallery({
       {/* Aspect Ratio & Orientation Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 px-1 sm:px-4">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-slate-300 font-serif">Vault Gallery</span>
-          <span className="text-xs text-slate-500">•</span>
-          <span className="text-xs text-slate-400 font-sans">{filteredPhotos.length} Memories</span>
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-300 font-serif">Vault Gallery</span>
+          <span className="text-xs text-slate-400">•</span>
+          <span className="text-xs text-slate-600 dark:text-slate-400 font-sans">{filteredPhotos.length} Memories</span>
         </div>
 
-        <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md p-1 rounded-2xl border border-white/10 text-xs font-sans max-w-full overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 bg-white/90 dark:bg-black/60 backdrop-blur-md p-1 rounded-2xl border border-black/10 dark:border-white/10 text-xs font-sans max-w-full overflow-x-auto no-scrollbar shadow-sm">
           <button
             onClick={() => setFilter('all')}
-            className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
               filter === 'all'
                 ? 'bg-vault-gold text-black font-bold shadow'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white'
             }`}
           >
             ✦ All ({photos.length})
           </button>
           <button
             onClick={() => setFilter('landscape')}
-            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               filter === 'landscape'
                 ? 'bg-vault-gold text-black font-bold shadow'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white'
             }`}
           >
             <span>▱ Landscape (16:9)</span>
@@ -75,10 +75,10 @@ export function Fallback2DGallery({
           </button>
           <button
             onClick={() => setFilter('portrait')}
-            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               filter === 'portrait'
                 ? 'bg-vault-gold text-black font-bold shadow'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white'
             }`}
           >
             <span>▯ Portrait (9:16)</span>
@@ -95,10 +95,10 @@ export function Fallback2DGallery({
             <div
               key={photo.id}
               onClick={() => onSelectPhoto(photo.id)}
-              className="group relative rounded-2xl overflow-hidden glass-panel-interactive cursor-pointer border border-white/5 hover:border-vault-gold/40 flex flex-col justify-between"
+              className="group relative rounded-2xl overflow-hidden glass-panel-interactive cursor-pointer border border-black/10 dark:border-white/5 hover:border-vault-gold/60 flex flex-col justify-between bg-white dark:bg-[#0c0e16] shadow-sm dark:shadow-none transition-all duration-200 active:scale-95 hover:-translate-y-1"
             >
               {/* Image Preview Container (Strict 16:9 Landscape vs 9:16 Portrait) */}
-              <div className={`relative ${isPortrait ? 'aspect-[9/16]' : 'aspect-[16/9]'} bg-slate-950 overflow-hidden`}>
+              <div className={`relative ${isPortrait ? 'aspect-[9/16]' : 'aspect-[16/9]'} bg-slate-100 dark:bg-slate-950 overflow-hidden`}>
                 <img
                   src={thumbUrl}
                   alt={photo.metadata.title}
@@ -132,17 +132,17 @@ export function Fallback2DGallery({
 
               {/* Photo Info Card Footer */}
               <div className="p-2 sm:p-3">
-                <h4 className="text-xs sm:text-sm font-semibold text-slate-100 truncate group-hover:text-vault-gold transition-colors font-serif">
+                <h4 className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100 truncate group-hover:text-vault-gold transition-colors font-serif">
                   {photo.metadata.title}
                 </h4>
-                <div className="flex items-center gap-1.5 sm:gap-2 mt-1 text-[11px] sm:text-xs text-slate-400 font-sans">
+                <div className="flex items-center gap-1.5 sm:gap-2 mt-1 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-sans">
                   <span className="flex items-center gap-1 flex-shrink-0">
                     <Calendar className="w-3 h-3 text-vault-gold" />
                     <span>{photo.metadata.captureDate}</span>
                   </span>
                   {photo.metadata.location?.label && (
-                    <span className="flex items-center gap-1 truncate text-slate-500">
-                      <MapPin className="w-3 h-3 text-cyan-400 flex-shrink-0" />
+                    <span className="flex items-center gap-1 truncate text-slate-500 dark:text-slate-400">
+                      <MapPin className="w-3 h-3 text-amber-600 dark:text-cyan-400 flex-shrink-0" />
                       <span className="truncate">{photo.metadata.location.label}</span>
                     </span>
                   )}

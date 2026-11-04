@@ -24,120 +24,6 @@ interface BulkUploadModalProps {
   onViewUniverse?: () => void;
 }
 
-/**
- * Generates 4 sample photo File objects with rich Tamil Nadu locations and aesthetic
- * canvas gradient patterns so users can test the upload flow instantly with 1 click.
- */
-async function generateSampleDemoFiles(): Promise<File[]> {
-  const samples = [
-    {
-      title: 'Marina Beach Golden Sunrise Chennai',
-      filename: 'Marina_Beach_Golden_Sunrise_Chennai.jpg',
-      isPortrait: false,
-      colorA: '#ff7e5f',
-      colorB: '#feb47b',
-      colorC: '#1a102f',
-      sub: 'Chennai, Tamil Nadu • 13.0499° N, 80.2824° E',
-      tag: 'Marina, Chennai, Sunrise, TamilNadu',
-    },
-    {
-      title: 'Meenakshi Amman Gopuram Twilight Madurai',
-      filename: 'Meenakshi_Amman_Gopuram_Madurai.jpg',
-      isPortrait: true,
-      colorA: '#61045f',
-      colorB: '#aa076b',
-      colorC: '#0e0b16',
-      sub: 'Madurai, Tamil Nadu • 9.9195° N, 78.1193° E',
-      tag: 'Madurai, Meenakshi, Heritage, Architecture',
-    },
-    {
-      title: 'Nilgiris Blue Mountains & Tea Terraces Ooty',
-      filename: 'Nilgiris_Blue_Mountains_Ooty.jpg',
-      isPortrait: false,
-      colorA: '#005c97',
-      colorB: '#363795',
-      colorC: '#0b132b',
-      sub: 'Ooty, Nilgiris, Tamil Nadu • 11.4102° N, 76.6950° E',
-      tag: 'Ooty, Nilgiris, Mountains, TeaGardens',
-    },
-    {
-      title: 'Mahabalipuram Shore Temple Coastal Vista',
-      filename: 'Mahabalipuram_Shore_Temple_Vista.jpg',
-      isPortrait: false,
-      colorA: '#e65c00',
-      colorB: '#f9d423',
-      colorC: '#1c1917',
-      sub: 'Mahabalipuram, Tamil Nadu • 12.6163° N, 80.1927° E',
-      tag: 'Mahabalipuram, ShoreTemple, UNESCO, Coastal',
-    },
-  ];
-
-  const files: File[] = [];
-
-  for (const s of samples) {
-    const width = s.isPortrait ? 800 : 1200;
-    const height = s.isPortrait ? 1200 : 800;
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-
-    if (ctx) {
-      // Luxury background gradient
-      const grad = ctx.createLinearGradient(0, 0, width, height);
-      grad.addColorStop(0, s.colorA);
-      grad.addColorStop(0.5, s.colorB);
-      grad.addColorStop(1, s.colorC);
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, width, height);
-
-      // Vignette effect
-      const vignette = ctx.createRadialGradient(
-        width / 2,
-        height / 2,
-        width * 0.25,
-        width / 2,
-        height / 2,
-        width * 0.7
-      );
-      vignette.addColorStop(0, 'rgba(0,0,0,0)');
-      vignette.addColorStop(1, 'rgba(0,0,0,0.65)');
-      ctx.fillStyle = vignette;
-      ctx.fillRect(0, 0, width, height);
-
-      // Golden geometric frame
-      ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(30, 30, width - 60, height - 60);
-
-      // Aesthetic typography
-      ctx.fillStyle = '#D4AF37';
-      ctx.font = '700 18px system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('✦ MYORB FAMILY VAULT • TAMIL NADU ARCHIVE', width / 2, height / 2 - 40);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '700 28px system-ui, sans-serif';
-      ctx.fillText(s.title, width / 2, height / 2 + 10);
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-      ctx.font = '500 16px system-ui, sans-serif';
-      ctx.fillText(s.sub, width / 2, height / 2 + 50);
-
-      ctx.fillStyle = 'rgba(212, 175, 55, 0.75)';
-      ctx.font = '600 14px system-ui, sans-serif';
-      ctx.fillText(`Tags: ${s.tag}`, width / 2, height / 2 + 85);
-    }
-
-    const blob = await new Promise<Blob>((res) => {
-      canvas.toBlob((b) => res(b || new Blob()), 'image/jpeg', 0.92);
-    });
-
-    files.push(new File([blob], s.filename, { type: 'image/jpeg', lastModified: Date.now() }));
-  }
-
-  return files;
-}
 
 export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadModalProps) {
   const {
@@ -154,7 +40,6 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
   const [isUploading, setIsUploading] = useState(false);
   const [overallProgress, setOverallProgress] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [isLoadingSamples, setIsLoadingSamples] = useState(false);
 
   // Common Batch Applied Metadata
   const [batchAlbumId, setBatchAlbumId] = useState(albums[0]?.id || '');
@@ -228,17 +113,6 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
     }
   };
 
-  const handleLoadSamples = async () => {
-    setIsLoadingSamples(true);
-    try {
-      const sampleFiles = await generateSampleDemoFiles();
-      handleFilesSelected(sampleFiles);
-    } catch (err) {
-      console.error('Failed to generate sample files:', err);
-    } finally {
-      setIsLoadingSamples(false);
-    }
-  };
 
   const applyBatchMetadataToAll = () => {
     setItems((prev) =>
@@ -280,6 +154,8 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
 
     const key = masterVaultKey || (await generateAlbumKey());
     let completedCount = 0;
+    const createdPhotos: Photo[] = [];
+    const activeGlobeId = useVaultStore.getState().activeGlobeId || 'globe_main';
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -336,7 +212,7 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
 
         // Construct complete Photo object
         const newPhoto: Photo = {
-          id: `pho_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          id: `pho_${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${i}`,
           familyId: currentFamily.id,
           albumId: item.targetAlbumId || albums[0]?.id || 'alb_default',
           uploaderId: currentMember.id,
@@ -358,11 +234,12 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
           decryptedFullUrl: URL.createObjectURL(processed.originalBlob),
           isFavorite: false,
           inTrash: false,
+          globeId: activeGlobeId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
 
-        addPhoto(newPhoto);
+        createdPhotos.push(newPhoto);
 
         // Step 4: Saved
         setItems((prev) =>
@@ -380,34 +257,38 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
       }
     }
 
+    if (createdPhotos.length > 0) {
+      useVaultStore.getState().bulkAddPhotosToGlobe(createdPhotos);
+    }
+
     setIsUploading(false);
     setIsSuccess(true);
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-      <div className="glass-panel w-full max-w-4xl max-h-[92vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-white/10 bg-[#0e0c14]/95">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/60 dark:bg-black/85 backdrop-blur-md animate-in fade-in">
+      <div className="w-full max-w-4xl max-h-[92vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0e0c14]/95 text-slate-900 dark:text-white">
         {/* Modal Header */}
-        <div className="p-3.5 sm:p-5 border-b border-white/10 flex items-center justify-between">
+        <div className="p-3.5 sm:p-5 border-b border-black/10 dark:border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-2.5 rounded-2xl bg-purple-600/30 text-purple-400 border border-purple-500/30 shadow-glow">
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-purple-600/15 dark:bg-purple-600/30 text-purple-700 dark:text-purple-400 border border-purple-500/30 shadow-sm">
               <UploadCloud className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-lg font-bold text-white flex items-center gap-1.5 sm:gap-2">
+              <h3 className="text-sm sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-1.5 sm:gap-2">
                 <span>Bulk Memory Uploader</span>
-                <span className="text-[9px] sm:text-[10px] font-mono tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 whitespace-nowrap">
+                <span className="text-[9px] sm:text-[10px] font-mono tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border border-emerald-500/30 whitespace-nowrap font-semibold">
                   AES-256-GCM
                 </span>
               </h3>
-              <p className="text-[10px] sm:text-xs text-slate-400 line-clamp-1 sm:line-clamp-none">
+              <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 line-clamp-1 sm:line-clamp-none">
                 End-to-end client encrypted before transmission. 100–500+ batch capacity.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+            className="p-1.5 sm:p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -423,8 +304,8 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
             onClick={() => fileInputRef.current?.click()}
             className={`border-2 border-dashed rounded-3xl p-4 sm:p-8 text-center transition-all cursor-pointer group ${
               isDragging
-                ? 'border-purple-400 bg-purple-900/30 scale-[0.99] shadow-glow'
-                : 'border-white/15 bg-white/[0.03] hover:border-purple-500/50 hover:bg-white/[0.05]'
+                ? 'border-purple-500 bg-purple-500/10 scale-[0.99] shadow-glow'
+                : 'border-slate-300 dark:border-white/15 bg-slate-50 dark:bg-white/[0.03] hover:border-purple-500/50 hover:bg-purple-50/50 dark:hover:bg-white/[0.05]'
             }`}
           >
             <input
@@ -452,14 +333,14 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
               }}
             />
 
-            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-purple-600/20 border border-purple-500/30 text-purple-400 mx-auto flex items-center justify-center mb-3 group-hover:scale-105 group-hover:bg-purple-600/30 transition-all shadow-glow">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-purple-600/15 dark:bg-purple-600/20 border border-purple-500/30 text-purple-700 dark:text-purple-400 mx-auto flex items-center justify-center mb-3 group-hover:scale-105 group-hover:bg-purple-600/25 transition-all shadow-sm">
               <ImageIcon className="w-6 h-6 sm:w-8 sm:h-8" />
             </div>
 
-            <h4 className="text-sm sm:text-base font-semibold text-white group-hover:text-purple-200 transition-colors">
+            <h4 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white group-hover:text-purple-700 dark:group-hover:text-purple-200 transition-colors">
               Click to choose photos or drag & drop anywhere
             </h4>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1 mb-4 sm:mb-5">
+            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto mt-1 mb-4 sm:mb-5">
               Supports JPEG, PNG, WebP, AVIF, HEIC. EXIF timestamps and Tamil Nadu coordinates automatically preserved.
             </p>
 
@@ -470,7 +351,7 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
                   e.stopPropagation();
                   fileInputRef.current?.click();
                 }}
-                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-glow transition-all"
+                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-md transition-all cursor-pointer"
               >
                 Choose Photos
               </button>
@@ -480,38 +361,26 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
                   e.stopPropagation();
                   folderInputRef.current?.click();
                 }}
-                className="px-4 py-2 rounded-xl glass-panel-interactive text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 border border-black/10 dark:border-white/10 text-slate-800 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               >
-                <FolderPlus className="w-3.5 h-3.5 text-cyan-400" />
+                <FolderPlus className="w-3.5 h-3.5 text-purple-600 dark:text-cyan-400" />
                 <span>Upload Folder</span>
-              </button>
-              <button
-                type="button"
-                disabled={isLoadingSamples}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleLoadSamples();
-                }}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-600/30 border border-amber-500/50 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition-all"
-              >
-                <Zap className="w-3.5 h-3.5 fill-current text-amber-400" />
-                <span>{isLoadingSamples ? 'Generating...' : 'Try Sample Photos (Instant Demo)'}</span>
               </button>
             </div>
           </div>
 
           {/* Success Celebration Banner */}
           {isSuccess && items.length > 0 && (
-            <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2">
+            <div className="p-4 rounded-2xl bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/40 text-emerald-900 dark:text-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
                     {items.filter((i) => i.state === 'saved').length} Memories Successfully Encrypted & Saved into Vault!
                   </p>
-                  <p className="text-xs text-emerald-300/80">
+                  <p className="text-xs text-emerald-800 dark:text-emerald-300/80">
                     Client-side encrypted with AES-256-GCM. Immediately available in your 3D universe.
                   </p>
                 </div>
@@ -522,7 +391,7 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
                   onClose();
                   onViewUniverse?.();
                 }}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-xs font-bold tracking-wide shadow-glow transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-vault-gold hover:bg-amber-400 text-black text-xs font-bold tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 fill-current" />
                 <span>View in 3D Universe</span>
@@ -532,15 +401,15 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
 
           {/* Batch Metadata Mass Editor */}
           {items.length > 0 && (
-            <div className="glass-panel p-4 rounded-2xl border border-white/10 space-y-3 bg-white/[0.02]">
+            <div className="p-4 rounded-2xl border border-black/10 dark:border-white/10 space-y-3 bg-slate-50 dark:bg-white/[0.02]">
               <div className="flex items-center justify-between">
-                <h5 className="text-xs font-bold uppercase tracking-wider text-purple-400">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400">
                   Batch Properties Applicator ({items.length} photos selected)
                 </h5>
                 <button
                   type="button"
                   onClick={applyBatchMetadataToAll}
-                  className="px-3 py-1 rounded-lg bg-purple-600/30 border border-purple-500/40 text-purple-300 hover:bg-purple-600/50 text-xs font-medium transition-all"
+                  className="px-3 py-1 rounded-lg bg-purple-600/15 dark:bg-purple-600/30 border border-purple-500/40 text-purple-700 dark:text-purple-300 hover:bg-purple-600/25 dark:hover:bg-purple-600/50 text-xs font-medium transition-all cursor-pointer"
                 >
                   Apply to All Photos
                 </button>
@@ -548,14 +417,14 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="text-[11px] text-slate-400 mb-1 block">Target Album</label>
+                  <label className="text-[11px] text-slate-600 dark:text-slate-400 mb-1 block">Target Album</label>
                   <select
                     value={batchAlbumId}
                     onChange={(e) => setBatchAlbumId(e.target.value)}
-                    className="glass-input w-full p-2 rounded-xl text-xs bg-slate-900 border border-white/10 text-white"
+                    className="w-full p-2 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white"
                   >
                     {albums.map((alb) => (
-                      <option key={alb.id} value={alb.id} className="bg-slate-900 text-white">
+                      <option key={alb.id} value={alb.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                         {alb.name}
                       </option>
                     ))}
@@ -563,45 +432,45 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-slate-400 mb-1 block">Shared Event Name</label>
+                  <label className="text-[11px] text-slate-600 dark:text-slate-400 mb-1 block">Shared Event Name</label>
                   <input
                     type="text"
                     placeholder="e.g. Tamil Nadu Heritage Tour"
                     value={batchEventName}
                     onChange={(e) => setBatchEventName(e.target.value)}
-                    className="glass-input w-full p-2 rounded-xl text-xs bg-slate-900/60 border border-white/10 text-white"
+                    className="w-full p-2 rounded-xl text-xs bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-slate-400 mb-1 block">Date</label>
+                  <label className="text-[11px] text-slate-600 dark:text-slate-400 mb-1 block">Date</label>
                   <input
                     type="date"
                     value={batchDate}
                     onChange={(e) => setBatchDate(e.target.value)}
-                    className="glass-input w-full p-2 rounded-xl text-xs bg-slate-900/60 border border-white/10 text-white"
+                    className="w-full p-2 rounded-xl text-xs bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-slate-400 mb-1 block">Location Label</label>
+                  <label className="text-[11px] text-slate-600 dark:text-slate-400 mb-1 block">Location Label</label>
                   <input
                     type="text"
                     placeholder="e.g. Marina Beach, Chennai"
                     value={batchLocationLabel}
                     onChange={(e) => setBatchLocationLabel(e.target.value)}
-                    className="glass-input w-full p-2 rounded-xl text-xs bg-slate-900/60 border border-white/10 text-white"
+                    className="w-full p-2 rounded-xl text-xs bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-[11px] text-slate-400 mb-1 block">Tags (comma-separated)</label>
+                  <label className="text-[11px] text-slate-600 dark:text-slate-400 mb-1 block">Tags (comma-separated)</label>
                   <input
                     type="text"
                     placeholder="chennai, marina, sunrise, heritage"
                     value={batchTags}
                     onChange={(e) => setBatchTags(e.target.value)}
-                    className="glass-input w-full p-2 rounded-xl text-xs bg-slate-900/60 border border-white/10 text-white"
+                    className="w-full p-2 rounded-xl text-xs bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400"
                   />
                 </div>
               </div>
@@ -611,18 +480,18 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
           {/* Queue List */}
           {items.length > 0 && (
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+              <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 px-1">
                 <span>Queue Items ({items.length})</span>
-                <span className="font-mono text-purple-400">{overallProgress}% Total Progress</span>
+                <span className="font-mono text-purple-700 dark:text-purple-400 font-semibold">{overallProgress}% Total Progress</span>
               </div>
 
               <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                 {items.map((item) => (
                   <div
                     key={item.id}
-                    className="glass-panel p-2.5 rounded-xl flex items-center gap-3 border border-white/5 bg-white/[0.02]"
+                    className="p-2.5 rounded-xl flex items-center gap-3 border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02]"
                   >
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-900 flex-shrink-0 border border-white/10">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-900 flex-shrink-0 border border-black/10 dark:border-white/10">
                       <img src={item.previewUrl} alt="" className="w-full h-full object-cover" />
                     </div>
 
@@ -639,17 +508,17 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
                               )
                             );
                           }}
-                          className="bg-transparent text-xs font-semibold text-white truncate focus:outline-none focus:border-b border-purple-500 w-full mr-2"
+                          className="bg-transparent text-xs font-semibold text-slate-900 dark:text-white truncate focus:outline-none focus:border-b border-purple-500 w-full mr-2"
                         />
                         <span
-                          className={`text-[10px] font-mono tracking-wider px-2 py-0.5 rounded-full ${
+                          className={`text-[10px] font-mono tracking-wider px-2 py-0.5 rounded-full font-semibold ${
                             item.state === 'saved'
-                              ? 'bg-emerald-500/20 text-emerald-400'
+                              ? 'bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400'
                               : item.state === 'failed'
-                              ? 'bg-rose-500/20 text-rose-400'
+                              ? 'bg-rose-500/15 dark:bg-rose-500/20 text-rose-800 dark:text-rose-400'
                               : item.state === 'encrypting'
-                              ? 'bg-cyan-500/20 text-cyan-400'
-                              : 'bg-purple-500/20 text-purple-400'
+                              ? 'bg-cyan-500/15 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-400'
+                              : 'bg-purple-500/15 dark:bg-purple-500/20 text-purple-800 dark:text-purple-400'
                           }`}
                         >
                           {item.state}
@@ -657,14 +526,14 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
                       </div>
 
                       {/* Progress Bar */}
-                      <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden mt-1.5">
+                      <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden mt-1.5">
                         <div
                           className={`h-full transition-all duration-300 ${
                             item.state === 'saved'
-                              ? 'bg-emerald-400'
+                              ? 'bg-emerald-500'
                               : item.state === 'failed'
                               ? 'bg-rose-500'
-                              : 'bg-purple-500'
+                              : 'bg-purple-600'
                           }`}
                           style={{ width: `${item.progress}%` }}
                         />
@@ -675,7 +544,7 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
                       type="button"
                       onClick={() => removeItem(item.id)}
                       disabled={isUploading}
-                      className="text-slate-400 hover:text-rose-400 p-1 rounded-lg"
+                      className="text-slate-400 hover:text-rose-500 p-1 rounded-lg cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -687,14 +556,14 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-black/40">
-          <div className="text-xs text-slate-400 text-center sm:text-left">
+        <div className="p-4 border-t border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-50 dark:bg-black/40">
+          <div className="text-xs text-slate-600 dark:text-slate-400 text-center sm:text-left">
             {items.length > 0 ? (
-              <span className="text-slate-300">
-                <strong className="text-white">{items.length}</strong> {items.length === 1 ? 'item' : 'items'} ready for encryption
+              <span className="text-slate-700 dark:text-slate-300">
+                <strong className="text-slate-900 dark:text-white">{items.length}</strong> {items.length === 1 ? 'item' : 'items'} ready for encryption
               </span>
             ) : (
-              'No files added — click above or try sample demo'
+              'No files selected — drag and drop or browse photos to encrypt and upload'
             )}
           </div>
 
@@ -703,7 +572,7 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
               type="button"
               onClick={onClose}
               disabled={isUploading}
-              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white"
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white cursor-pointer"
             >
               Cancel
             </button>
@@ -711,10 +580,10 @@ export function BulkUploadModal({ isOpen, onClose, onViewUniverse }: BulkUploadM
               type="button"
               onClick={startBatchUpload}
               disabled={items.length === 0 || isUploading}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-glow transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
                 items.length === 0 || isUploading
-                  ? 'bg-purple-800/40 text-purple-300/40 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white cursor-pointer'
+                  ? 'bg-purple-300/40 dark:bg-purple-800/40 text-purple-400/60 dark:text-purple-300/40 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md cursor-pointer active:scale-95'
               }`}
             >
               <Play className="w-3.5 h-3.5 fill-current" />

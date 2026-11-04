@@ -1,17 +1,20 @@
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useVaultStore } from '../../stores/useVaultStore';
 
 export function ParticleStarfield({ count = 800 }: { count?: number }) {
   const pointsRef = useRef<THREE.Points>(null);
+  const theme = useVaultStore((s) => s.theme);
+  const isLight = theme === 'light';
 
   const [positions, colors] = useMemo(() => {
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
 
-    const colorA = new THREE.Color('#A78BFA'); // Soft violet
-    const colorB = new THREE.Color('#38BDF8'); // Light cyan
-    const colorC = new THREE.Color('#FFFFFF'); // Starlight white
+    const colorA = isLight ? new THREE.Color('#D97706') : new THREE.Color('#A78BFA'); // Warm gold vs Soft violet
+    const colorB = isLight ? new THREE.Color('#B48328') : new THREE.Color('#38BDF8'); // Antique amber vs Light cyan
+    const colorC = isLight ? new THREE.Color('#64748B') : new THREE.Color('#FFFFFF'); // Slate dust vs Starlight white
 
     for (let i = 0; i < count; i++) {
       // Distributed in a sphere shell surrounding the universe
@@ -31,7 +34,7 @@ export function ParticleStarfield({ count = 800 }: { count?: number }) {
     }
 
     return [pos, col];
-  }, [count]);
+  }, [count, isLight]);
 
   useFrame((_, delta) => {
     if (pointsRef.current) {
@@ -53,12 +56,11 @@ export function ParticleStarfield({ count = 800 }: { count?: number }) {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.12}
+        size={isLight ? 0.09 : 0.12}
         vertexColors
         transparent
-        opacity={0.65}
-        blending={THREE.AdditiveBlending}
-        sizeAttenuation
+        opacity={isLight ? 0.35 : 0.65}
+        blending={isLight ? THREE.NormalBlending : THREE.AdditiveBlending}
         depthWrite={false}
       />
     </points>

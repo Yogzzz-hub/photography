@@ -117,16 +117,16 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 sm:gap-4 shadow-xl">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 sm:gap-4 shadow-xl bg-white dark:bg-[#121622]/70 text-slate-900 dark:text-white">
         <div className="flex items-center gap-3 sm:gap-3.5">
-          <div className="p-3 sm:p-3.5 rounded-2xl bg-purple-600/20 border border-purple-500/30 text-purple-400">
+          <div className="p-3 sm:p-3.5 rounded-2xl bg-purple-600/15 border border-purple-500/30 text-purple-600 dark:text-purple-400">
             <Folder className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl font-serif font-bold text-white tracking-wide">
+            <h2 className="text-lg sm:text-xl font-serif font-bold text-slate-900 dark:text-white tracking-wide">
               Family Memory Albums
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5 font-sans">
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 font-sans">
               Curate special journeys, generational roots, and group memories by story.
             </p>
           </div>
@@ -152,31 +152,31 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
             setActiveAlbumId(null);
             onSelectAlbum('all');
           }}
-          className={`glass-panel-interactive rounded-3xl overflow-hidden cursor-pointer border p-6 flex flex-col justify-between min-h-[240px] transition-all ${
+          className={`glass-panel-interactive rounded-3xl overflow-hidden cursor-pointer border p-6 flex flex-col justify-between min-h-[240px] transition-all bg-white dark:bg-[#121622]/70 text-slate-900 dark:text-white shadow-sm ${
             activeAlbumId === null
-              ? 'border-vault-gold/60 bg-vault-gold/[0.04] shadow-glow'
-              : 'border-white/5 hover:border-white/15'
+              ? 'border-vault-gold/60 bg-amber-50/50 dark:bg-vault-gold/[0.04] shadow-glow'
+              : 'border-black/10 dark:border-white/5 hover:border-black/20 dark:hover:border-white/15'
           }`}
         >
           <div className="flex items-center justify-between">
-            <div className="p-3.5 rounded-2xl bg-vault-gold/15 text-vault-gold border border-vault-gold/30">
+            <div className="p-3.5 rounded-2xl bg-amber-100 dark:bg-vault-gold/15 text-amber-900 dark:text-vault-gold border border-amber-300 dark:border-vault-gold/30">
               <Sparkles className="w-6 h-6" />
             </div>
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-white/10 text-vault-gold border border-vault-gold/20">
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-black/5 dark:bg-white/10 text-amber-900 dark:text-vault-gold border border-vault-gold/20">
               {availablePhotos.length} Memories
             </span>
           </div>
 
           <div>
-            <h3 className="text-lg font-serif font-bold text-white tracking-wide">
+            <h3 className="text-lg font-serif font-bold text-slate-900 dark:text-white tracking-wide">
               All Memories Mosaic
             </h3>
-            <p className="text-xs text-slate-400 mt-1 font-sans">
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-sans">
               Explore the entire family memory cosmos across 108 orbiting coordinates.
             </p>
           </div>
 
-          <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-400">
+          <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
             <span>
               {availablePhotos.filter((p) => p.width >= p.height).length} Landscape •{' '}
               {availablePhotos.filter((p) => p.height > p.width).length} Portrait
@@ -208,10 +208,10 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                 setActiveAlbumId(album.id);
                 onSelectAlbum(album.id);
               }}
-              className={`group relative rounded-3xl overflow-hidden glass-panel-interactive cursor-pointer border transition-all ${
+              className={`group relative rounded-3xl overflow-hidden glass-panel-interactive cursor-pointer border transition-all bg-white dark:bg-[#121622]/70 text-slate-900 dark:text-white shadow-sm ${
                 isSelected
-                  ? 'border-vault-gold/70 shadow-glow bg-vault-gold/[0.03]'
-                  : 'border-white/10 hover:border-white/20'
+                  ? 'border-vault-gold/70 shadow-glow bg-amber-50/50 dark:bg-vault-gold/[0.03]'
+                  : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20'
               }`}
             >
               <div className="relative aspect-[16/9] bg-slate-950 overflow-hidden">
@@ -231,25 +231,25 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
 
               <div className="p-5 flex flex-col justify-between min-h-[140px]">
                 <div>
-                  <h3 className="text-base font-serif font-bold text-white group-hover:text-vault-gold transition-colors">
+                  <h3 className="text-base font-serif font-bold text-slate-900 dark:text-white group-hover:text-vault-gold transition-colors">
                     {album.name}
                   </h3>
                   {album.description && (
-                    <p className="text-xs text-slate-400 mt-1 font-sans line-clamp-2">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-sans line-clamp-2">
                       {album.description}
                     </p>
                   )}
                 </div>
 
-                <div className="pt-3 mt-3 border-t border-white/5 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-400 font-sans">
+                <div className="pt-3 mt-3 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-600 dark:text-slate-400 font-sans">
                     {landscapeCount} ▱ • {portraitCount} ▯
                   </span>
 
                   {/* Group / Add Photos Button */}
                   <button
                     onClick={(e) => handleOpenGroupModal(e, album)}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/10 text-xs font-medium text-vault-gold transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-black/5 dark:bg-white/[0.08] hover:bg-black/10 dark:hover:bg-white/[0.15] border border-black/10 dark:border-white/10 text-xs font-semibold text-amber-800 dark:text-vault-gold transition-all cursor-pointer"
                     title="Add or Remove Photos from this Album"
                   >
                     <PlusCircle className="w-3.5 h-3.5" />
@@ -264,11 +264,11 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
 
       {/* CREATE ALBUM MODAL WITH DEDICATED PHOTO PICKER / GROUPING */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-          <div className="bg-[#0b0e17] border border-white/15 w-full max-w-2xl rounded-3xl p-4 sm:p-6 shadow-2xl relative max-h-[92vh] flex flex-col">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 bg-black/60 dark:bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="bg-white dark:bg-[#0b0e17] border border-black/10 dark:border-white/15 w-full max-w-2xl rounded-3xl p-4 sm:p-6 shadow-2xl relative max-h-[92vh] flex flex-col text-slate-900 dark:text-white">
             <button
               onClick={() => setIsCreateOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"
+              className="absolute top-4 right-4 text-slate-400 hover:text-black dark:hover:text-white p-1"
             >
               <X className="w-5 h-5" />
             </button>
@@ -278,8 +278,8 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                 <FolderPlus className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-serif font-bold text-white">Create Memory Album</h3>
-                <p className="text-xs text-slate-400">
+                <h3 className="text-lg font-serif font-bold text-slate-900 dark:text-white">Create Memory Album</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   Name your collection and select photos from your vault to group together.
                 </p>
               </div>
@@ -288,34 +288,34 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
             <form onSubmit={handleCreate} className="space-y-4 font-sans flex-1 flex flex-col min-h-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-300 block mb-1">Album Title *</label>
+                  <label className="text-xs text-slate-700 dark:text-slate-300 block mb-1">Album Title *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Marina Beach Dawns & Festivals"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="glass-input w-full p-2.5 rounded-xl text-xs"
+                    className="w-full p-2.5 rounded-xl text-xs bg-slate-50 dark:bg-black/40 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white focus:outline-none focus:border-vault-gold"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-300 block mb-1">Story / Description (Optional)</label>
+                  <label className="text-xs text-slate-700 dark:text-slate-300 block mb-1">Story / Description (Optional)</label>
                   <input
                     type="text"
                     placeholder="Generational archives, journeys, milestones..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="glass-input w-full p-2.5 rounded-xl text-xs"
+                    className="w-full p-2.5 rounded-xl text-xs bg-slate-50 dark:bg-black/40 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white focus:outline-none focus:border-vault-gold"
                   />
                 </div>
               </div>
 
               {/* PHOTO GROUPING SELECTOR */}
-              <div className="flex-1 flex flex-col min-h-0 pt-2 border-t border-white/10">
+              <div className="flex-1 flex flex-col min-h-0 pt-2 border-t border-black/10 dark:border-white/10">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                       <Layers className="w-4 h-4 text-vault-gold" />
                       Select Photos to Group:
                     </span>
@@ -381,12 +381,12 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                     placeholder="Search by title, location, or tag..."
                     value={searchFilter}
                     onChange={(e) => setSearchFilter(e.target.value)}
-                    className="glass-input w-full pl-8 pr-3 py-1.5 rounded-xl text-xs"
+                    className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-black/40 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white focus:outline-none focus:border-vault-gold"
                   />
                 </div>
 
                 {/* Scrollable Photo Grid */}
-                <div className="flex-1 overflow-y-auto max-h-[300px] rounded-2xl border border-white/10 p-2 bg-slate-950/60 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+                <div className="flex-1 overflow-y-auto max-h-[300px] rounded-2xl border border-black/10 dark:border-white/10 p-2 bg-slate-100 dark:bg-slate-950/60 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
                   {filteredPhotos.map((photo) => {
                     const isSelected = selectedPhotoIds.has(photo.id);
                     const isPortrait = photo.height > photo.width || photo.orientation === 'portrait';
@@ -398,11 +398,11 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                         onClick={() => toggleSelectPhoto(photo.id)}
                         className={`relative rounded-xl overflow-hidden cursor-pointer border transition-all flex flex-col group ${
                           isSelected
-                            ? 'border-vault-gold shadow-glow bg-vault-gold/10'
-                            : 'border-white/10 hover:border-white/30 bg-white/[0.02]'
+                            ? 'border-vault-gold shadow-glow bg-amber-100/50 dark:bg-vault-gold/10'
+                            : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/30 bg-white dark:bg-white/[0.02]'
                         }`}
                       >
-                        <div className={`relative ${isPortrait ? 'aspect-[9/16]' : 'aspect-[16/9]'} bg-slate-900 overflow-hidden`}>
+                        <div className={`relative ${isPortrait ? 'aspect-[9/16]' : 'aspect-[16/9]'} bg-slate-200 dark:bg-slate-900 overflow-hidden`}>
                           <img
                             src={thumbUrl}
                             alt={photo.metadata.title}
@@ -426,10 +426,10 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                         </div>
 
                         <div className="p-1.5">
-                          <p className="text-[11px] font-medium text-white truncate">
+                          <p className="text-[11px] font-medium text-slate-900 dark:text-white truncate">
                             {photo.metadata.title}
                           </p>
-                          <p className="text-[9px] text-slate-400 truncate">
+                          <p className="text-[9px] text-slate-500 dark:text-slate-400 truncate">
                             {photo.metadata.captureDate}
                           </p>
                         </div>
@@ -440,8 +440,8 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <span className="text-xs text-slate-400 text-center sm:text-left">
+              <div className="pt-3 border-t border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <span className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
                   {selectedPhotoIds.size} of {availablePhotos.length} memories grouped
                 </span>
 
@@ -449,7 +449,7 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                   <button
                     type="button"
                     onClick={() => setIsCreateOpen(false)}
-                    className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white"
+                    className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white"
                   >
                     Cancel
                   </button>
@@ -468,11 +468,11 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
 
       {/* MANAGE / GROUP PHOTOS MODAL FOR EXISTING ALBUMS */}
       {editingAlbum && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-          <div className="bg-[#0b0e17] border border-white/15 w-full max-w-2xl rounded-3xl p-4 sm:p-6 shadow-2xl relative max-h-[92vh] flex flex-col">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 bg-black/60 dark:bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="bg-white dark:bg-[#0b0e17] border border-black/10 dark:border-white/15 w-full max-w-2xl rounded-3xl p-4 sm:p-6 shadow-2xl relative max-h-[92vh] flex flex-col text-slate-900 dark:text-white">
             <button
               onClick={() => setEditingAlbum(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"
+              className="absolute top-4 right-4 text-slate-400 hover:text-black dark:hover:text-white p-1"
             >
               <X className="w-5 h-5" />
             </button>
@@ -482,16 +482,16 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                 <Layers className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-serif font-bold text-white">
+                <h3 className="text-lg font-serif font-bold text-slate-900 dark:text-white">
                   Group Memories into {editingAlbum.name}
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   Check memories to include in this album, or uncheck to remove them.
                 </p>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto max-h-[380px] rounded-2xl border border-white/10 p-2 bg-slate-950/60 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 mt-3">
+            <div className="flex-1 overflow-y-auto max-h-[380px] rounded-2xl border border-black/10 dark:border-white/10 p-2 bg-slate-100 dark:bg-slate-950/60 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 mt-3">
               {availablePhotos.map((photo) => {
                 const isSelected = editSelectedPhotoIds.has(photo.id);
                 const isPortrait = photo.height > photo.width || photo.orientation === 'portrait';
@@ -503,11 +503,11 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                     onClick={() => toggleEditSelectPhoto(photo.id)}
                     className={`relative rounded-xl overflow-hidden cursor-pointer border transition-all flex flex-col group ${
                       isSelected
-                        ? 'border-vault-gold shadow-glow bg-vault-gold/10'
-                        : 'border-white/10 hover:border-white/30 bg-white/[0.02]'
+                        ? 'border-vault-gold shadow-glow bg-amber-100/50 dark:bg-vault-gold/10'
+                        : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/30 bg-white dark:bg-white/[0.02]'
                     }`}
                   >
-                    <div className={`relative ${isPortrait ? 'aspect-[9/16]' : 'aspect-[16/9]'} bg-slate-900 overflow-hidden`}>
+                    <div className={`relative ${isPortrait ? 'aspect-[9/16]' : 'aspect-[16/9]'} bg-slate-200 dark:bg-slate-900 overflow-hidden`}>
                       <img
                         src={thumbUrl}
                         alt={photo.metadata.title}
@@ -531,10 +531,10 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                     </div>
 
                     <div className="p-1.5">
-                      <p className="text-[11px] font-medium text-white truncate">
+                      <p className="text-[11px] font-medium text-slate-900 dark:text-white truncate">
                         {photo.metadata.title}
                       </p>
-                      <p className="text-[9px] text-slate-400 truncate">
+                      <p className="text-[9px] text-slate-500 dark:text-slate-400 truncate">
                         {photo.metadata.captureDate}
                       </p>
                     </div>
@@ -543,8 +543,8 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
               })}
             </div>
 
-            <div className="pt-4 mt-3 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <span className="text-xs text-slate-400 text-center sm:text-left">
+            <div className="pt-4 mt-3 border-t border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <span className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
                 {editSelectedPhotoIds.size} memories assigned to this album
               </span>
 
@@ -552,7 +552,7 @@ export function AlbumsView({ onSelectAlbum }: { onSelectAlbum: (albumId: string)
                 <button
                   type="button"
                   onClick={() => setEditingAlbum(null)}
-                  className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white"
+                  className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white"
                 >
                   Cancel
                 </button>

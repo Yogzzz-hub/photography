@@ -16,10 +16,10 @@ describe('Vault State & CRUD Management', () => {
 
   const samplePhoto: Photo = {
     id: 'test_photo_1',
-    familyId: 'fam_orb_001',
-    albumId: 'alb_heritage',
-    uploaderId: 'mem_001',
-    uploaderName: 'Elena Vanderbilt',
+    familyId: 'fam_myorb_main',
+    albumId: 'alb_architecture',
+    uploaderId: 'mem_curator',
+    uploaderName: 'Vault Curator',
     storagePath: 'families/fam_orb_001/photos/test_1.enc',
     thumbStoragePath: 'families/fam_orb_001/photos/test_1_thumb.enc',
     fileSizeBytes: 2000000,
@@ -72,6 +72,26 @@ describe('Vault State & CRUD Management', () => {
     const photo = updated.photos.find((p) => p.id === 'test_photo_1');
     expect(photo?.metadata.title).toBe('Updated Title: Lake House Sunset');
     expect(photo?.metadata.story).toBe('A wonderful story added later.');
+  });
+
+  it('updates photo image data via updatePhoto (crop, rotate, replace)', () => {
+    const store = useVaultStore.getState();
+    store.addPhoto(samplePhoto);
+
+    store.updatePhoto('test_photo_1', {
+      decryptedFullUrl: 'data:image/jpeg;base64,cropped_image_data',
+      decryptedThumbUrl: 'data:image/jpeg;base64,cropped_thumb_data',
+      width: 1080,
+      height: 1920,
+      orientation: 'portrait',
+    });
+
+    const updated = useVaultStore.getState();
+    const photo = updated.photos.find((p) => p.id === 'test_photo_1');
+    expect(photo?.decryptedFullUrl).toBe('data:image/jpeg;base64,cropped_image_data');
+    expect(photo?.orientation).toBe('portrait');
+    expect(photo?.width).toBe(1080);
+    expect(photo?.height).toBe(1920);
   });
 
   it('moves a photo to trash (soft delete) and allows restoration', () => {

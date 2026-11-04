@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useVaultStore } from './stores/useVaultStore';
 import { Navbar, type NavigationTab } from './components/layout/Navbar';
 import { MemoryUniverse } from './components/3d/MemoryUniverse';
@@ -12,10 +12,13 @@ const StorageDashboard = lazy(() => import('./components/admin/StorageDashboard'
 const ActivityHistory = lazy(() => import('./components/admin/ActivityHistory').then((m) => ({ default: m.ActivityHistory })));
 const FamilyManagement = lazy(() => import('./components/admin/FamilyManagement').then((m) => ({ default: m.FamilyManagement })));
 const BackupCenter = lazy(() => import('./components/admin/BackupCenter').then((m) => ({ default: m.BackupCenter })));
-const BulkUploadModal = lazy(() => import('./components/upload/BulkUploadModal').then((m) => ({ default: m.BulkUploadModal })));
-const PhotoDetailModal = lazy(() => import('./components/media/PhotoDetailModal').then((m) => ({ default: m.PhotoDetailModal })));
-const SlideshowModal = lazy(() => import('./components/media/SlideshowModal').then((m) => ({ default: m.SlideshowModal })));
-const LockUnlockModal = lazy(() => import('./components/layout/LockUnlockModal').then((m) => ({ default: m.LockUnlockModal })));
+import { BulkUploadModal } from './components/upload/BulkUploadModal';
+import { PhotoDetailModal } from './components/media/PhotoDetailModal';
+import { SlideshowModal } from './components/media/SlideshowModal';
+import { VaultLoginModal } from './components/auth/VaultLoginModal';
+import { JoinVaultModal } from './components/auth/JoinVaultModal';
+import { UserProfileModal } from './components/profile/UserProfileModal';
+import { extractAndNormalizeInviteCode } from './utils/inviteUtils';
 
 const ViewLoader = () => (
   <div className="flex flex-col items-center justify-center min-h-[50vh] text-vault-gold font-sans text-xs tracking-widest uppercase animate-pulse gap-2">
@@ -28,6 +31,9 @@ export function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('universe');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isLockModalOpen, setIsLockModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [incomingInviteCode, setIncomingInviteCode] = useState<string>('');
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
   const {
     photos,
@@ -40,19 +46,74 @@ export function App() {
     unlockWithMasterKey,
   } = useVaultStore();
 
-  // Auto-initialize vault cryptographic key in demo mode for instant seamless experience
+  const hasInitializedRef = useRef(false);
+
+  // Auto-initialize vault cryptographic key on initial mount for instant seamless experience
   useEffect(() => {
-    if (!isVaultUnlocked) {
-      generateMasterVaultKey().then((key) => {
-        unlockWithMasterKey(key);
-      });
+    if (!hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      if (!isVaultUnlocked) {
+        generateMasterVaultKey().then((key) => {
+          unlockWithMasterKey(key);
+        });
+      }
     }
   }, [isVaultUnlocked, unlockWithMasterKey]);
+
+  // Intercept invitation codes from URL (?code=... / ?invite=... / /join?code=...)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const codeFromSearch = searchParams.get('code') || searchParams.get('invite');
+
+      let detectedCode = codeFromSearch;
+
+      // Also check sessionStorage in case user arrived via /join/index.html redirect
+      if (!detectedCode) {
+        const storedCode = sessionStorage.getItem('myorb_pending_invite_code');
+        if (storedCode) {
+          detectedCode = storedCode;
+          sessionStorage.removeItem('myorb_pending_invite_code');
+        }
+      }
+
+      // Also check hash fragment e.g. #/join?code=...
+      if (!detectedCode && window.location.hash.includes('code=')) {
+        const hashMatch = window.location.hash.match(/(?:code|invite)=([A-Za-z0-9_\-]+)/i);
+        if (hashMatch && hashMatch[1]) {
+          detectedCode = hashMatch[1];
+        }
+      }
+
+      // Check path /join or /join/:code
+      if (!detectedCode && window.location.pathname.includes('/join')) {
+        const pathSegments = window.location.pathname.split('/').filter(Boolean);
+        const lastSegment = pathSegments[pathSegments.length - 1];
+        if (lastSegment && lastSegment !== 'join' && !lastSegment.includes('?')) {
+          detectedCode = lastSegment;
+        }
+      }
+
+      if (detectedCode) {
+        const normalized = extractAndNormalizeInviteCode(detectedCode);
+        if (normalized) {
+          setIncomingInviteCode(normalized);
+          setIsJoinModalOpen(true);
+        }
+      } else if (window.location.pathname === '/join' || window.location.pathname.startsWith('/join/')) {
+        setIsJoinModalOpen(true);
+      }
+    } catch (e) {
+      console.warn('Could not parse incoming invitation parameters:', e);
+    }
+  }, []);
 
   const isUniverse = currentTab === 'universe';
 
   return (
-    <div className="relative min-h-screen bg-vault-void text-slate-100 flex flex-col font-sans overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#F6F5F0] text-slate-900 dark:bg-vault-void dark:text-slate-100 transition-colors duration-300 flex flex-col font-sans overflow-x-hidden">
       {/* Top Navbar (displayed on 2D and administrative views) */}
       {!isUniverse && (
         <div className="sticky top-0 z-40">
@@ -61,6 +122,7 @@ export function App() {
             onSelectTab={setCurrentTab}
             onOpenUpload={() => setIsUploadOpen(true)}
             onOpenLockModal={() => setIsLockModalOpen(true)}
+            onOpenProfile={() => setIsProfileModalOpen(true)}
           />
         </div>
       )}
@@ -74,6 +136,7 @@ export function App() {
               onNavigateTab={(tab) => setCurrentTab(tab)}
               onOpenUpload={() => setIsUploadOpen(true)}
               onOpenLockModal={() => setIsLockModalOpen(true)}
+              onOpenProfile={() => setIsProfileModalOpen(true)}
             />
           )}
 
@@ -137,7 +200,16 @@ export function App() {
         />
         <PhotoDetailModal photoId={selectedPhotoId} onClose={() => setSelectedPhotoId(null)} />
         <SlideshowModal isOpen={isSlideshowActive} onClose={() => setIsSlideshowActive(false)} />
-        <LockUnlockModal isOpen={isLockModalOpen} onClose={() => setIsLockModalOpen(false)} />
+        <VaultLoginModal isOpen={isLockModalOpen} onClose={() => setIsLockModalOpen(false)} />
+        <JoinVaultModal
+          isOpen={isJoinModalOpen}
+          onClose={() => setIsJoinModalOpen(false)}
+          inviteCode={incomingInviteCode}
+          onSuccess={() => {
+            setCurrentTab('universe');
+          }}
+        />
+        <UserProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
       </Suspense>
     </div>
   );

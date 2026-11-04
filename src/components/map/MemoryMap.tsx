@@ -98,12 +98,16 @@ export function MemoryMap({
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const pickingMarkerRef = useRef<maplibregl.Marker | null>(null);
 
-  const { photos, setSelectedPhotoId } = useVaultStore();
+  const { photos, setSelectedPhotoId, theme } = useVaultStore();
   const [selectedPinPhotos, setSelectedPinPhotos] = useState<Photo[] | null>(null);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
-  const [mapStyle, setMapStyle] = useState<'dark' | 'liberty'>('dark');
+  const [mapStyle, setMapStyle] = useState<'dark' | 'liberty'>(() => (theme === 'light' ? 'liberty' : 'dark'));
   const [pickedCoords, setPickedCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [currentZoom, setCurrentZoom] = useState<number>(11.2);
+
+  useEffect(() => {
+    setMapStyle(theme === 'light' ? 'liberty' : 'dark');
+  }, [theme]);
 
   // Filter only photos with valid GPS coordinates
   const geotaggedPhotos = useMemo(() => {
@@ -270,35 +274,35 @@ export function MemoryMap({
   const currentPreviewPhoto = selectedPinPhotos ? selectedPinPhotos[activePhotoIndex] : null;
 
   return (
-    <div className="relative w-full h-full min-h-[400px] sm:min-h-[580px] bg-[#040508] rounded-3xl overflow-hidden border border-white/10 select-none shadow-2xl">
+    <div className="relative w-full h-full min-h-[400px] sm:min-h-[580px] bg-[#F6F5F0] dark:bg-[#040508] rounded-3xl overflow-hidden border border-black/10 dark:border-white/10 select-none shadow-2xl transition-colors duration-300">
       {/* MapLibre Canvas Container */}
       <div ref={mapContainerRef} className="w-full h-full min-h-[400px] sm:min-h-[580px]" />
 
       {/* Top Map Status Badge */}
       <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <div className="glass-panel px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-medium text-slate-200">
+        <div className="glass-panel px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-medium text-slate-800 dark:text-slate-200 border border-black/10 dark:border-white/10 bg-white/90 dark:bg-black/80">
           <MapPin className="w-3.5 h-3.5 text-vault-gold" />
           <span>{geotaggedPhotos.length} Tamil Nadu Memories</span>
         </div>
 
-        <div className="glass-panel px-3 py-1.5 rounded-full text-xs text-slate-300 font-mono hidden sm:inline-flex">
+        <div className="glass-panel px-3 py-1.5 rounded-full text-xs text-slate-700 dark:text-slate-300 font-mono hidden sm:inline-flex border border-black/10 dark:border-white/10 bg-white/90 dark:bg-black/80">
           Zoom: {currentZoom}x
         </div>
 
         {isPickingLocation && (
-          <div className="glass-panel px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold text-vault-gold border border-vault-gold/40 animate-pulse">
+          <div className="glass-panel px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold text-vault-gold border border-vault-gold/40 animate-pulse bg-white/90 dark:bg-black/80">
             Click map to pin memory
           </div>
         )}
       </div>
 
       {/* Top Quick Focus Region Pills */}
-      <div className="absolute top-3 left-3 sm:top-4 sm:left-1/2 sm:-translate-x-1/2 z-10 flex items-center gap-1 sm:gap-1.5 p-1 bg-black/80 backdrop-blur-xl border border-white/10 rounded-full shadow-xl max-w-[calc(100vw-110px)] sm:max-w-none overflow-x-auto no-scrollbar">
+      <div className="absolute top-3 left-3 sm:top-4 sm:left-1/2 sm:-translate-x-1/2 z-10 flex items-center gap-1 sm:gap-1.5 p-1 bg-white/90 dark:bg-black/80 backdrop-blur-xl border border-black/10 dark:border-white/10 rounded-full shadow-xl max-w-[calc(100vw-110px)] sm:max-w-none overflow-x-auto no-scrollbar">
         {QUICK_PRESETS.map((preset) => (
           <button
             key={preset.label}
             onClick={() => handleFlyTo(preset.center, preset.zoom)}
-            className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap"
+            className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all whitespace-nowrap cursor-pointer"
           >
             {preset.label}
           </button>
@@ -311,7 +315,7 @@ export function MemoryMap({
         <button
           onClick={() => handleFlyTo(CHENNAI_CENTER, 11.2)}
           title="Reset to Chennai, Tamil Nadu"
-          className="glass-panel-interactive p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-vault-gold hover:text-white"
+          className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-vault-gold hover:text-black dark:hover:text-white bg-white/90 dark:glass-panel-interactive border border-black/10 dark:border-white/10 shadow-md cursor-pointer"
         >
           <RotateCcw className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
         </button>
@@ -320,7 +324,7 @@ export function MemoryMap({
         <button
           onClick={() => setMapStyle(mapStyle === 'dark' ? 'liberty' : 'dark')}
           title="Toggle Map Cartography Style"
-          className="glass-panel-interactive p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-purple-300 hover:text-white"
+          className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-purple-600 dark:text-purple-300 hover:text-black dark:hover:text-white bg-white/90 dark:glass-panel-interactive border border-black/10 dark:border-white/10 shadow-md cursor-pointer"
         >
           <Layers className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
         </button>
@@ -332,7 +336,7 @@ export function MemoryMap({
           onClick={() => handleZoom(1.0)}
           title="Zoom In"
           disabled={currentZoom >= 14.5}
-          className="glass-panel-interactive p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white bg-white/90 dark:glass-panel-interactive border border-black/10 dark:border-white/10 shadow-md disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         >
           <ZoomIn className="w-4 h-4" />
         </button>
@@ -340,7 +344,7 @@ export function MemoryMap({
           onClick={() => handleZoom(-1.0)}
           title="Zoom Out (Explore Tamil Nadu)"
           disabled={currentZoom <= 4.5}
-          className="glass-panel-interactive p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white bg-white/90 dark:glass-panel-interactive border border-black/10 dark:border-white/10 shadow-md disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         >
           <ZoomOut className="w-4 h-4" />
         </button>
@@ -349,12 +353,12 @@ export function MemoryMap({
       {/* Floating Selected Pin Photo Carousel Modal */}
       {currentPreviewPhoto && (
         <div className="absolute bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 w-[94vw] max-w-md animate-in fade-in slide-in-from-bottom-4">
-          <div className="bg-[#0A0D15]/95 backdrop-blur-2xl p-3.5 sm:p-4 rounded-3xl border border-vault-gold/40 shadow-2xl">
+          <div className="bg-white/95 dark:bg-[#0A0D15]/95 backdrop-blur-2xl p-3.5 sm:p-4 rounded-3xl border border-vault-gold/40 shadow-2xl text-slate-900 dark:text-white">
             <div className="flex items-start gap-3 sm:gap-4">
               {(() => {
                 const isPortrait = currentPreviewPhoto.height > currentPreviewPhoto.width || currentPreviewPhoto.orientation === 'portrait';
                 return (
-                  <div className={`rounded-2xl overflow-hidden bg-slate-900 border border-white/10 flex-shrink-0 shadow-inner ${
+                  <div className={`rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-black/10 dark:border-white/10 flex-shrink-0 shadow-inner ${
                     isPortrait ? 'w-14 h-24 aspect-[9/16]' : 'w-24 h-14 sm:w-28 sm:h-16 aspect-[16/9]'
                   }`}>
                     <img
@@ -368,18 +372,18 @@ export function MemoryMap({
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-serif italic text-base font-semibold text-white truncate">
+                  <h4 className="font-serif italic text-base font-semibold text-slate-900 dark:text-white truncate">
                     {currentPreviewPhoto.metadata.title}
                   </h4>
                   <button
                     onClick={() => setSelectedPinPhotos(null)}
-                    className="text-slate-400 hover:text-white text-xs ml-2 p-1"
+                    className="text-slate-400 hover:text-black dark:hover:text-white text-xs ml-2 p-1 cursor-pointer"
                   >
                     ✕
                   </button>
                 </div>
 
-                <p className="text-xs text-vault-gold flex items-center gap-1.5 mt-0.5 truncate">
+                <p className="text-xs text-vault-gold flex items-center gap-1.5 mt-0.5 truncate font-medium">
                   <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                   <span className="truncate">{currentPreviewPhoto.metadata.location?.label}</span>
                 </p>

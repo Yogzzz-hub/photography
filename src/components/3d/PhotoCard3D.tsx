@@ -6,6 +6,7 @@ import type { LayoutTransform } from './layouts/layoutCalculators';
 import { vaultAudio } from '../../services/audioSynthesizer';
 import { getLoadedTexture } from '../../services/textureCache';
 import { getInstantProceduralTexture } from '../../services/instantTextures';
+import { useVaultStore } from '../../stores/useVaultStore';
 
 interface PhotoCard3DProps {
   slotIndex: number;
@@ -34,6 +35,8 @@ export function PhotoCard3D({
 }: PhotoCard3DProps) {
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
+  const theme = useVaultStore((s) => s.theme);
+  const isLight = theme === 'light';
 
   // Determine orientation dynamically (true to reference myorb.live with distinct portrait & landscape cards)
   const isPortrait = photo.height > photo.width || photo.orientation === 'portrait';
@@ -68,10 +71,10 @@ export function PhotoCard3D({
   const dragOffsetRef = useRef(new THREE.Vector3(0, 0, 0));
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
 
-  // Strict 16:9 widescreen (Landscape) and 9:16 vertical widescreen (Portrait) card dimensions
-  const cardWidth = isPortrait ? 1.44 : 2.56;
-  const cardHeight = isPortrait ? 2.56 : 1.44;
-  const cornerRadius = 0.09;
+  // Dense, prominent card dimensions calibrated for luxury mosaic with zero collisions
+  const cardWidth = isPortrait ? 1.85 : 2.65;
+  const cardHeight = isPortrait ? 2.65 : 1.70;
+  const cornerRadius = 0.12;
 
   // Reusable rounded-corner squircle geometry
   const roundedGeometry = useMemo(() => {
@@ -230,6 +233,7 @@ export function PhotoCard3D({
 
     pointerStartRef.current = null;
     e.stopPropagation();
+    vaultAudio.playWhoosh();
     onSelect(photo.id);
   };
 
@@ -271,21 +275,21 @@ export function PhotoCard3D({
         )}
       </mesh>
 
-      {/* Back Photographic Card Surface (Visible from inside the 3D sphere/planetarium, unmirrored) */}
+      {/* Back Photographic Card Surface (Visible only from inside the 3D sphere/planetarium, unmirrored) */}
       <mesh position={[0, 0, -0.005]} scale={[-1, 1, 1]} geometry={roundedGeometry}>
         {activeTexture ? (
           <meshBasicMaterial
             map={activeTexture}
-            side={THREE.FrontSide}
+            side={THREE.BackSide}
             toneMapped={false}
             color={isMonochrome ? '#C0C0C0' : '#FFFFFF'}
           />
         ) : (
           <meshStandardMaterial
-            color="#141822"
+            color={isLight ? '#EDEAE2' : '#141822'}
             roughness={0.25}
             metalness={0.5}
-            side={THREE.FrontSide}
+            side={THREE.BackSide}
           />
         )}
       </mesh>
@@ -299,8 +303,8 @@ export function PhotoCard3D({
               : isSelected
               ? '#E5C07B'
               : isHovered
-              ? '#F8FAFC'
-              : 'rgba(255, 255, 255, 0.28)'
+              ? (isLight ? '#0F172A' : '#F8FAFC')
+              : (isLight ? 'rgba(0, 0, 0, 0.16)' : 'rgba(255, 255, 255, 0.28)')
           }
           linewidth={isDragging || isHovered || isSelected ? 2 : 1}
           transparent

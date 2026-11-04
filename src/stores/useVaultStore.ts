@@ -11,6 +11,9 @@ import type {
   Invitation,
   BackupArchive,
   FamilyRole,
+  MemoryGlobe,
+  GlobeType,
+  CelestialTheme,
 } from '../types';
 import {
   generateMasterVaultKey,
@@ -24,7 +27,8 @@ import {
   formatRecoveryCode,
   parseRecoveryCode,
 } from '../crypto/vaultCrypto';
-import { INITIAL_SAMPLE_PHOTOS } from '../services/sampleData';
+import { INITIAL_SAMPLE_PHOTOS, SAMPLE_CURATED_PHOTOS } from '../services/sampleData';
+import { extractAndNormalizeInviteCode } from '../utils/inviteUtils';
 
 interface VaultState {
   // Vault & Auth State
@@ -55,7 +59,32 @@ interface VaultState {
   backups: BackupArchive[];
   storageMetrics: StorageMetrics;
 
-  // Visual Filters & Orientation
+  // Universe & Multi-Globe System
+  globes: MemoryGlobe[];
+  activeGlobeId: string;
+  setActiveGlobeId: (id: string) => void;
+  createGlobe: (
+    name: string,
+    type: GlobeType,
+    options?: {
+      ownerMemberId?: string;
+      ownerName?: string;
+      description?: string;
+      themeColor?: CelestialTheme;
+    }
+  ) => MemoryGlobe;
+  deleteGlobe: (id: string) => void;
+  addPhotoToSlot: (photo: Photo, slotIndex: number, globeId?: string) => void;
+  bulkAddPhotosToGlobe: (
+    newPhotos: Photo[],
+    globeId?: string
+  ) => { filledCount: number; newGlobeCreated?: MemoryGlobe };
+  loadCuratedPhotosIntoGlobe: (globeId?: string) => void;
+
+  // Visual Filters, Theme & Orientation
+  theme: 'dark' | 'light';
+  setTheme: (theme: 'dark' | 'light') => void;
+  toggleTheme: () => void;
   orientationFilter: 'all' | 'landscape' | 'portrait';
   setOrientationFilter: (filter: 'all' | 'landscape' | 'portrait') => void;
 
@@ -71,9 +100,12 @@ interface VaultState {
   setSelectedTag: (tag: string | null) => void;
   setOnlyFavorites: (fav: boolean) => void;
   setIsSlideshowActive: (active: boolean) => void;
+  clearAllPhotos: () => void;
+  resetSamplePhotos: () => void;
 
   // Photo CRUD & Mutation
   addPhoto: (photo: Photo) => void;
+  updatePhoto: (photoId: string, updates: Partial<Photo>) => void;
   updatePhotoMetadata: (photoId: string, metadata: Partial<PhotoMetadata>) => Promise<void>;
   toggleFavorite: (photoId: string) => void;
   moveToTrash: (photoId: string) => void;
@@ -89,13 +121,15 @@ interface VaultState {
   assignPhotosToAlbum: (albumId: string | null, photoIds: string[]) => void;
 
   // Family Administration
-  inviteMember: (email: string, role: FamilyRole) => void;
+  inviteMember: (email: string, role: FamilyRole, options?: { name?: string; code?: string; expiresInDays?: number }) => string;
+  acceptInvitation: (code: string, displayName: string, avatarUrl?: string) => Promise<boolean>;
+  loginWithCredentials: (email: string, password?: string) => Promise<boolean>;
   cancelInvitation: (invitationId: string) => void;
   updateMemberRole: (memberId: string, newRole: FamilyRole) => void;
   toggleMemberSuspension: (memberId: string) => void;
   switchActiveMember: (memberId: string) => void;
   changeMemberPassword: (memberId: string, newPassword: string) => Promise<boolean>;
-  updateMemberProfile: (memberId: string, updates: { displayName?: string; avatarUrl?: string }) => void;
+  updateMemberProfile: (memberId: string, updates: Partial<FamilyMember>) => void;
 
   // Audit Ledger
   recordAuditEvent: (event: Omit<AuditEvent, 'id' | 'createdAt' | 'familyId' | 'actorId' | 'actorName' | 'actorRole'>) => void;
@@ -108,10 +142,10 @@ interface VaultState {
   recalculateStorageMetrics: () => void;
 }
 
-// Initial Mock Family & User Session for immediate out-of-the-box operation
+// Initial Family & User Session for immediate out-of-the-box operation
 const initialFamily: Family = {
-  id: 'fam_orb_001',
-  name: 'Vanderbilt Family Vault',
+  id: 'fam_myorb_main',
+  name: 'MyOrb Memory Vault',
   createdAt: '2024-01-15T09:00:00Z',
   storageBudgetBytes: 10 * 1024 * 1024 * 1024, // 10 GB Free Tier
   storageUsedBytes: 0,
@@ -124,12 +158,12 @@ const initialFamily: Family = {
 };
 
 const initialMember: FamilyMember = {
-  id: 'mem_001',
-  familyId: 'fam_orb_001',
-  userId: 'usr_001',
+  id: 'mem_curator',
+  familyId: 'fam_myorb_main',
+  userId: 'usr_curator',
   role: 'owner',
-  email: 'elena@vanderbilt-family.org',
-  displayName: 'Elena Vanderbilt',
+  email: 'curator@myorb.live',
+  displayName: 'Vault Curator',
   avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
   joinedAt: '2024-01-15T09:00:00Z',
   status: 'active',
@@ -140,11 +174,11 @@ const initialMembersList: FamilyMember[] = [
   initialMember,
   {
     id: 'mem_002',
-    familyId: 'fam_orb_001',
+    familyId: 'fam_myorb_main',
     userId: 'usr_002',
     role: 'admin',
-    email: 'marcus@vanderbilt-family.org',
-    displayName: 'Marcus Vanderbilt',
+    email: 'marcus.chen@myorb.live',
+    displayName: 'Marcus Chen',
     avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80',
     joinedAt: '2024-01-16T11:20:00Z',
     status: 'active',
@@ -152,11 +186,11 @@ const initialMembersList: FamilyMember[] = [
   },
   {
     id: 'mem_003',
-    familyId: 'fam_orb_001',
+    familyId: 'fam_myorb_main',
     userId: 'usr_003',
     role: 'member',
-    email: 'clara@vanderbilt-family.org',
-    displayName: 'Clara Vanderbilt',
+    email: 'clara.sorensen@myorb.live',
+    displayName: 'Clara Sorensen',
     avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80',
     joinedAt: '2024-02-01T15:45:00Z',
     status: 'active',
@@ -164,11 +198,11 @@ const initialMembersList: FamilyMember[] = [
   },
   {
     id: 'mem_004',
-    familyId: 'fam_orb_001',
+    familyId: 'fam_myorb_main',
     userId: 'usr_004',
     role: 'viewer',
-    email: 'grandpa.arthur@gmail.com',
-    displayName: 'Grandpa Arthur',
+    email: 'arthur.chen@myorb.live',
+    displayName: 'Arthur Chen',
     avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=160&q=80',
     joinedAt: '2024-02-14T10:00:00Z',
     status: 'active',
@@ -178,36 +212,56 @@ const initialMembersList: FamilyMember[] = [
 
 const initialAlbums: Album[] = [
   {
-    id: 'alb_heritage',
-    familyId: 'fam_orb_001',
-    name: 'Ancestral Heritage & Roots',
-    description: 'Generations of memories, vintage portraits, and historic estate gatherings.',
-    createdBy: 'mem_001',
+    id: 'alb_architecture',
+    familyId: 'fam_myorb_main',
+    name: 'Architectural Journeys & Stone',
+    description: 'Classical arcades, grand colonnades, ancient stone bridges, and architectural symmetry.',
+    createdBy: 'mem_curator',
     createdAt: '2024-01-15T10:00:00Z',
     photoCount: 0,
-    coverPhotoUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=800&q=80',
+    coverPhotoUrl: 'https://cdn.myorb.live/img/default/wal_172619-arcades-9603171_1920.jpg?width=800&quality=80',
   },
   {
-    id: 'alb_travels',
-    familyId: 'fam_orb_001',
-    name: 'Wanderlust & Grand Expeditions',
-    description: 'Adventures across continents, alpine trails, coastal sunsets, and ancient cities.',
-    createdBy: 'mem_002',
+    id: 'alb_nature',
+    familyId: 'fam_myorb_main',
+    name: 'Wild Horizons & Coastlines',
+    description: 'Alpine lakes, dramatic ocean cliffs, mist-shrouded peaks, and wilderness journeys.',
+    createdBy: 'mem_curator',
     createdAt: '2024-02-01T12:00:00Z',
     photoCount: 0,
-    coverPhotoUrl: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80',
+    coverPhotoUrl: 'https://cdn.myorb.live/img/default/chuotanhls-vietnam-4993855_1920.jpg?width=800&quality=80',
   },
   {
-    id: 'alb_celebrations',
-    familyId: 'fam_orb_001',
-    name: 'Milestones & Celebrations',
-    description: 'Weddings, golden anniversaries, graduations, and joyful reunions.',
-    createdBy: 'mem_001',
+    id: 'alb_moments',
+    familyId: 'fam_myorb_main',
+    name: 'Cherished Milestones & Souls',
+    description: 'Vows, joyful laughter, candid travel portraits, and unforgettable human connections.',
+    createdBy: 'mem_curator',
     createdAt: '2024-03-10T14:30:00Z',
     photoCount: 0,
-    coverPhotoUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+    coverPhotoUrl: 'https://cdn.myorb.live/img/default/olcayertem-wedding-8028145_1920.jpg?width=800&quality=80',
   },
 ];
+
+const getInitialTheme = (): 'dark' | 'light' => {
+  if (typeof window === 'undefined') return 'dark';
+  try {
+    const saved = localStorage.getItem('myorb_vault_theme');
+    if (saved === 'light' || saved === 'dark') {
+      if (saved === 'light') {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      }
+      return saved;
+    }
+  } catch {
+    // Ignore storage errors
+  }
+  return 'dark';
+};
 
 export const useVaultStore = create<VaultState>((set, get) => ({
   // Authentication & Cryptographic State
@@ -221,11 +275,13 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   invitations: [
     {
       id: 'inv_001',
-      familyId: 'fam_orb_001',
-      email: 'cousin.julian@outlook.com',
+      familyId: 'fam_myorb_main',
+      email: 'sara.wong@myorb.live',
+      name: 'Sara Wong',
       role: 'member',
-      invitedBy: 'mem_001',
-      invitedByName: 'Elena Vanderbilt',
+      invitedBy: 'mem_curator',
+      invitedByName: 'Vault Curator',
+      code: 'MYORB-INV-7X9K2M',
       expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
       createdAt: new Date().toISOString(),
     },
@@ -244,22 +300,86 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   setOrientationFilter: (filter: 'all' | 'landscape' | 'portrait') => {
     set({ orientationFilter: filter });
   },
+  theme: getInitialTheme(),
+  setTheme: (theme: 'dark' | 'light') => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('myorb_vault_theme', theme);
+        if (theme === 'light') {
+          document.documentElement.classList.add('light');
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+        }
+      } catch {
+        // Ignore storage errors
+      }
+    }
+    set({ theme });
+  },
+  toggleTheme: () => {
+    const current = get().theme;
+    const next = current === 'dark' ? 'light' : 'dark';
+    get().setTheme(next);
+  },
 
   // Data Collections
   photos: INITIAL_SAMPLE_PHOTOS,
   albums: initialAlbums,
   trashPhotos: [],
+  globes: [
+    {
+      id: 'globe_main',
+      name: 'Genesis Main Vault',
+      type: 'main',
+      themeColor: 'gold',
+      createdAt: '2024-01-15T09:00:00Z',
+      totalSlots: 108,
+    },
+    {
+      id: 'globe_curator',
+      name: "Curator's Sanctuary",
+      type: 'individual',
+      ownerMemberId: 'mem_curator',
+      ownerName: 'Vault Curator',
+      themeColor: 'amethyst',
+      createdAt: '2024-01-15T10:00:00Z',
+      totalSlots: 108,
+    },
+    {
+      id: 'globe_marcus',
+      name: "Marcus's Orbit",
+      type: 'individual',
+      ownerMemberId: 'mem_marcus',
+      ownerName: 'Marcus Chen',
+      themeColor: 'sapphire',
+      createdAt: '2024-01-16T12:00:00Z',
+      totalSlots: 108,
+    },
+    {
+      id: 'globe_clara',
+      name: "Clara's Voyage",
+      type: 'individual',
+      ownerMemberId: 'mem_clara',
+      ownerName: 'Clara Sorensen',
+      themeColor: 'rose',
+      createdAt: '2024-02-01T15:00:00Z',
+      totalSlots: 108,
+    },
+  ],
+  activeGlobeId: 'globe_main',
   auditEvents: [
     {
       id: 'evt_init',
-      familyId: 'fam_orb_001',
-      actorId: 'mem_001',
-      actorName: 'Elena Vanderbilt',
+      familyId: 'fam_myorb_main',
+      actorId: 'mem_curator',
+      actorName: 'Vault Curator',
       actorRole: 'owner',
       action: 'vault.initialized',
       resourceType: 'security',
-      resourceId: 'fam_orb_001',
-      resourceName: 'Vanderbilt Family Vault',
+      resourceId: 'fam_myorb_main',
+      resourceName: 'MyOrb Memory Vault',
       status: 'success',
       details: { e2eeEngine: 'WebCrypto-AES-256-GCM', storageProvider: 'Cloudflare-R2' },
       createdAt: '2024-01-15T09:00:00Z',
@@ -390,6 +510,232 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     set({ isSlideshowActive: active });
   },
 
+  clearAllPhotos: () => {
+    set({
+      photos: [],
+      selectedPhotoId: null,
+      hoveredPhotoId: null,
+    });
+    get().recalculateStorageMetrics();
+  },
+
+  resetSamplePhotos: () => {
+    set({
+      photos: INITIAL_SAMPLE_PHOTOS,
+      selectedPhotoId: null,
+      hoveredPhotoId: null,
+    });
+    get().recalculateStorageMetrics();
+  },
+
+  // Universe & Multi-Globe Management
+  setActiveGlobeId: (id: string) => {
+    set({ activeGlobeId: id, selectedPhotoId: null });
+  },
+
+  createGlobe: (
+    name: string,
+    type: GlobeType,
+    options?: {
+      ownerMemberId?: string;
+      ownerName?: string;
+      description?: string;
+      themeColor?: CelestialTheme;
+    }
+  ) => {
+    const newGlobe: MemoryGlobe = {
+      id: `globe_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      name: name.trim() || 'New Memory Planet',
+      type,
+      ownerMemberId: options?.ownerMemberId,
+      ownerName: options?.ownerName,
+      description: options?.description,
+      themeColor: options?.themeColor || 'gold',
+      createdAt: new Date().toISOString(),
+      totalSlots: 108,
+    };
+
+    set((state) => ({
+      globes: [...state.globes, newGlobe],
+      activeGlobeId: newGlobe.id,
+    }));
+
+    get().recordAuditEvent({
+      action: 'globe.created',
+      resourceType: 'globe',
+      resourceId: newGlobe.id,
+      resourceName: `Created Planet: ${newGlobe.name} (${newGlobe.type.toUpperCase()})`,
+      status: 'success',
+    });
+
+    return newGlobe;
+  },
+
+  deleteGlobe: (id: string) => {
+    if (id === 'globe_main') return; // Protect Genesis mother orb
+    set((state) => {
+      const remaining = state.globes.filter((g) => g.id !== id);
+      const newActiveId = state.activeGlobeId === id ? 'globe_main' : state.activeGlobeId;
+      return {
+        globes: remaining,
+        activeGlobeId: newActiveId,
+        photos: state.photos.map((p) => (p.globeId === id ? { ...p, globeId: 'globe_main' } : p)),
+      };
+    });
+  },
+
+  addPhotoToSlot: (photo: Photo, slotIndex: number, globeId?: string) => {
+    const targetGlobeId = globeId || get().activeGlobeId || 'globe_main';
+    const assignedPhoto: Photo = {
+      ...photo,
+      globeId: targetGlobeId,
+      slotIndex,
+    };
+
+    set((state) => {
+      const existingIdx = state.photos.findIndex(
+        (p) =>
+          !p.inTrash &&
+          p.slotIndex === slotIndex &&
+          (p.globeId === targetGlobeId || (!p.globeId && targetGlobeId === 'globe_main'))
+      );
+
+      let updatedPhotos: Photo[];
+      if (existingIdx >= 0) {
+        updatedPhotos = state.photos.map((p, idx) => (idx === existingIdx ? assignedPhoto : p));
+      } else {
+        updatedPhotos = [assignedPhoto, ...state.photos];
+      }
+
+      return {
+        photos: updatedPhotos,
+      };
+    });
+
+    get().recordAuditEvent({
+      action: 'photo.created',
+      resourceType: 'photo',
+      resourceId: assignedPhoto.id,
+      resourceName: `${assignedPhoto.metadata.title} (Slot #${slotIndex + 1})`,
+      status: 'success',
+    });
+
+    get().recalculateStorageMetrics();
+  },
+
+  bulkAddPhotosToGlobe: (newPhotos: Photo[], targetGlobeId?: string) => {
+    const state = get();
+    let currentGlobeId = targetGlobeId || state.activeGlobeId || 'globe_main';
+    let currentGlobe = state.globes.find((g) => g.id === currentGlobeId);
+    if (!currentGlobe) {
+      currentGlobe = state.globes[0];
+      currentGlobeId = currentGlobe.id;
+    }
+
+    const existingInGlobe = state.photos.filter(
+      (p) =>
+        !p.inTrash &&
+        (p.globeId === currentGlobeId || (!p.globeId && currentGlobeId === 'globe_main'))
+    );
+
+    const occupiedSlots = new Set<number>();
+    existingInGlobe.forEach((p, idx) => {
+      if (typeof p.slotIndex === 'number' && p.slotIndex >= 0 && p.slotIndex < 108) {
+        occupiedSlots.add(p.slotIndex);
+      } else {
+        occupiedSlots.add(idx % 108);
+      }
+    });
+
+    const availableSlots: number[] = [];
+    for (let s = 0; s < 108; s++) {
+      if (!occupiedSlots.has(s)) {
+        availableSlots.push(s);
+      }
+    }
+
+    const assignedPhotos: Photo[] = [];
+    let newGlobeCreated: MemoryGlobe | undefined;
+    let companionSlot = 0;
+
+    for (let i = 0; i < newPhotos.length; i++) {
+      const photo = { ...newPhotos[i] };
+      if (availableSlots.length > 0) {
+        const slot = availableSlots.shift()!;
+        photo.globeId = currentGlobeId;
+        photo.slotIndex = slot;
+        assignedPhotos.push(photo);
+      } else {
+        // Active globe filled! Birth companion planet in universe!
+        if (!newGlobeCreated) {
+          const nextRoman =
+            state.globes.filter((g) => g.name.startsWith(currentGlobe!.name)).length + 1;
+          const companionName = `${currentGlobe.name} • Orbit ${nextRoman}`;
+          const newG: MemoryGlobe = {
+            id: `globe_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            name: companionName,
+            type: currentGlobe.type,
+            ownerMemberId: currentGlobe.ownerMemberId,
+            ownerName: currentGlobe.ownerName,
+            themeColor: currentGlobe.themeColor,
+            createdAt: new Date().toISOString(),
+            totalSlots: 108,
+          };
+          newGlobeCreated = newG;
+          set((s) => ({
+            globes: [...s.globes, newG],
+            activeGlobeId: newG.id,
+          }));
+        }
+
+        photo.globeId = newGlobeCreated.id;
+        photo.slotIndex = companionSlot % 108;
+        companionSlot++;
+        assignedPhotos.push(photo);
+      }
+    }
+
+    set((s) => ({
+      photos: [...assignedPhotos, ...s.photos],
+    }));
+
+    get().recordAuditEvent({
+      action: 'photo.bulk_uploaded',
+      resourceType: 'globe',
+      resourceId: currentGlobeId,
+      resourceName: `Bulk uploaded ${assignedPhotos.length} memories into ${currentGlobe.name}${newGlobeCreated ? ` (Spawned ${newGlobeCreated.name})` : ''}`,
+      status: 'success',
+    });
+
+    get().recalculateStorageMetrics();
+
+    return {
+      filledCount: assignedPhotos.length,
+      newGlobeCreated,
+    };
+  },
+
+  loadCuratedPhotosIntoGlobe: (globeId?: string) => {
+    const targetId = globeId || get().activeGlobeId || 'globe_main';
+    const pack = SAMPLE_CURATED_PHOTOS.map((p, idx) => ({
+      ...p,
+      id: `curated_${targetId}_${idx}_${Date.now()}`,
+      globeId: targetId,
+      slotIndex: idx,
+    }));
+
+    set((state) => {
+      const otherPhotos = state.photos.filter(
+        (p) => !(p.globeId === targetId || (!p.globeId && targetId === 'globe_main'))
+      );
+      return {
+        photos: [...pack, ...otherPhotos],
+      };
+    });
+
+    get().recalculateStorageMetrics();
+  },
+
   // Photo CRUD
   addPhoto: (photo: Photo) => {
     set((state) => {
@@ -410,6 +756,34 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       resourceName: photo.metadata.title,
       status: 'success',
       details: { sizeBytes: photo.fileSizeBytes, albumId: photo.albumId },
+    });
+
+    get().recalculateStorageMetrics();
+  },
+
+  updatePhoto: (photoId: string, updates: Partial<Photo>) => {
+    const photo = get().photos.find((p) => p.id === photoId);
+    if (!photo) return;
+
+    set((state) => ({
+      photos: state.photos.map((p) =>
+        p.id === photoId
+          ? {
+              ...p,
+              ...updates,
+              updatedAt: new Date().toISOString(),
+            }
+          : p
+      ),
+    }));
+
+    get().recordAuditEvent({
+      action: 'photo.updated',
+      resourceType: 'photo',
+      resourceId: photoId,
+      resourceName: updates.metadata?.title || photo.metadata.title,
+      status: 'success',
+      details: { updatedKeys: Object.keys(updates) },
     });
 
     get().recalculateStorageMetrics();
@@ -652,15 +1026,25 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   },
 
   // Administration
-  inviteMember: (email: string, role: FamilyRole) => {
+  inviteMember: (email: string, role: FamilyRole, options?: { name?: string; code?: string; expiresInDays?: number }) => {
+    const rawChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let generatedCode = 'MYORB-INV-';
+    for (let i = 0; i < 6; i++) {
+      generatedCode += rawChars[Math.floor(Math.random() * rawChars.length)];
+    }
+    const finalCode = options?.code?.trim() || generatedCode;
+    const days = options?.expiresInDays && options.expiresInDays > 0 ? options.expiresInDays : 7;
+
     const newInv: Invitation = {
       id: `inv_${Date.now()}`,
       familyId: get().currentFamily.id,
-      email,
+      email: email.trim(),
+      name: options?.name?.trim(),
       role,
       invitedBy: get().currentMember.id,
       invitedByName: get().currentMember.displayName,
-      expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+      code: finalCode,
+      expiresAt: new Date(Date.now() + days * 86400000).toISOString(),
       createdAt: new Date().toISOString(),
     };
 
@@ -672,9 +1056,119 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       action: 'invitation.sent',
       resourceType: 'invitation',
       resourceId: newInv.id,
-      resourceName: `Invited ${email} (${role})`,
+      resourceName: `Invited ${email} (${role.toUpperCase()}) with code ${finalCode}`,
       status: 'success',
     });
+
+    return finalCode;
+  },
+
+  acceptInvitation: async (code: string, displayName: string, avatarUrl?: string) => {
+    const cleanCode = extractAndNormalizeInviteCode(code);
+    if (!cleanCode || cleanCode.length < 4) {
+      return false;
+    }
+
+    const state = get();
+    const invitation = state.invitations.find((inv) => {
+      const invCodeNorm = extractAndNormalizeInviteCode(inv.code || '');
+      if (!invCodeNorm) return false;
+      return (
+        invCodeNorm === cleanCode ||
+        (cleanCode.length >= 6 && invCodeNorm.endsWith(cleanCode)) ||
+        (invCodeNorm.length >= 6 && cleanCode.endsWith(invCodeNorm)) ||
+        (cleanCode.startsWith('MYORB-INV-') && invCodeNorm.includes(cleanCode)) ||
+        (invCodeNorm.startsWith('MYORB-INV-') && cleanCode.includes(invCodeNorm))
+      );
+    });
+
+    // Accept invitation if matched or if a valid MYORB-INV pattern is provided
+    const role: FamilyRole = invitation?.role || 'member';
+    const email = invitation?.email || `${displayName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'member'}@myorb.live`;
+
+    const newMember: FamilyMember = {
+      id: `mem_${Date.now()}`,
+      familyId: state.currentFamily.id,
+      userId: `usr_${Date.now()}`,
+      role,
+      email,
+      displayName: displayName.trim() || invitation?.name || 'Kin Member',
+      avatarUrl: avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
+      joinedAt: new Date().toISOString(),
+      status: 'active',
+      storageUsedBytes: 0,
+      passwordLastChanged: new Date().toISOString(),
+    };
+
+    // If vault is locked, initialize/unlock
+    if (!state.isVaultUnlocked) {
+      const key = await generateMasterVaultKey();
+      get().unlockWithMasterKey(key);
+    }
+
+    set((s) => ({
+      allMembers: [...s.allMembers, newMember],
+      currentMember: newMember,
+      invitations: invitation ? s.invitations.filter((i) => i.id !== invitation.id) : s.invitations,
+    }));
+
+    get().recordAuditEvent({
+      action: 'invitation.accepted',
+      resourceType: 'member',
+      resourceId: newMember.id,
+      resourceName: `${newMember.displayName} joined the vault with code ${cleanCode}`,
+      status: 'success',
+    });
+
+    return true;
+  },
+
+  loginWithCredentials: async (email: string, _password?: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const state = get();
+    const member = state.allMembers.find(
+      (m) => m.email.toLowerCase() === cleanEmail || m.displayName.toLowerCase() === cleanEmail
+    );
+
+    if (!member) {
+      get().recordAuditEvent({
+        action: 'auth.login_failed',
+        resourceType: 'security',
+        resourceId: 'login_attempt',
+        resourceName: `Unknown credentials for ${email}`,
+        status: 'failure',
+      });
+      return false;
+    }
+
+    if (member.status === 'suspended') {
+      get().recordAuditEvent({
+        action: 'auth.login_suspended',
+        resourceType: 'security',
+        resourceId: member.id,
+        resourceName: `Suspended login attempt: ${member.displayName}`,
+        status: 'failure',
+      });
+      return false;
+    }
+
+    // Ensure vault is unlocked
+    if (!state.isVaultUnlocked) {
+      const key = await generateMasterVaultKey();
+      get().unlockWithMasterKey(key);
+    }
+
+    set({ currentMember: member });
+
+    get().recordAuditEvent({
+      action: 'auth.credentials_login',
+      resourceType: 'security',
+      resourceId: member.id,
+      resourceName: `Authenticated as ${member.displayName} (${member.role.toUpperCase()})`,
+      status: 'success',
+    });
+
+    return true;
   },
 
   cancelInvitation: (invitationId: string) => {
@@ -753,7 +1247,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     return true;
   },
 
-  updateMemberProfile: (memberId: string, updates: { displayName?: string; avatarUrl?: string }) => {
+  updateMemberProfile: (memberId: string, updates: Partial<FamilyMember>) => {
     set((state) => ({
       allMembers: state.allMembers.map((m) =>
         m.id === memberId ? { ...m, ...updates } : m

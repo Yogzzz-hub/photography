@@ -28,15 +28,20 @@ export interface FamilyMember {
   status: 'active' | 'suspended';
   storageUsedBytes: number;
   passwordLastChanged?: string;
+  bio?: string;
+  phone?: string;
+  location?: string;
 }
 
 export interface Invitation {
   id: string;
   familyId: string;
   email: string;
+  name?: string;
   role: FamilyRole;
   invitedBy: string;
   invitedByName: string;
+  code?: string;
   expiresAt: string;
   acceptedAt?: string;
   createdAt: string;
@@ -83,6 +88,8 @@ export interface Photo {
   id: string;
   familyId: string;
   albumId: string;
+  globeId?: string; // Celestial globe / planet this photo belongs to
+  slotIndex?: number; // Explicit slot (0-107) in the globe lattice
   uploaderId: string;
   uploaderName: string;
   storagePath: string;
@@ -107,6 +114,21 @@ export interface Photo {
   trashedAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export type GlobeType = 'main' | 'individual' | 'group' | 'milestone';
+export type CelestialTheme = 'gold' | 'amethyst' | 'sapphire' | 'emerald' | 'rose' | 'amber';
+
+export interface MemoryGlobe {
+  id: string;
+  name: string;
+  type: GlobeType;
+  ownerMemberId?: string;
+  ownerName?: string;
+  description?: string;
+  themeColor: CelestialTheme;
+  createdAt: string;
+  totalSlots: number; // default 108 slots
 }
 
 export type ViewMode3D = 
@@ -149,7 +171,7 @@ export interface AuditEvent {
   actorName: string;
   actorRole: FamilyRole;
   action: string;
-  resourceType: 'photo' | 'album' | 'member' | 'invitation' | 'backup' | 'storage' | 'security';
+  resourceType: 'photo' | 'album' | 'member' | 'invitation' | 'backup' | 'storage' | 'security' | 'globe';
   resourceId: string;
   resourceName?: string;
   status: 'success' | 'failure';
