@@ -29,9 +29,13 @@ export function extractAndNormalizeInviteCode(input: string): string {
         str = paramCode;
       }
     } catch {
-      const match = str.match(/(?:code|invite)=([A-Za-z0-9_\-]+)/i);
+      const match = str.match(/(?:code|invite)=([A-Za-z0-9_\-\s%]+)/i);
       if (match && match[1]) {
-        str = match[1];
+        try {
+          str = decodeURIComponent(match[1]);
+        } catch {
+          str = match[1];
+        }
       }
     }
   }
@@ -45,8 +49,8 @@ export function extractAndNormalizeInviteCode(input: string): string {
     }
   }
 
-  // Normalize: trim, uppercase, convert all underscores to hyphens
-  let normalized = str.trim().toUpperCase().replace(/_/g, '-');
+  // Normalize: trim, uppercase, convert all underscores and spaces to hyphens
+  let normalized = str.trim().toUpperCase().replace(/[\s_]+/g, '-');
 
   // Standardize prefix if malformed
   normalized = normalized.replace(/^MYORB[_\-\s]*INV[_\-\s]*/, 'MYORB-INV-');
@@ -67,5 +71,5 @@ export function getVaultJoinUrl(code: string): string {
       : 'http://localhost:3000';
 
   const cleanCode = extractAndNormalizeInviteCode(code);
-  return `${origin}/join?code=${encodeURIComponent(cleanCode)}`;
+  return `${origin}/?code=${encodeURIComponent(cleanCode)}`;
 }

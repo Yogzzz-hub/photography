@@ -140,4 +140,40 @@ describe('Memory Universe & Multi-Globe Planet System', () => {
     const uniqueSlots = new Set(mainPhotos.map((p) => p.slotIndex));
     expect(uniqueSlots.size).toBe(108);
   });
+
+  it('assigns unique soundtracks to each default planet and supports per-planet music customization', () => {
+    const store = useVaultStore.getState();
+    const mainGlobe = store.globes.find((g) => g.id === 'globe_main');
+    const curatorGlobe = store.globes.find((g) => g.id === 'globe_curator');
+    const marcusGlobe = store.globes.find((g) => g.id === 'globe_marcus');
+    const claraGlobe = store.globes.find((g) => g.id === 'globe_clara');
+
+    expect(mainGlobe?.bgmTrackId).toBe('orbit');
+    expect(mainGlobe?.bgmTrackName).toBe('Celestial Orbit');
+
+    expect(curatorGlobe?.bgmTrackId).toBe('golden');
+    expect(curatorGlobe?.bgmTrackName).toBe('Golden Hour');
+
+    expect(marcusGlobe?.bgmTrackId).toBe('zenith');
+    expect(marcusGlobe?.bgmTrackName).toBe('Zenith Horizon');
+
+    expect(claraGlobe?.bgmTrackId).toBe('solitude');
+    expect(claraGlobe?.bgmTrackName).toBe('Deep Solitude');
+
+    // Create a new planet with a custom soundtrack
+    const nebulaPlanet = store.createGlobe('Nebula Symphony', 'milestone', {
+      themeColor: 'emerald',
+      bgmTrackId: 'zenith',
+      bgmTrackName: 'Zenith Horizon',
+    });
+    expect(nebulaPlanet.bgmTrackId).toBe('zenith');
+    expect(nebulaPlanet.bgmTrackName).toBe('Zenith Horizon');
+
+    // Update soundtrack for this planet
+    store.updateGlobeBgm(nebulaPlanet.id, 'golden', 'Golden Hour');
+    const updated = useVaultStore.getState();
+    const updatedPlanet = updated.globes.find((g) => g.id === nebulaPlanet.id);
+    expect(updatedPlanet?.bgmTrackId).toBe('golden');
+    expect(updatedPlanet?.bgmTrackName).toBe('Golden Hour');
+  });
 });

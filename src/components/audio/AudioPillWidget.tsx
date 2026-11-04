@@ -4,6 +4,7 @@ import {
   BGM_TRACKS,
   type BgmTrackConfig,
 } from '../../services/audioSynthesizer';
+import { useVaultStore } from '../../stores/useVaultStore';
 import { Music, Play, Pause, Sliders } from 'lucide-react';
 
 interface AudioPillWidgetProps {
@@ -15,6 +16,9 @@ export function AudioPillWidget({ onOpenSettings }: AudioPillWidgetProps) {
   const [currentTrackId, setCurrentTrackId] = useState<BgmTrackConfig['id']>(vaultAudio.getCurrentTrack());
   const [isMuted, setIsMuted] = useState(vaultAudio.getIsMuted());
   const [customTrackName, setCustomTrackName] = useState<string | null>(vaultAudio.getCustomTrackName());
+
+  const { globes, activeGlobeId } = useVaultStore();
+  const activeGlobe = globes.find((g) => g.id === activeGlobeId);
 
   useEffect(() => {
     return vaultAudio.subscribe(() => {
@@ -32,11 +36,13 @@ export function AudioPillWidget({ onOpenSettings }: AudioPillWidgetProps) {
     vaultAudio.toggleBgm();
   };
 
+  const globeShortName = activeGlobe?.name ? activeGlobe.name.split(' ')[0] : 'Orb';
+
   return (
     <div
       onClick={onOpenSettings}
       className="group flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-white/90 dark:bg-black/75 hover:bg-white dark:hover:bg-black/90 border border-black/10 dark:border-white/15 hover:border-vault-gold/60 text-slate-900 dark:text-white backdrop-blur-2xl shadow-md dark:shadow-xl transition-all cursor-pointer select-none active:scale-95"
-      title="Customize Background Music & Ambient Soundscapes"
+      title={`Soundtrack for ${activeGlobe?.name || 'Vault'} (Click to configure)`}
     >
       {/* Animated Soundwave Equalizer or Music Note */}
       <div className="flex items-center justify-center w-5 h-5 rounded-full bg-black/5 dark:bg-white/10 group-hover:bg-vault-gold/20 text-vault-gold transition-colors">
@@ -56,8 +62,8 @@ export function AudioPillWidget({ onOpenSettings }: AudioPillWidgetProps) {
         <span className="text-[11px] font-medium text-slate-900 dark:text-white/95 group-hover:text-vault-gold leading-none transition-colors truncate max-w-[85px] 2xl:max-w-[120px]">
           {customTrackName || currentTrack.name}
         </span>
-        <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono leading-none mt-0.5">
-          {customTrackName ? 'Custom Soundtrack' : (isBgmActive ? 'Ambient Soundscape' : 'BGM Paused')}
+        <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono leading-none mt-0.5 truncate max-w-[110px]">
+          {customTrackName ? `${globeShortName} • Custom` : (isBgmActive ? `${globeShortName} • Soundscape` : 'BGM Paused')}
         </span>
       </div>
 

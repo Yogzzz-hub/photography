@@ -118,6 +118,7 @@ export interface Photo {
 
 export type GlobeType = 'main' | 'individual' | 'group' | 'milestone';
 export type CelestialTheme = 'gold' | 'amethyst' | 'sapphire' | 'emerald' | 'rose' | 'amber';
+export type GlobeBgmTrackId = 'orbit' | 'solitude' | 'golden' | 'zenith' | 'custom' | 'off';
 
 export interface MemoryGlobe {
   id: string;
@@ -128,6 +129,9 @@ export interface MemoryGlobe {
   description?: string;
   themeColor: CelestialTheme;
   customColor?: string; // Hex color code e.g. #F59E0B, #A855F7, #38BDF8
+  bgmTrackId?: GlobeBgmTrackId;
+  bgmTrackName?: string;
+  bgmTrackUrl?: string; // Audio Data URL or URL for custom user soundtrack
   createdAt: string;
   totalSlots: number; // default 108 slots
 }

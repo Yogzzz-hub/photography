@@ -25,6 +25,7 @@ import {
   Upload,
   FileAudio,
   Trash2,
+  Globe,
 } from 'lucide-react';
 
 interface AudioSettingsModalProps {
@@ -58,7 +59,22 @@ export function AudioSettingsModal({ isOpen, onClose }: AudioSettingsModalProps)
   const [isDragOver, setIsDragOver] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { recordAuditEvent } = useVaultStore();
+  const {
+    globes,
+    activeGlobeId,
+    setActiveGlobeId,
+    updateGlobeBgm,
+    recordAuditEvent,
+  } = useVaultStore();
+
+  const [selectedGlobeId, setSelectedGlobeId] = useState(activeGlobeId);
+
+  // Keep selectedGlobeId synced with activeGlobeId
+  useEffect(() => {
+    setSelectedGlobeId(activeGlobeId);
+  }, [activeGlobeId]);
+
+  const targetGlobe = globes.find((g) => g.id === selectedGlobeId) || globes[0];
 
   useEffect(() => {
     return vaultAudio.subscribe(() => {
@@ -79,6 +95,10 @@ export function AudioSettingsModal({ isOpen, onClose }: AudioSettingsModalProps)
   };
 
   const handleSelectTrack = (trackId: BgmTrackConfig['id']) => {
+    const track = BGM_TRACKS.find((t) => t.id === trackId);
+    if (track && targetGlobe) {
+      updateGlobeBgm(targetGlobe.id, trackId, track.name, undefined);
+    }
     vaultAudio.selectBgmTrack(trackId);
     if (!isBgmActive) {
       vaultAudio.startBgm(trackId);
@@ -102,7 +122,10 @@ export function AudioSettingsModal({ isOpen, onClose }: AudioSettingsModalProps)
     }
 
     const url = URL.createObjectURL(file);
-    vaultAudio.loadCustomTrack(url, file.name);
+    if (targetGlobe) {
+      updateGlobeBgm(targetGlobe.id, 'custom', file.name, url);
+    }
+    vaultAudio.loadCustomTrack(url, file.name, true);
 
     if (e.target) {
       e.target.value = '';
@@ -114,7 +137,7 @@ export function AudioSettingsModal({ isOpen, onClose }: AudioSettingsModalProps)
       resourceId: 'custom_bgm_track',
       status: 'success',
       resourceName: file.name,
-      details: { info: `Loaded custom memory soundtrack: ${file.name}` },
+      details: { info: `Loaded custom memory soundtrack for planet ${targetGlobe?.name}: ${file.name}` },
     });
   };
 
@@ -125,7 +148,10 @@ export function AudioSettingsModal({ isOpen, onClose }: AudioSettingsModalProps)
     if (!file) return;
 
     const url = URL.createObjectURL(file);
-    vaultAudio.loadCustomTrack(url, file.name);
+    if (targetGlobe) {
+      updateGlobeBgm(targetGlobe.id, 'custom', file.name, url);
+    }
+    vaultAudio.loadCustomTrack(url, file.name, true);
 
     recordAuditEvent({
       action: 'create',
@@ -133,19 +159,23 @@ export function AudioSettingsModal({ isOpen, onClose }: AudioSettingsModalProps)
       resourceId: 'custom_bgm_track',
       status: 'success',
       resourceName: file.name,
-      details: { info: `Loaded custom memory soundtrack via drag & drop: ${file.name}` },
+      details: { info: `Loaded custom memory soundtrack via drag & drop for ${targetGlobe?.name}: ${file.name}` },
     });
   };
 
   const handleClearCustomAudio = () => {
+    if (targetGlobe) {
+      updateGlobeBgm(targetGlobe.id, 'orbit', 'Celestial Orbit', undefined);
+    }
     vaultAudio.clearCustomTrack();
+    vaultAudio.selectBgmTrack('orbit');
     recordAuditEvent({
       action: 'audio.custom_remove',
       resourceType: 'security',
       resourceId: 'custom_bgm_track',
       resourceName: customTrackName || 'Custom Audio',
       status: 'success',
-      details: { info: 'Removed custom memory soundtrack' },
+      details: { info: `Removed custom memory soundtrack from ${targetGlobe?.name}` },
     });
   };
 
@@ -185,6 +215,58 @@ export function AudioSettingsModal({ isOpen, onClose }: AudioSettingsModalProps)
 
         {/* Scrollable Content Body */}
         <div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-7 space-y-5 no-scrollbar">
+
+        {/* Planet Target Selector Pill Bar */}
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-vault-gold/10 border border-vault-gold/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-vault-gold/20 flex items-center justify-center text-vault-gold flex-shrink-0">
+              <Globe className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-serif font-bold text-slate-900 dark:text-white">
+                  Soundtrack For: <span className="text-amber-600 dark:text-vault-gold">{targetGlobe?.name}</span>
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-vault-gold/15 border border-vault-gold/30 text-amber-900 dark:text-vault-gold">
+                  {targetGlobe?.bgmTrackName || 'Celestial Orbit'}
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-sans mt-0.5">
+                Each planet in the universe plays its own soundtrack when you enter its orbit.
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Planet Selector Switcher */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-full">
+            {globes.map((globe) => {
+              const isSelected = globe.id === selectedGlobeId;
+              return (
+                <button
+                  key={globe.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedGlobeId(globe.id);
+                    if (activeGlobeId !== globe.id) {
+                      setActiveGlobeId(globe.id);
+                    }
+                  }}
+                  className={`px-2.5 py-1 rounded-xl text-[11px] font-medium transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                    isSelected
+                      ? 'bg-vault-gold text-black font-bold shadow-sm'
+                      : 'bg-white/80 dark:bg-white/5 border border-stone-300 dark:border-white/10 text-stone-700 dark:text-stone-300 hover:border-vault-gold/40'
+                  }`}
+                >
+                  <span
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: globe.customColor || '#F59E0B' }}
+                  />
+                  <span className="truncate max-w-[105px]">{globe.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Master Mute & Status Bar */}
         <div className="flex items-center justify-between p-3 rounded-2xl bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/10">
@@ -263,8 +345,13 @@ export function AudioSettingsModal({ isOpen, onClose }: AudioSettingsModalProps)
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {BGM_TRACKS.map((track) => {
-              const isSelected = !customTrackName && currentTrack === track.id;
-              const isCurrentPlaying = isSelected && isBgmActive;
+              const isSelected =
+                !targetGlobe?.bgmTrackUrl &&
+                (targetGlobe?.bgmTrackId
+                  ? targetGlobe.bgmTrackId === track.id
+                  : currentTrack === track.id) &&
+                !customTrackName;
+              const isCurrentPlaying = (currentTrack === track.id) && isBgmActive && !customTrackName;
 
               return (
                 <div

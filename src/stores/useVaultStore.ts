@@ -14,7 +14,9 @@ import type {
   MemoryGlobe,
   GlobeType,
   CelestialTheme,
+  GlobeBgmTrackId,
 } from '../types';
+import { vaultAudio } from '../services/audioSynthesizer';
 import {
   generateMasterVaultKey,
   generateAlbumKey,
@@ -72,11 +74,20 @@ interface VaultState {
       description?: string;
       themeColor?: CelestialTheme;
       customColor?: string;
+      bgmTrackId?: GlobeBgmTrackId;
+      bgmTrackName?: string;
+      bgmTrackUrl?: string;
     }
   ) => MemoryGlobe;
   updateGlobe: (
     id: string,
-    updates: Partial<Pick<MemoryGlobe, 'name' | 'type' | 'description' | 'themeColor' | 'customColor'>>
+    updates: Partial<Pick<MemoryGlobe, 'name' | 'type' | 'description' | 'themeColor' | 'customColor' | 'bgmTrackId' | 'bgmTrackName' | 'bgmTrackUrl'>>
+  ) => void;
+  updateGlobeBgm: (
+    globeId: string,
+    trackId: GlobeBgmTrackId,
+    trackName: string,
+    trackUrl?: string
   ) => void;
   deleteGlobe: (id: string) => void;
   addPhotoToSlot: (photo: Photo, slotIndex: number, globeId?: string) => void;
@@ -340,6 +351,8 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       type: 'main',
       themeColor: 'gold',
       customColor: '#F59E0B',
+      bgmTrackId: 'orbit',
+      bgmTrackName: 'Celestial Orbit',
       createdAt: '2024-01-15T09:00:00Z',
       totalSlots: 108,
     },
@@ -351,6 +364,8 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       ownerName: 'Vault Curator',
       themeColor: 'amethyst',
       customColor: '#A855F7',
+      bgmTrackId: 'golden',
+      bgmTrackName: 'Golden Hour',
       createdAt: '2024-01-15T10:00:00Z',
       totalSlots: 108,
     },
@@ -362,6 +377,8 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       ownerName: 'Marcus Chen',
       themeColor: 'sapphire',
       customColor: '#0EA5E9',
+      bgmTrackId: 'zenith',
+      bgmTrackName: 'Zenith Horizon',
       createdAt: '2024-01-16T12:00:00Z',
       totalSlots: 108,
     },
@@ -373,6 +390,8 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       ownerName: 'Clara Sorensen',
       themeColor: 'rose',
       customColor: '#F43F5E',
+      bgmTrackId: 'solitude',
+      bgmTrackName: 'Deep Solitude',
       createdAt: '2024-02-01T15:00:00Z',
       totalSlots: 108,
     },
@@ -539,6 +558,18 @@ export const useVaultStore = create<VaultState>((set, get) => ({
 
   // Universe & Multi-Globe Management
   setActiveGlobeId: (id: string) => {
+    const targetGlobe = get().globes.find((g) => g.id === id);
+    if (targetGlobe) {
+      if (targetGlobe.bgmTrackUrl && targetGlobe.bgmTrackName) {
+        vaultAudio.loadCustomTrack(targetGlobe.bgmTrackUrl, targetGlobe.bgmTrackName, vaultAudio.isBgmActive());
+      } else if (targetGlobe.bgmTrackId) {
+        if (targetGlobe.bgmTrackId === 'off') {
+          vaultAudio.stopBgm();
+        } else if (targetGlobe.bgmTrackId !== 'custom') {
+          vaultAudio.selectBgmTrack(targetGlobe.bgmTrackId);
+        }
+      }
+    }
     set({ activeGlobeId: id, selectedPhotoId: null });
   },
 
@@ -551,6 +582,9 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       description?: string;
       themeColor?: CelestialTheme;
       customColor?: string;
+      bgmTrackId?: GlobeBgmTrackId;
+      bgmTrackName?: string;
+      bgmTrackUrl?: string;
     }
   ) => {
     const defaultCustomColor =
@@ -576,6 +610,9 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       description: options?.description,
       themeColor: options?.themeColor || 'gold',
       customColor: defaultCustomColor,
+      bgmTrackId: options?.bgmTrackId || 'orbit',
+      bgmTrackName: options?.bgmTrackName || 'Celestial Orbit',
+      bgmTrackUrl: options?.bgmTrackUrl,
       createdAt: new Date().toISOString(),
       totalSlots: 108,
     };
@@ -584,6 +621,13 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       globes: [...state.globes, newGlobe],
       activeGlobeId: newGlobe.id,
     }));
+
+    // Trigger audio sync for newly birthed planet
+    if (newGlobe.bgmTrackUrl && newGlobe.bgmTrackName) {
+      vaultAudio.loadCustomTrack(newGlobe.bgmTrackUrl, newGlobe.bgmTrackName, vaultAudio.isBgmActive());
+    } else if (newGlobe.bgmTrackId && newGlobe.bgmTrackId !== 'off' && newGlobe.bgmTrackId !== 'custom') {
+      vaultAudio.selectBgmTrack(newGlobe.bgmTrackId);
+    }
 
     get().recordAuditEvent({
       action: 'globe.created',
@@ -598,11 +642,42 @@ export const useVaultStore = create<VaultState>((set, get) => ({
 
   updateGlobe: (
     id: string,
-    updates: Partial<Pick<MemoryGlobe, 'name' | 'type' | 'description' | 'themeColor' | 'customColor'>>
+    updates: Partial<Pick<MemoryGlobe, 'name' | 'type' | 'description' | 'themeColor' | 'customColor' | 'bgmTrackId' | 'bgmTrackName' | 'bgmTrackUrl'>>
   ) => {
     set((state) => ({
       globes: state.globes.map((g) => (g.id === id ? { ...g, ...updates } : g)),
     }));
+  },
+
+  updateGlobeBgm: (
+    globeId: string,
+    trackId: GlobeBgmTrackId,
+    trackName: string,
+    trackUrl?: string
+  ) => {
+    set((state) => ({
+      globes: state.globes.map((g) =>
+        g.id === globeId
+          ? {
+              ...g,
+              bgmTrackId: trackId,
+              bgmTrackName: trackName,
+              bgmTrackUrl: trackUrl,
+            }
+          : g
+      ),
+    }));
+
+    // If updating the currently active globe, sync the audio engine immediately
+    if (get().activeGlobeId === globeId) {
+      if (trackUrl && trackName) {
+        vaultAudio.loadCustomTrack(trackUrl, trackName, vaultAudio.isBgmActive());
+      } else if (trackId === 'off') {
+        vaultAudio.stopBgm();
+      } else if (trackId !== 'custom') {
+        vaultAudio.selectBgmTrack(trackId);
+      }
+    }
   },
 
   deleteGlobe: (id: string) => {

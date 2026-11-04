@@ -463,7 +463,7 @@ class AudioSynthesizer {
 
   // --- Custom Audio Track Engine ---
 
-  public loadCustomTrack(url: string, name: string) {
+  public loadCustomTrack(url: string, name: string, autoPlay = true) {
     if (this.customAudioEl) {
       this.customAudioEl.pause();
       this.customAudioEl.src = '';
@@ -471,7 +471,6 @@ class AudioSynthesizer {
 
     this.stopBgmNodes();
     this.customTrackName = name;
-    this.isMuted = false;
     if (this.bgmVolume < 0.25) {
       this.bgmVolume = 0.5;
     }
@@ -479,11 +478,17 @@ class AudioSynthesizer {
     this.customAudioEl = new Audio(url);
     this.customAudioEl.loop = true;
     this.customAudioEl.volume = this.bgmVolume;
-    this.customAudioEl.play().catch((err) => {
-      console.warn('Audio play waiting for user gesture or audio engine unlock', err);
-    });
 
-    this.bgmPlaying = true;
+    if (autoPlay) {
+      this.isMuted = false;
+      this.customAudioEl.play().catch((err) => {
+        console.warn('Audio play waiting for user gesture or audio engine unlock', err);
+      });
+      this.bgmPlaying = true;
+    } else {
+      this.bgmPlaying = false;
+    }
+
     this.notify();
   }
 

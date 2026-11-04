@@ -117,8 +117,14 @@ describe('Vault Security & Governance (Store Operations)', () => {
     expect(member?.bio).toBe('Preserving our family history across generations.');
   });
 
-  it('normalizes invitation codes across URLs, underscores, and case variants', () => {
+  it('normalizes invitation codes across URLs, spaces, underscores, and case variants', () => {
     expect(extractAndNormalizeInviteCode('https://myorb.live/join?code=MYORB_INV_G9EZRC')).toBe(
+      'MYORB-INV-G9EZRC'
+    );
+    expect(extractAndNormalizeInviteCode('https://myorb.live/join?code=MYORB%20INV%20G9EZRC')).toBe(
+      'MYORB-INV-G9EZRC'
+    );
+    expect(extractAndNormalizeInviteCode('MYORB INV G9EZRC')).toBe(
       'MYORB-INV-G9EZRC'
     );
     expect(extractAndNormalizeInviteCode('http://localhost:3000/join?code=MYORB-INV-7X9K2M')).toBe(
@@ -132,8 +138,7 @@ describe('Vault Security & Governance (Store Operations)', () => {
 
   it('generates dynamic vault join URLs using active origin', () => {
     const url = getVaultJoinUrl('MYORB_INV_G9EZRC');
-    expect(url).toContain('/join?code=MYORB-INV-G9EZRC');
-    expect(url).not.toContain('https://myorb.live/join');
+    expect(url).toContain('?code=MYORB-INV-G9EZRC');
   });
 
   it('accepts invitation when user passes full URL or code with underscores', async () => {

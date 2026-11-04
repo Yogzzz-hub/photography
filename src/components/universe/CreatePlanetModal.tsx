@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useVaultStore } from '../../stores/useVaultStore';
-import { vaultAudio } from '../../services/audioSynthesizer';
-import type { GlobeType, CelestialTheme } from '../../types';
+import { vaultAudio, BGM_TRACKS } from '../../services/audioSynthesizer';
+import type { GlobeType, CelestialTheme, GlobeBgmTrackId } from '../../types';
 import {
   Globe,
   Sparkles,
@@ -11,6 +11,11 @@ import {
   Compass,
   Award,
   Check,
+  Music,
+  Upload,
+  Play,
+  Pause,
+  FileAudio,
 } from 'lucide-react';
 
 interface CreatePlanetModalProps {
@@ -37,9 +42,27 @@ export function CreatePlanetModal({ isOpen, onClose, onCreated }: CreatePlanetMo
   const [themeColor, setThemeColor] = useState<CelestialTheme>('gold');
   const [customColor, setCustomColor] = useState('#F59E0B');
   const [description, setDescription] = useState('');
+  const [bgmTrackId, setBgmTrackId] = useState<GlobeBgmTrackId>('orbit');
+  const [bgmTrackName, setBgmTrackName] = useState('Celestial Orbit');
+  const [customAudioUrl, setCustomAudioUrl] = useState<string | undefined>(undefined);
+  const [customFileName, setCustomFileName] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const audioInputRef = useRef<HTMLInputElement>(null);
+
   if (!isOpen) return null;
+
+  const handleCustomAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    setCustomAudioUrl(url);
+    setCustomFileName(file.name);
+    setBgmTrackId('custom');
+    setBgmTrackName(file.name);
+    vaultAudio.playChime(659.25);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +79,9 @@ export function CreatePlanetModal({ isOpen, onClose, onCreated }: CreatePlanetMo
       description: description.trim() || undefined,
       themeColor,
       customColor,
+      bgmTrackId,
+      bgmTrackName,
+      bgmTrackUrl: customAudioUrl,
     });
 
     setTimeout(() => {
@@ -264,6 +290,83 @@ export function CreatePlanetModal({ isOpen, onClose, onCreated }: CreatePlanetMo
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Planet Soundtrack Assignment */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-[11px] font-semibold text-stone-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Music className="w-3.5 h-3.5 text-vault-gold" />
+                <span>Planet Dedicated Soundtrack</span>
+              </label>
+              <span className="text-[10px] font-mono text-vault-gold font-medium truncate max-w-[140px]">
+                {bgmTrackName}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {BGM_TRACKS.map((track) => {
+                const isSelected = bgmTrackId === track.id;
+                return (
+                  <button
+                    key={track.id}
+                    type="button"
+                    onClick={() => {
+                      setBgmTrackId(track.id);
+                      setBgmTrackName(track.name);
+                      setCustomAudioUrl(undefined);
+                      setCustomFileName(null);
+                      vaultAudio.playChime(587.33);
+                    }}
+                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      isSelected
+                        ? 'border-vault-gold bg-vault-gold/15 shadow-sm ring-1 ring-vault-gold/50'
+                        : 'border-stone-200 dark:border-white/10 hover:border-vault-gold/30 bg-stone-50 dark:bg-white/[0.02]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[11px] font-medium ${isSelected ? 'text-vault-gold font-bold' : 'text-stone-800 dark:text-white'}`}>
+                        {track.name}
+                      </span>
+                      {isSelected && <Check className="w-3 h-3 text-vault-gold flex-shrink-0" />}
+                    </div>
+                    <span className="text-[9px] text-stone-500 dark:text-slate-400 font-mono mt-0.5">
+                      {track.key} • {track.tempo}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Custom Audio File Upload for this Planet */}
+            <div className="mt-2">
+              <input
+                ref={audioInputRef}
+                type="file"
+                accept="audio/*,.mp3,.wav,.ogg,.m4a"
+                onChange={handleCustomAudioUpload}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => audioInputRef.current?.click()}
+                className={`w-full p-2 rounded-xl border text-xs flex items-center justify-between transition-all cursor-pointer ${
+                  bgmTrackId === 'custom'
+                    ? 'border-vault-gold bg-vault-gold/15 text-vault-gold font-bold shadow-sm'
+                    : 'border-dashed border-stone-300 dark:border-white/20 hover:border-vault-gold/50 text-stone-600 dark:text-slate-400 bg-stone-50/50 dark:bg-white/[0.01]'
+                }`}
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <Upload className="w-3.5 h-3.5 flex-shrink-0 text-vault-gold" />
+                  <span className="truncate">
+                    {customFileName ? `Custom Track: ${customFileName}` : 'Upload Custom Audio (.mp3, .wav, .m4a)'}
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10 text-stone-700 dark:text-slate-300">
+                  {customFileName ? 'Uploaded' : 'Browse'}
+                </span>
+              </button>
             </div>
           </div>
 
