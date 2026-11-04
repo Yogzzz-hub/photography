@@ -21,6 +21,8 @@ import {
   Folder,
   Maximize2,
   Minimize2,
+  ZoomIn,
+  ZoomOut,
   ShieldCheck,
   Crop,
   RotateCw,
@@ -56,7 +58,15 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
 
   const photo = photos.find((p) => p.id === photoId);
   const [isEditing, setIsEditing] = useState(false);
-  const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef<{ x: number; y: number; startPanX: number; startPanY: number }>({
+    x: 0,
+    y: 0,
+    startPanX: 0,
+    startPanY: 0,
+  });
   const [savedBanner, setSavedBanner] = useState(false);
 
   // Form State for editing
@@ -84,12 +94,13 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
       setTargetAlbumId(photo.albumId);
       setMoodFilter(photo.metadata.mood || 'none');
       setIsEditing(false);
-      setIsZoomed(false);
+      setZoomLevel(1);
+      setPanOffset({ x: 0, y: 0 });
       setSavedBanner(false);
     }
   }, [photo?.id]);
 
-  // Keyboard navigation
+  // Keyboard navigation & zoom controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -100,14 +111,36 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
         vaultAudio.playWhoosh();
         onClose();
       }
-      if (!isEditing && !isCropperOpen && photoId) {
-        const currentIndex = photos.findIndex((p) => p.id === photoId);
-        if (e.key === 'ArrowRight' && currentIndex < photos.length - 1) {
+      if (!isEditing && !isCropperOpen) {
+        if (photoId) {
+          const currentIndex = photos.findIndex((p) => p.id === photoId);
+          if (e.key === 'ArrowRight' && currentIndex < photos.length - 1) {
+            vaultAudio.playWhoosh();
+            setZoomLevel(1);
+            setPanOffset({ x: 0, y: 0 });
+            useVaultStore.getState().setSelectedPhotoId(photos[currentIndex + 1].id);
+          } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+            vaultAudio.playWhoosh();
+            setZoomLevel(1);
+            setPanOffset({ x: 0, y: 0 });
+            useVaultStore.getState().setSelectedPhotoId(photos[currentIndex - 1].id);
+          }
+        }
+        // Zoom shortcuts: + / = to zoom in, - to zoom out, 0 to reset
+        if (e.key === '+' || e.key === '=') {
           vaultAudio.playWhoosh();
-          useVaultStore.getState().setSelectedPhotoId(photos[currentIndex + 1].id);
-        } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+          setZoomLevel((z) => Math.min(4, Number((z + 0.25).toFixed(2))));
+        } else if (e.key === '-' || e.key === '_') {
           vaultAudio.playWhoosh();
-          useVaultStore.getState().setSelectedPhotoId(photos[currentIndex - 1].id);
+          setZoomLevel((z) => {
+            const next = Math.max(1, Number((z - 0.25).toFixed(2)));
+            if (next === 1) setPanOffset({ x: 0, y: 0 });
+            return next;
+          });
+        } else if (e.key === '0') {
+          vaultAudio.playWhoosh();
+          setZoomLevel(1);
+          setPanOffset({ x: 0, y: 0 });
         }
       }
     };
@@ -124,13 +157,78 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
   const handlePrev = () => {
     if (!hasPrev) return;
     vaultAudio.playWhoosh();
+    setZoomLevel(1);
+    setPanOffset({ x: 0, y: 0 });
     useVaultStore.getState().setSelectedPhotoId(photos[currentIndex - 1].id);
   };
 
   const handleNext = () => {
     if (!hasNext) return;
     vaultAudio.playWhoosh();
+    setZoomLevel(1);
+    setPanOffset({ x: 0, y: 0 });
     useVaultStore.getState().setSelectedPhotoId(photos[currentIndex + 1].id);
+  };
+
+  // High-Precision Mouse Wheel Zoom
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const zoomDelta = e.deltaY * -0.0015;
+    setZoomLevel((prev) => {
+      const next = Math.min(4, Math.max(1, Number((prev + zoomDelta).toFixed(2))));
+      if (next === 1) setPanOffset({ x: 0, y: 0 });
+      return next;
+    });
+  };
+
+  // Pointer Drag Panning for High-Res Exploration
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (zoomLevel <= 1) return;
+    setIsPanning(true);
+    panStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      startPanX: panOffset.x,
+      startPanY: panOffset.y,
+    };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isPanning || zoomLevel <= 1) return;
+    const dx = e.clientX - panStartRef.current.x;
+    const dy = e.clientY - panStartRef.current.y;
+    const maxPan = 550 * (zoomLevel - 1);
+    setPanOffset({
+      x: Math.max(-maxPan, Math.min(maxPan, panStartRef.current.startPanX + dx)),
+      y: Math.max(-maxPan, Math.min(maxPan, panStartRef.current.startPanY + dy)),
+    });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!isPanning) return;
+    setIsPanning(false);
+    try {
+      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {
+      // Ignored if capture lost
+    }
+  };
+
+  // Click & Double-click zoom toggle
+  const handleImageClick = () => {
+    const moved =
+      Math.abs(panOffset.x - panStartRef.current.startPanX) +
+      Math.abs(panOffset.y - panStartRef.current.startPanY);
+    if (moved > 6) return; // Drag occurred, cancel click
+
+    vaultAudio.playWhoosh();
+    if (zoomLevel > 1) {
+      setZoomLevel(1);
+      setPanOffset({ x: 0, y: 0 });
+    } else {
+      setZoomLevel(2.2);
+    }
   };
 
   // Launch interactive image cropper
@@ -399,42 +497,121 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                   </motion.button>
                 )}
 
-                {/* Animated Image Canvas with Cinematic Spring & Bloom */}
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={photo.id}
-                    initial={{ opacity: 0, scale: 0.94, filter: 'blur(3px)' }}
-                    animate={{ opacity: 1, scale: isZoomed ? 1.25 : 1, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, scale: 1.03, filter: 'blur(2px)' }}
-                    transition={{
-                      opacity: { duration: 0.24, ease: 'easeOut' },
-                      filter: { duration: 0.2, ease: 'easeOut' },
-                      scale: { duration: 0.38, ease: [0.16, 1, 0.3, 1] },
+                {/* Floating Precision Zoom HUD */}
+                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-1 z-20 p-1 rounded-2xl bg-black/75 backdrop-blur-xl border border-white/15 shadow-2xl">
+                  <button
+                    disabled={zoomLevel <= 1}
+                    onClick={() => {
+                      vaultAudio.playWhoosh();
+                      setZoomLevel((z) => {
+                        const next = Math.max(1, Number((z - 0.25).toFixed(2)));
+                        if (next === 1) setPanOffset({ x: 0, y: 0 });
+                        return next;
+                      });
                     }}
-                    className="relative w-full h-full flex items-center justify-center"
+                    className="p-1.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                    title="Zoom Out (-)"
                   >
-                    <img
-                      src={photo.decryptedFullUrl || photo.decryptedThumbUrl || photo.thumbStoragePath}
-                      alt={photo.metadata.title}
+                    <ZoomOut className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      vaultAudio.playWhoosh();
+                      if (zoomLevel === 1) setZoomLevel(2);
+                      else if (zoomLevel < 3) setZoomLevel(3);
+                      else {
+                        setZoomLevel(1);
+                        setPanOffset({ x: 0, y: 0 });
+                      }
+                    }}
+                    className="px-2 py-0.5 rounded-lg text-[11px] font-mono font-bold text-vault-gold hover:bg-white/10 transition-colors cursor-pointer"
+                    title="Click to cycle zoom levels"
+                  >
+                    {Math.round(zoomLevel * 100)}%
+                  </button>
+
+                  <button
+                    disabled={zoomLevel >= 4}
+                    onClick={() => {
+                      vaultAudio.playWhoosh();
+                      setZoomLevel((z) => Math.min(4, Number((z + 0.25).toFixed(2))));
+                    }}
+                    className="p-1.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                    title="Zoom In (+)"
+                  >
+                    <ZoomIn className="w-3.5 h-3.5" />
+                  </button>
+
+                  {zoomLevel > 1 && (
+                    <button
+                      onClick={() => {
+                        vaultAudio.playWhoosh();
+                        setZoomLevel(1);
+                        setPanOffset({ x: 0, y: 0 });
+                      }}
+                      className="px-2 py-0.5 rounded-lg text-[10px] font-semibold text-slate-300 hover:text-white hover:bg-white/10 border-l border-white/10 transition-colors cursor-pointer"
+                      title="Reset to Fit (0)"
+                    >
+                      Fit
+                    </button>
+                  )}
+                </div>
+
+                {/* Interactive High-Fidelity Image Canvas with Pan & Zoom */}
+                <div
+                  onWheel={handleWheel}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerCancel={handlePointerUp}
+                  className="relative w-full h-full flex items-center justify-center overflow-hidden touch-none"
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={photo.id}
+                      initial={{ opacity: 0, scale: 0.94, filter: 'blur(3px)' }}
+                      animate={{ opacity: 1, filter: 'blur(0px)' }}
+                      exit={{ opacity: 0, scale: 1.03, filter: 'blur(2px)' }}
+                      transition={{
+                        opacity: { duration: 0.24, ease: 'easeOut' },
+                        filter: { duration: 0.2, ease: 'easeOut' },
+                      }}
                       style={{
-                        filter: activeMood.filter,
+                        transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+                        transformOrigin: 'center center',
+                        transition: isPanning ? 'none' : 'transform 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
                       }}
-                      onError={(e) => {
-                        const fallbackUrl = getInstantProceduralDataUrl(
-                          photo.id,
-                          photo.height > photo.width || photo.orientation === 'portrait'
-                        );
-                        if (e.currentTarget.src !== fallbackUrl) {
-                          e.currentTarget.src = fallbackUrl;
-                        }
-                      }}
-                      className={`max-w-full max-h-full object-contain rounded-2xl shadow-2xl border border-white/10 select-none transition-all duration-300 ${
-                        isZoomed ? 'cursor-zoom-out shadow-[0_0_50px_rgba(229,192,123,0.35)]' : 'cursor-zoom-in'
-                      }`}
-                      onClick={() => setIsZoomed(!isZoomed)}
-                    />
-                  </motion.div>
-                </AnimatePresence>
+                      className="relative max-w-full max-h-full flex items-center justify-center select-none"
+                    >
+                      <img
+                        src={photo.decryptedFullUrl || photo.decryptedThumbUrl || photo.thumbStoragePath}
+                        alt={photo.metadata.title}
+                        draggable={false}
+                        style={{
+                          filter: activeMood.filter,
+                        }}
+                        onError={(e) => {
+                          const fallbackUrl = getInstantProceduralDataUrl(
+                            photo.id,
+                            photo.height > photo.width || photo.orientation === 'portrait'
+                          );
+                          if (e.currentTarget.src !== fallbackUrl) {
+                            e.currentTarget.src = fallbackUrl;
+                          }
+                        }}
+                        className={`max-w-full max-h-[72vh] object-contain rounded-2xl shadow-2xl border border-white/10 select-none ${
+                          zoomLevel > 1
+                            ? isPanning
+                              ? 'cursor-grabbing shadow-[0_0_50px_rgba(229,192,123,0.35)]'
+                              : 'cursor-grab shadow-[0_0_50px_rgba(229,192,123,0.35)]'
+                            : 'cursor-zoom-in'
+                        }`}
+                        onClick={handleImageClick}
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
 
                 {/* Quick Floating Overlay Toolbar on the Photo Canvas */}
                 <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 flex items-center gap-1 sm:gap-1.5 z-20 p-1.5 rounded-2xl bg-black/80 backdrop-blur-xl border border-white/15 shadow-2xl">
@@ -514,17 +691,22 @@ export function PhotoDetailModal({ photoId, onClose }: PhotoDetailModalProps) {
                     whileTap={{ scale: 0.92 }}
                     onClick={() => {
                       vaultAudio.playWhoosh();
-                      setIsZoomed(!isZoomed);
+                      if (zoomLevel > 1) {
+                        setZoomLevel(1);
+                        setPanOffset({ x: 0, y: 0 });
+                      } else {
+                        setZoomLevel(2.2);
+                      }
                     }}
                     className={`p-2 sm:p-2.5 rounded-xl transition-all cursor-pointer ${
-                      isZoomed
+                      zoomLevel > 1
                         ? 'bg-vault-gold text-black shadow-glow font-bold'
                         : 'text-slate-300 hover:text-white hover:bg-white/10'
                     }`}
-                    title={isZoomed ? 'Zoom Out (Original Scale)' : 'Zoom In (Expanded View)'}
-                    aria-label={isZoomed ? 'Zoom Out' : 'Zoom In'}
+                    title={zoomLevel > 1 ? `Zoomed ${Math.round(zoomLevel * 100)}% - Click to Reset` : 'Zoom In (or double-click photo)'}
+                    aria-label={zoomLevel > 1 ? 'Reset Zoom' : 'Zoom In'}
                   >
-                    {isZoomed ? (
+                    {zoomLevel > 1 ? (
                       <Minimize2 className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-black" />
                     ) : (
                       <Maximize2 className="w-3.5 sm:w-4 h-3.5 sm:h-4" />

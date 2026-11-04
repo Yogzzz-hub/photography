@@ -17,6 +17,7 @@ import {
   type AspectRatioOption,
   type CropState,
   calculateCropBox,
+  calculateBaseFitScale,
   renderCroppedCanvas,
   dataUrlToFile,
 } from '../../utils/imageCropper';
@@ -47,6 +48,7 @@ export function ImageCropperModal({
   const [rotation, setRotation] = useState(0);
   const [flipHorizontal, setFlipHorizontal] = useState(false);
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [naturalDimensions, setNaturalDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -88,6 +90,21 @@ export function ImageCropperModal({
 
   const cropBox = calculateCropBox(containerSize.width, containerSize.height, aspectRatio);
 
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = e.currentTarget;
+    if (naturalWidth && naturalHeight) {
+      setNaturalDimensions({ width: naturalWidth, height: naturalHeight });
+    }
+  };
+
+  // Base scale calculation so image fits crop box at zoom = 1 without mega-pixel distortion
+  const baseScale = naturalDimensions.width && naturalDimensions.height
+    ? calculateBaseFitScale(naturalDimensions.width, naturalDimensions.height, cropBox.width, cropBox.height, rotation)
+    : 1;
+
+  const displayedWidth = naturalDimensions.width ? naturalDimensions.width * baseScale : undefined;
+  const displayedHeight = naturalDimensions.height ? naturalDimensions.height * baseScale : undefined;
+
   // Pointer drag listeners for panning image
   const handlePointerDown = (e: React.PointerEvent) => {
     isDraggingRef.current = true;
@@ -104,9 +121,17 @@ export function ImageCropperModal({
     if (!isDraggingRef.current) return;
     const dx = e.clientX - dragStartRef.current.x;
     const dy = e.clientY - dragStartRef.current.y;
+
+    const isSideways = Math.abs(rotation % 180) === 90;
+    const effW = (isSideways ? (displayedHeight || cropBox.height) : (displayedWidth || cropBox.width)) * zoom;
+    const effH = (isSideways ? (displayedWidth || cropBox.width) : (displayedHeight || cropBox.height)) * zoom;
+
+    const maxPanX = Math.max(cropBox.width * 1.5, effW * 0.9);
+    const maxPanY = Math.max(cropBox.height * 1.5, effH * 0.9);
+
     setPan({
-      x: dragStartRef.current.panX + dx,
-      y: dragStartRef.current.panY + dy,
+      x: Math.max(-maxPanX, Math.min(maxPanX, dragStartRef.current.panX + dx)),
+      y: Math.max(-maxPanY, Math.min(maxPanY, dragStartRef.current.panY + dy)),
     });
   };
 
@@ -119,7 +144,20 @@ export function ImageCropperModal({
     }
   };
 
-  // Perform canvas crop
+  // Mouse wheel zoom
+  const handleWheel = (e: React.WheelEvent) => {
+    e.stopPropagation();
+    const zoomDelta = e.deltaY * -0.0015;
+    setZoom((prev) => Math.min(4, Math.max(0.8, Number((prev + zoomDelta).toFixed(3)))));
+  };
+
+  // Double click toggles between 1x and 2x zoom
+  const handleDoubleClick = () => {
+    vaultAudio.playSnap();
+    setZoom((prev) => (prev > 1.25 ? 1 : 2));
+  };
+
+  // Perform canvas crop with exact 1:1 parity to DOM viewport
   const getCroppedOutput = useCallback((): { dataUrl: string; file: File } | null => {
     const img = imageRef.current;
     if (!img) return null;
@@ -131,13 +169,15 @@ export function ImageCropperModal({
       panX: pan.x,
       panY: pan.y,
       aspectRatio,
+      containerWidth: containerSize.width,
+      containerHeight: containerSize.height,
     };
 
-    const canvas = renderCroppedCanvas(img, cropState, cropBox);
+    const canvas = renderCroppedCanvas(img, cropState, cropBox, containerSize);
     const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
     const file = dataUrlToFile(dataUrl, `memory-cropped-${Date.now()}.jpg`);
     return { dataUrl, file };
-  }, [zoom, rotation, flipHorizontal, pan, aspectRatio, cropBox]);
+  }, [zoom, rotation, flipHorizontal, pan, aspectRatio, cropBox, containerSize]);
 
   const handleApply = () => {
     vaultAudio.playSnap();
@@ -197,7 +237,7 @@ export function ImageCropperModal({
                 {title}
               </h3>
               <p className="text-[11px] text-slate-400 font-sans">
-                Drag to pan • Pinch or slide to zoom • Choose aspect ratio
+                Drag to pan • Mouse wheel or slider to zoom • Double-click for 2x
               </p>
             </div>
           </div>
@@ -251,6 +291,8 @@ export function ImageCropperModal({
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
+          onWheel={handleWheel}
+          onDoubleClick={handleDoubleClick}
         >
           {/* Transforming Image */}
           <img
@@ -259,8 +301,11 @@ export function ImageCropperModal({
             alt="Crop Target"
             crossOrigin="anonymous"
             draggable={false}
-            className="absolute pointer-events-none max-w-none transition-transform duration-75"
+            onLoad={handleImageLoad}
+            className="absolute pointer-events-none select-none max-w-none transition-transform duration-75"
             style={{
+              width: displayedWidth ? `${displayedWidth}px` : 'auto',
+              height: displayedHeight ? `${displayedHeight}px` : 'auto',
               transform: `translate(${pan.x}px, ${pan.y}px) rotate(${rotation}deg) scaleX(${
                 flipHorizontal ? -1 : 1
               }) scale(${zoom})`,
@@ -313,29 +358,29 @@ export function ImageCropperModal({
           {/* Zoom Controls */}
           <div className="flex items-center gap-2.5 flex-1 min-w-[200px]">
             <button
-              onClick={() => setZoom((z) => Math.max(1, z - 0.15))}
-              className="p-1 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white"
+              onClick={() => setZoom((z) => Math.max(0.8, Number((z - 0.2).toFixed(2))))}
+              className="p-1 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white cursor-pointer"
               title="Zoom Out"
             >
               <ZoomOut className="w-4 h-4" />
             </button>
             <input
               type="range"
-              min="1"
-              max="3"
+              min="0.8"
+              max="4"
               step="0.05"
               value={zoom}
               onChange={(e) => setZoom(parseFloat(e.target.value))}
               className="w-full accent-vault-gold h-1.5 bg-white/20 rounded-lg cursor-pointer"
             />
             <button
-              onClick={() => setZoom((z) => Math.min(3, z + 0.15))}
-              className="p-1 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white"
+              onClick={() => setZoom((z) => Math.min(4, Number((z + 0.2).toFixed(2))))}
+              className="p-1 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white cursor-pointer"
               title="Zoom In"
             >
               <ZoomIn className="w-4 h-4" />
             </button>
-            <span className="font-mono text-xs text-vault-gold w-10 text-right">
+            <span className="font-mono text-xs text-vault-gold w-12 text-right">
               {Math.round(zoom * 100)}%
             </span>
           </div>
