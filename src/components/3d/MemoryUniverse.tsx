@@ -1290,31 +1290,30 @@ export function MemoryUniverse({
         </div>
       )}
 
-      {/* 24-Hour Ephemeral Stories Floating Stack (Positioned with safe clearance from bottom corner badges) */}
-      {/* Laptop / Desktop Hover-to-Fan Stack */}
+      {/* 24-Hour Ephemeral Stories Floating Stack (Available across phone & desktop with luxury 3D fanned deck) */}
       <div
-        className="absolute bottom-6 right-36 sm:right-44 lg:right-48 z-30 hidden sm:flex flex-col items-end group cursor-pointer select-none"
+        className="absolute bottom-20 sm:bottom-6 right-3 sm:right-40 md:right-44 lg:right-48 z-30 flex flex-col items-end group cursor-pointer select-none active:scale-95 transition-transform duration-200"
         onClick={() => {
           vaultAudio.playWhoosh();
           setIsStoryViewerOpen(true);
         }}
         title="Explore & Publish 24-Hour Family Stories"
       >
-        {/* Stack of fanned cards that expand widely on hover (shown when stories exist) */}
+        {/* Stack of fanned cards that expand widely on hover / tap (shown when stories exist) */}
         {stories.length > 0 && (
-          <div className="relative w-36 h-24 mb-3 transition-transform duration-300 ease-out group-hover:scale-105">
+          <div className="relative w-32 h-20 sm:w-36 sm:h-24 mb-2 sm:mb-3 transition-transform duration-300 ease-out group-hover:scale-105 group-active:scale-100">
             {stories.slice(0, 3).map((item, idx) => {
               const rotClass =
                 idx === 0
-                  ? '-rotate-6 group-hover:-translate-x-8 group-hover:-translate-y-4 group-hover:-rotate-12 group-hover:scale-105'
+                  ? '-rotate-6 group-hover:-translate-x-8 group-hover:-translate-y-4 group-hover:-rotate-12 group-hover:scale-105 group-active:-translate-x-4 group-active:-rotate-8'
                   : idx === 1
-                  ? 'rotate-0 group-hover:-translate-y-6 group-hover:scale-110 group-hover:z-20'
-                  : 'rotate-6 group-hover:translate-x-8 group-hover:-translate-y-4 group-hover:rotate-12 group-hover:scale-105';
+                  ? 'rotate-0 group-hover:-translate-y-6 group-hover:scale-110 group-hover:z-20 group-active:-translate-y-3'
+                  : 'rotate-6 group-hover:translate-x-8 group-hover:-translate-y-4 group-hover:rotate-12 group-hover:scale-105 group-active:translate-x-4 group-active:rotate-8';
 
               return (
                 <div
                   key={item.id}
-                  className={`absolute inset-0 rounded-2xl overflow-hidden border border-white/25 group-hover:border-vault-gold/70 shadow-2xl transition-all duration-300 ease-out origin-bottom bg-gradient-to-br from-slate-900 via-slate-800 to-black ${rotClass}`}
+                  className={`absolute inset-0 rounded-xl sm:rounded-2xl overflow-hidden border border-white/25 group-hover:border-vault-gold/70 shadow-2xl transition-all duration-300 ease-out origin-bottom bg-gradient-to-br from-slate-900 via-slate-800 to-black ${rotClass}`}
                   style={{ zIndex: idx }}
                 >
                   <img
@@ -1330,8 +1329,8 @@ export function MemoryUniverse({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
                   <div className="absolute bottom-1.5 left-2 right-2 flex items-center justify-between text-[10px] text-white">
-                    <span className="font-semibold truncate max-w-[85px] drop-shadow-md">{item.authorName}</span>
-                    <span className="text-[9px] font-mono text-vault-gold bg-black/70 px-1 py-0.2 rounded border border-vault-gold/40">24h</span>
+                    <span className="font-semibold truncate max-w-[70px] sm:max-w-[85px] drop-shadow-md">{item.authorName}</span>
+                    <span className="text-[8px] sm:text-[9px] font-mono text-vault-gold bg-black/70 px-1 py-0.2 rounded border border-vault-gold/40">24h</span>
                   </div>
                 </div>
               );
@@ -1340,39 +1339,12 @@ export function MemoryUniverse({
         )}
 
         {/* Floating Pill Label */}
-        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/85 backdrop-blur-xl border border-white/15 text-xs text-white/90 shadow-xl group-hover:border-vault-gold/60 group-hover:shadow-[0_0_20px_rgba(229,192,123,0.35)] transition-all">
-          <Sparkles className="w-3.5 h-3.5 text-vault-gold animate-pulse" />
-          <span className="font-serif italic tracking-wide">24h Stories</span>
-          <span className="text-[10px] font-mono bg-vault-gold/20 text-vault-gold font-semibold px-2 py-0.2 rounded-full border border-vault-gold/30">
+        <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-black/85 backdrop-blur-xl border border-white/15 text-[11px] sm:text-xs text-white/90 shadow-xl group-hover:border-vault-gold/60 group-hover:shadow-[0_0_20px_rgba(229,192,123,0.35)] transition-all">
+          <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-vault-gold animate-pulse flex-shrink-0" />
+          <span className="font-serif italic tracking-wide whitespace-nowrap">24h Stories</span>
+          <span className="text-[9px] sm:text-[10px] font-mono bg-vault-gold/20 text-vault-gold font-semibold px-1.5 sm:px-2 py-0.2 rounded-full border border-vault-gold/30 flex-shrink-0">
             {stories.length > 0 ? `${stories.length} Active` : '+ Add'}
           </span>
-        </div>
-      </div>
-
-      {/* Phone Floating 24h Stories Pill (Mobile-Optimized & Positioned cleanly above bottom dock) */}
-      <div
-        className="absolute bottom-20 right-3.5 z-40 sm:hidden flex items-center gap-2 p-1.5 pl-2 pr-3.5 rounded-full bg-black/90 backdrop-blur-2xl border border-vault-gold/50 text-white shadow-2xl active:scale-95 transition-all cursor-pointer"
-        onClick={() => {
-          vaultAudio.playWhoosh();
-          setIsStoryViewerOpen(true);
-        }}
-        title="View 24-Hour Stories"
-      >
-        <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-vault-gold shadow-md flex-shrink-0">
-          <img
-            src={stories[0]?.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80'}
-            alt="Story"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="flex flex-col text-left">
-          <div className="flex items-center gap-1.5 text-xs font-medium leading-none">
-            <span className="text-white font-serif italic">24h Stories</span>
-            <span className="text-[10px] font-mono bg-vault-gold text-black font-bold px-1.5 rounded-full">
-              {stories.length}
-            </span>
-          </div>
-          <span className="text-[9px] font-mono text-amber-200/90 mt-0.5">Tap to view</span>
         </div>
       </div>
 
