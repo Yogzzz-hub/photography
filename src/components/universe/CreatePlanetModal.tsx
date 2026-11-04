@@ -22,10 +22,10 @@ interface CreatePlanetModalProps {
 const THEME_OPTIONS: { id: CelestialTheme; label: string; bgClass: string; borderClass: string; hex: string }[] = [
   { id: 'gold', label: 'Solar Gold', bgClass: 'bg-amber-500/20 text-amber-300', borderClass: 'border-amber-400', hex: '#F59E0B' },
   { id: 'amethyst', label: 'Ethereal Amethyst', bgClass: 'bg-purple-500/20 text-purple-300', borderClass: 'border-purple-400', hex: '#A855F7' },
-  { id: 'sapphire', label: 'Cosmic Sapphire', bgClass: 'bg-sky-500/20 text-sky-300', borderClass: 'border-sky-400', hex: '#38BDF8' },
+  { id: 'sapphire', label: 'Cosmic Sapphire', bgClass: 'bg-sky-500/20 text-sky-300', borderClass: 'border-sky-400', hex: '#0EA5E9' },
   { id: 'emerald', label: 'Emerald Nebula', bgClass: 'bg-emerald-500/20 text-emerald-300', borderClass: 'border-emerald-400', hex: '#10B981' },
-  { id: 'rose', label: 'Radiant Rose', bgClass: 'bg-rose-500/20 text-rose-300', borderClass: 'border-rose-400', hex: '#FB7185' },
-  { id: 'amber', label: 'Starlight Amber', bgClass: 'bg-orange-500/20 text-orange-300', borderClass: 'border-orange-400', hex: '#FB923C' },
+  { id: 'rose', label: 'Radiant Rose', bgClass: 'bg-rose-500/20 text-rose-300', borderClass: 'border-rose-400', hex: '#F43F5E' },
+  { id: 'amber', label: 'Starlight Amber', bgClass: 'bg-orange-500/20 text-orange-300', borderClass: 'border-orange-400', hex: '#F97316' },
 ];
 
 export function CreatePlanetModal({ isOpen, onClose, onCreated }: CreatePlanetModalProps) {
@@ -35,6 +35,7 @@ export function CreatePlanetModal({ isOpen, onClose, onCreated }: CreatePlanetMo
   const [type, setType] = useState<GlobeType>('individual');
   const [ownerMemberId, setOwnerMemberId] = useState(currentMember.id);
   const [themeColor, setThemeColor] = useState<CelestialTheme>('gold');
+  const [customColor, setCustomColor] = useState('#F59E0B');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,6 +55,7 @@ export function CreatePlanetModal({ isOpen, onClose, onCreated }: CreatePlanetMo
       ownerName: type === 'individual' ? selectedOwner?.displayName : undefined,
       description: description.trim() || undefined,
       themeColor,
+      customColor,
     });
 
     setTimeout(() => {
@@ -171,19 +173,83 @@ export function CreatePlanetModal({ isOpen, onClose, onCreated }: CreatePlanetMo
             </div>
           )}
 
-          {/* Celestial Theme Color */}
+          {/* Live Visual Celestial Planet Hologram Preview */}
+          <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 flex items-center gap-4 relative overflow-hidden backdrop-blur-md">
+            <div
+              className="w-14 h-14 rounded-full flex-shrink-0 relative flex items-center justify-center transition-all duration-500 shadow-lg"
+              style={{
+                background: `radial-gradient(circle at 35% 35%, #ffffff 0%, ${customColor} 45%, #050508 100%)`,
+                boxShadow: `0 0 25px ${customColor}80, inset 0 0 15px ${customColor}90`,
+              }}
+            >
+              {/* Planetary Orbital Ring Accent */}
+              <div
+                className="absolute inset-[-4px] rounded-full border border-dashed opacity-70 animate-spin-slow pointer-events-none"
+                style={{ borderColor: customColor }}
+              />
+              <Globe className="w-5 h-5 text-white/80 drop-shadow-md" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9px] uppercase tracking-widest font-mono text-vault-gold px-1.5 py-0.5 rounded bg-vault-gold/15 border border-vault-gold/30">
+                  {type.toUpperCase()}
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">108 Memory Slots</span>
+              </div>
+              <h4 className="text-sm font-serif font-bold text-white truncate mt-0.5">
+                {name.trim() || 'Untitled Celestial Planet'}
+              </h4>
+              <p className="text-[11px] text-slate-400 font-sans truncate">
+                Hex Aura: <span className="font-mono text-vault-gold font-semibold uppercase">{customColor}</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Celestial Theme & Custom Color Picker */}
           <div>
-            <label className="block text-[11px] font-semibold text-stone-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-              Celestial Aura & Tint
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-[11px] font-semibold text-stone-600 dark:text-slate-400 uppercase tracking-wider">
+                Celestial Aura & Custom Color
+              </label>
+              {/* Native Color Picker & Hex Input */}
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="color"
+                  value={customColor}
+                  onChange={(e) => {
+                    const hex = e.target.value;
+                    setCustomColor(hex);
+                  }}
+                  className="w-6 h-6 rounded-md cursor-pointer border border-white/20 bg-transparent p-0"
+                  title="Pick Any Custom Hex Color"
+                />
+                <input
+                  type="text"
+                  maxLength={7}
+                  value={customColor}
+                  onChange={(e) => {
+                    let hex = e.target.value;
+                    if (!hex.startsWith('#')) hex = '#' + hex;
+                    setCustomColor(hex);
+                  }}
+                  className="w-20 px-1.5 py-0.5 text-[11px] font-mono text-center rounded bg-stone-100 dark:bg-black/60 border border-stone-300 dark:border-white/15 text-stone-900 dark:text-vault-gold uppercase focus:outline-none"
+                  placeholder="#F59E0B"
+                />
+              </div>
+            </div>
+
             <div className="grid grid-cols-3 gap-2">
               {THEME_OPTIONS.map((t) => {
-                const isSelected = themeColor === t.id;
+                const isSelected = customColor.toLowerCase() === t.hex.toLowerCase();
                 return (
                   <button
                     key={t.id}
                     type="button"
-                    onClick={() => setThemeColor(t.id)}
+                    onClick={() => {
+                      setThemeColor(t.id);
+                      setCustomColor(t.hex);
+                    }}
                     className={`p-2 rounded-xl border flex items-center gap-2 transition-all cursor-pointer text-left ${
                       isSelected
                         ? `${t.borderClass} ${t.bgClass} font-bold shadow-sm ring-1 ${t.borderClass}`

@@ -14,6 +14,7 @@ import { AudioSettingsModal } from '../audio/AudioSettingsModal';
 import { StoriesViewerModal, INITIAL_24H_STORIES, type VaultStory } from '../media/StoriesViewerModal';
 import { VaultGuideModal } from '../layout/VaultGuideModal';
 import { UniversePlanetBar } from './UniversePlanetBar';
+import { SolarSystemGalaxy } from './SolarSystemGalaxy';
 import { SingleSlotUploadModal } from '../upload/SingleSlotUploadModal';
 import { CreatePlanetModal } from '../universe/CreatePlanetModal';
 import type { ViewMode3D, Photo } from '../../types';
@@ -212,6 +213,7 @@ export function MemoryUniverse({
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [selectedSlotForUpload, setSelectedSlotForUpload] = useState<number | null>(null);
   const [isCreatePlanetOpen, setIsCreatePlanetOpen] = useState(false);
+  const [viewTier, setViewTier] = useState<'galaxy' | 'dome'>('dome');
 
   // In-Universe 3D Camera Flight Focus (Dive-Inside Memory)
   const [focusedSlotIndex, setFocusedSlotIndex] = useState<number | null>(null);
@@ -520,8 +522,20 @@ export function MemoryUniverse({
         }}
       />
 
-      {/* Primary Display Mode: Authentic myorb.live CSS 3D Dome for 'orb', or WebGL Canvas for other 3D modes */}
-      {viewMode3D === 'orb' ? (
+      {/* Primary Display Mode: Solar System Galaxy Overview or Planet Photo Dome */}
+      {viewTier === 'galaxy' ? (
+        <SolarSystemGalaxy
+          globes={globes}
+          activeGlobeId={activeGlobeId}
+          photos={photos}
+          onSelectPlanet={(globeId) => {
+            setActiveGlobeId(globeId);
+            setViewTier('dome');
+          }}
+          onOpenCreatePlanet={() => setIsCreatePlanetOpen(true)}
+          theme={theme}
+        />
+      ) : viewMode3D === 'orb' ? (
         <MyOrbDome
           photos={photos}
           onOpenPhotoDetail={onOpenPhotoDetail}
@@ -623,9 +637,9 @@ export function MemoryUniverse({
 
       {/* Top Header Floating Glass Shell (Protects Brand Monogram & Controls from 3D Orbiting Cards) */}
       <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none flex flex-col items-center bg-gradient-to-b from-[#F6F5F0] via-[#F6F5F0]/90 to-transparent dark:from-[#040508] dark:via-[#040508]/90 dark:to-transparent pb-4 backdrop-blur-md">
-        <div className="w-full flex items-center justify-between px-3 sm:px-6 pt-3 sm:pt-4 pb-1.5 pointer-events-auto">
-          {/* Top Left: Editorial Brand Monogram */}
-          <div className="flex items-center gap-2 sm:gap-3">
+        <div className="w-full flex items-center justify-between px-4 sm:px-8 lg:px-12 pt-3 sm:pt-4 pb-1.5 pointer-events-auto">
+          {/* Top Left: Editorial Brand Monogram (Never clipped on left edge) */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 pl-2 sm:pl-3 select-none">
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="font-serif tracking-[0.2em] sm:tracking-[0.35em] text-sm sm:text-lg font-normal text-slate-900 dark:text-white uppercase">
@@ -716,86 +730,113 @@ export function MemoryUniverse({
         </div>
 
         {/* Cosmic Universe Planet Carousel & Multi-Globe Controls */}
-        <div className="pointer-events-auto w-full max-w-7xl mx-auto px-1 sm:px-4">
+        <div className="pointer-events-auto w-full max-w-7xl mx-auto px-2 sm:px-6">
           <UniversePlanetBar
             onOpenCreatePlanet={() => setIsCreatePlanetOpen(true)}
             onOpenBulkUpload={() => {
               if (onOpenUpload) onOpenUpload();
             }}
+            viewTier={viewTier}
+            onToggleViewTier={() => {
+              vaultAudio.playWhoosh();
+              setViewTier((v) => (v === 'galaxy' ? 'dome' : 'galaxy'));
+            }}
+            onSelectPlanetWithWarp={(id) => {
+              setActiveGlobeId(id);
+              setViewTier('dome');
+            }}
           />
         </div>
 
-        {/* Top Center: Separate Landscape & Portrait Memory Mode */}
+        {/* View-Specific Secondary Sub-Bar (Solar System Guidance vs Planet Dome Orientation Filters) */}
         <div className="pointer-events-auto mt-0.5 flex justify-center">
-          <div className="flex items-center bg-white/95 dark:bg-[#0a0d17]/90 backdrop-blur-2xl border border-stone-200/80 dark:border-white/15 rounded-full p-1 shadow-md dark:shadow-xl max-w-[94vw] overflow-x-auto no-scrollbar text-slate-900 dark:text-white">
-            <button
-              onClick={() => {
-                vaultAudio.playWhoosh();
-                setOrientationFilter('all');
-              }}
-              className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-sans transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                orientationFilter === 'all'
-                  ? 'bg-vault-gold text-black font-bold shadow-sm'
-                  : 'text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.08]'
-              }`}
-              title="All Memories (Interleaved Mosaic)"
-            >
-              <span>✦ All</span>
-              <span className={`text-[10px] font-mono px-1 py-0.2 rounded font-semibold ${
-                orientationFilter === 'all'
-                  ? 'bg-black/10 text-black'
-                  : 'bg-stone-100 dark:bg-black/30 text-stone-700 dark:text-stone-300'
-              }`}>
-                {photos.filter((p) => !p.inTrash).length}
-              </span>
-            </button>
+          {viewTier === 'galaxy' ? (
+            <div className="flex items-center gap-2 bg-black/80 backdrop-blur-2xl border border-vault-gold/40 rounded-full px-4 py-1.5 shadow-xl text-vault-gold text-xs font-mono select-none animate-in fade-in">
+              <Sparkles className="w-3.5 h-3.5 text-vault-gold animate-spin-slow flex-shrink-0" />
+              <span className="hidden sm:inline">3D Solar System Overview • Orbiting Memory Planets</span>
+              <span className="sm:hidden">Solar System Overview</span>
+              <button
+                onClick={() => {
+                  vaultAudio.playWhoosh();
+                  setViewTier('dome');
+                }}
+                className="ml-1 sm:ml-2 px-3 py-0.5 rounded-full bg-vault-gold hover:bg-amber-400 text-black font-sans font-bold text-[11px] transition-all cursor-pointer shadow-sm active:scale-95 flex items-center gap-1"
+              >
+                <span>Enter Dome</span>
+                <span>➔</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center bg-white/95 dark:bg-[#0a0d17]/90 backdrop-blur-2xl border border-stone-200/80 dark:border-white/15 rounded-full p-1 shadow-md dark:shadow-xl max-w-[94vw] overflow-x-auto no-scrollbar text-slate-900 dark:text-white">
+              <button
+                onClick={() => {
+                  vaultAudio.playWhoosh();
+                  setOrientationFilter('all');
+                }}
+                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-sans transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                  orientationFilter === 'all'
+                    ? 'bg-vault-gold text-black font-bold shadow-sm'
+                    : 'text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.08]'
+                }`}
+                title="All Memories (Interleaved Mosaic)"
+              >
+                <span>✦ All</span>
+                <span className={`text-[10px] font-mono px-1 py-0.2 rounded font-semibold ${
+                  orientationFilter === 'all'
+                    ? 'bg-black/10 text-black'
+                    : 'bg-stone-100 dark:bg-black/30 text-stone-700 dark:text-stone-300'
+                }`}>
+                  {photos.filter((p) => !p.inTrash).length}
+                </span>
+              </button>
 
-            <button
-              onClick={() => {
-                vaultAudio.playWhoosh();
-                setOrientationFilter('landscape');
-              }}
-              className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-sans transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                orientationFilter === 'landscape'
-                  ? 'bg-vault-gold text-black font-bold shadow-sm'
-                  : 'text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.08]'
-              }`}
-              title="Filter Landscape Widescreen Memories (16:9)"
-            >
-              <span className="text-sm leading-none">▱</span>
-              <span>Landscape</span>
-              <span className={`text-[10px] font-mono px-1 py-0.2 rounded font-semibold ${
-                orientationFilter === 'landscape'
-                  ? 'bg-black/10 text-black'
-                  : 'bg-stone-100 dark:bg-black/30 text-stone-700 dark:text-stone-300'
-              }`}>
-                {photos.filter((p) => !p.inTrash && p.width >= p.height && p.orientation !== 'portrait').length}
-              </span>
-            </button>
+              <button
+                onClick={() => {
+                  vaultAudio.playWhoosh();
+                  setOrientationFilter('landscape');
+                }}
+                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-sans transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                  orientationFilter === 'landscape'
+                    ? 'bg-vault-gold text-black font-bold shadow-sm'
+                    : 'text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.08]'
+                }`}
+                title="Filter Landscape Widescreen Memories (16:9)"
+              >
+                <span className="text-sm leading-none">▱</span>
+                <span>Landscape</span>
+                <span className={`text-[10px] font-mono px-1 py-0.2 rounded font-semibold ${
+                  orientationFilter === 'landscape'
+                    ? 'bg-black/10 text-black'
+                    : 'bg-stone-100 dark:bg-black/30 text-stone-700 dark:text-stone-300'
+                }`}>
+                  {photos.filter((p) => !p.inTrash && p.width >= p.height && p.orientation !== 'portrait').length}
+                </span>
+              </button>
 
-            <button
-              onClick={() => {
-                vaultAudio.playWhoosh();
-                setOrientationFilter('portrait');
-              }}
-              className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-sans transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                orientationFilter === 'portrait'
-                  ? 'bg-vault-gold text-black font-bold shadow-sm'
-                  : 'text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.08]'
-              }`}
-              title="Filter Portrait Vertical Memories (9:16)"
-            >
-              <span className="text-sm leading-none">▯</span>
-              <span>Portrait</span>
-              <span className={`text-[10px] font-mono px-1 py-0.2 rounded font-semibold ${
-                orientationFilter === 'portrait'
-                  ? 'bg-black/10 text-black'
-                  : 'bg-stone-100 dark:bg-black/30 text-stone-700 dark:text-stone-300'
-              }`}>
-                {photos.filter((p) => !p.inTrash && (p.height > p.width || p.orientation === 'portrait')).length}
-              </span>
-            </button>
-          </div>
+              <button
+                onClick={() => {
+                  vaultAudio.playWhoosh();
+                  setOrientationFilter('portrait');
+                }}
+                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-sans transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                  orientationFilter === 'portrait'
+                    ? 'bg-vault-gold text-black font-bold shadow-sm'
+                    : 'text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.08]'
+                }`}
+                title="Filter Portrait Vertical Memories (9:16)"
+              >
+                <span className="text-sm leading-none">▯</span>
+                <span>Portrait</span>
+                <span className={`text-[10px] font-mono px-1 py-0.2 rounded font-semibold ${
+                  orientationFilter === 'portrait'
+                    ? 'bg-black/10 text-black'
+                    : 'bg-stone-100 dark:bg-black/30 text-stone-700 dark:text-stone-300'
+                }`}>
+                  {photos.filter((p) => !p.inTrash && (p.height > p.width || p.orientation === 'portrait')).length}
+                </span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1112,7 +1153,7 @@ export function MemoryUniverse({
             </div>
 
             {/* Navigation Links with Refined Ergonomic Spacing & Full Visibility */}
-            <div className="flex-1 min-h-0 overflow-y-auto py-1 space-y-0.5 font-sans pr-1 pb-4 overscroll-contain scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-white/10">
+            <div className="flex-1 min-h-0 overflow-y-auto py-1 space-y-0.5 font-sans pr-1 pb-6 overscroll-contain scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-white/10">
               {[
                 { tab: 'universe' as NavigationTab, label: '3D Memory Universe', icon: Globe, count: null },
                 { tab: 'library' as NavigationTab, label: 'Photo Library', icon: Grid, count: photos.filter(p => !p.inTrash).length },
@@ -1131,7 +1172,7 @@ export function MemoryUniverse({
                       setIsDrawerOpen(false);
                       if (onNavigateTab) onNavigateTab(tab);
                     }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.2 rounded-lg text-xs font-medium transition-all text-left cursor-pointer border ${
+                    className={`w-full flex items-center justify-between px-2.5 py-1 rounded-lg text-xs font-medium transition-all text-left cursor-pointer border ${
                       isActive
                         ? 'bg-amber-500/15 dark:bg-vault-gold/20 text-amber-950 dark:text-vault-gold border-amber-500/35 dark:border-vault-gold/40 font-semibold shadow-sm'
                         : 'text-stone-700 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-white/[0.06] border-transparent hover:border-stone-200/80 dark:hover:border-white/5'
@@ -1154,7 +1195,7 @@ export function MemoryUniverse({
             </div>
 
             {/* Bottom Actions in Drawer */}
-            <div className="border-t border-stone-200/90 dark:border-white/10 pt-1.5 flex flex-col gap-1 font-sans flex-shrink-0 pb-2 pb-safe">
+            <div className="border-t border-stone-200/90 dark:border-white/10 pt-1.5 flex flex-col gap-1.5 font-sans flex-shrink-0 pb-3 pb-safe">
               {/* Quick Actions Segmented Row (Audio, Guide, Theme, Fullscreen) */}
               <div className="grid grid-cols-4 gap-1 p-1 rounded-2xl bg-white dark:bg-white/[0.03] border border-stone-200/90 dark:border-white/10 shadow-[0_2px_8px_rgba(40,30,20,0.03)]">
                 <button

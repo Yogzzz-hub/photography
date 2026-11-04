@@ -40,50 +40,7 @@ export interface VaultStory {
   expiresAt: number; // createdAt + 24 * 3600 * 1000
 }
 
-export const INITIAL_24H_STORIES: VaultStory[] = [
-  {
-    id: 'story_01',
-    authorName: 'Elena V.',
-    authorRole: 'Curator',
-    authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
-    title: 'Grand Hallway Vows',
-    location: 'Verona Colonnade, Italy',
-    date: 'Today',
-    imgUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&h=800&q=85',
-    quote: '“Architecture is frozen music, and memory is the acoustic hall where it reverberates forever.”',
-    story: 'Morning light piercing the classical marble columns as we gathered for the golden jubilee ceremony.',
-    createdAt: Date.now() - 2.5 * 3600 * 1000,
-    expiresAt: Date.now() + 21.5 * 3600 * 1000,
-  },
-  {
-    id: 'story_02',
-    authorName: 'Marcus S.',
-    authorRole: 'Archivist',
-    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80',
-    title: 'Palazzo Ducale Arcades',
-    location: 'Piazza San Marco, Venice',
-    date: 'Today',
-    imgUrl: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&h=800&q=85',
-    quote: '“A window is not merely an aperture; it is a lens through which time remembers itself.”',
-    story: 'Afternoon shadows cutting diagonal geometry across the marble porticos facing the Venetian lagoon.',
-    createdAt: Date.now() - 5 * 3600 * 1000,
-    expiresAt: Date.now() + 19 * 3600 * 1000,
-  },
-  {
-    id: 'story_03',
-    authorName: 'Clara C.',
-    authorRole: 'Member',
-    authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&h=120&q=80',
-    title: 'Misty Alpine Karst Sanctuary',
-    location: 'Dolomite Highlands, Alps',
-    date: 'Today',
-    imgUrl: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&h=800&q=85',
-    quote: '“Between ancient water and weathered stone, quietude finds its sanctuary.”',
-    story: 'Drifting silently above mist-shrouded valleys and towering limestone peaks at dawn.',
-    createdAt: Date.now() - 8 * 3600 * 1000,
-    expiresAt: Date.now() + 16 * 3600 * 1000,
-  },
-];
+export const INITIAL_24H_STORIES: VaultStory[] = [];
 
 interface StoriesViewerModalProps {
   isOpen: boolean;
@@ -297,6 +254,37 @@ export function StoriesViewerModal({
       >
         {/* Story Body View */}
         {!isAddingStory ? (
+          stories.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center min-h-[380px] max-w-md mx-auto">
+              <div className="w-16 h-16 rounded-full bg-vault-gold/15 border border-vault-gold/30 flex items-center justify-center mb-4 shadow-glow">
+                <Sparkles className="w-8 h-8 text-vault-gold animate-pulse" />
+              </div>
+              <h3 className="font-serif text-xl sm:text-2xl text-white mb-2 font-normal">
+                No Active 24-Hour Stories
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-400 mb-6 leading-relaxed">
+                Ephemeral stories let kin members share candid 24-hour glimpses with sound, full-bleed images, and custom crops before they gracefully fade into the private vault.
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    vaultAudio.playWhoosh();
+                    setIsAddingStory(true);
+                  }}
+                  className="px-5 py-2.5 rounded-full bg-vault-gold hover:bg-amber-400 text-black font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Post First Story</span>
+                </button>
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-all cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          ) : (
           <div className="relative flex flex-col md:flex-row h-[78vh] sm:h-[520px]">
             {/* Visual Media Half with Ken Burns Ambient Scale */}
             <div className="relative w-full md:w-3/5 h-64 sm:h-full bg-black overflow-hidden flex items-center justify-center">
@@ -322,32 +310,34 @@ export function StoriesViewerModal({
               </div>
 
               {/* Author Identity Header Pill inside Media Viewer */}
-              <div className="absolute top-7 left-3 sm:left-4 z-30 flex items-center gap-2.5 bg-black/65 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15 drop-shadow-xl select-none">
-                <div className="relative">
-                  <img
-                    src={currentStory.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80'}
-                    alt={currentStory.authorName}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80';
-                    }}
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-vault-gold/80"
-                  />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-black" />
-                </div>
+              {currentStory && (
+                <div className="absolute top-7 left-3 sm:left-4 z-30 flex items-center gap-2.5 bg-black/65 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15 drop-shadow-xl select-none">
+                  <div className="relative">
+                    <img
+                      src={currentStory.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80'}
+                      alt={currentStory.authorName}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80';
+                      }}
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-vault-gold/80"
+                    />
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-black" />
+                  </div>
 
-                <div className="flex flex-col min-w-0 pr-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-semibold text-xs text-white truncate max-w-[110px] sm:max-w-[140px]">{currentStory.authorName}</span>
-                    <span className="text-[9px] font-mono uppercase px-1 py-0.2 rounded bg-vault-gold/20 text-vault-gold border border-vault-gold/30">
-                      {currentStory.authorRole}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 text-[10px] text-amber-200/90 font-mono">
-                    <Clock className="w-2.5 h-2.5 text-vault-gold" />
-                    <span>{calculateHoursLeft(currentStory.expiresAt)}</span>
+                  <div className="flex flex-col min-w-0 pr-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-xs text-white truncate max-w-[110px] sm:max-w-[140px]">{currentStory.authorName}</span>
+                      <span className="text-[9px] font-mono uppercase px-1 py-0.2 rounded bg-vault-gold/20 text-vault-gold border border-vault-gold/30">
+                        {currentStory.authorRole}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] text-amber-200/90 font-mono">
+                      <Clock className="w-2.5 h-2.5 text-vault-gold" />
+                      <span>{calculateHoursLeft(currentStory.expiresAt)}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Mobile Quick Action Buttons in Media View */}
               <div className="absolute top-7 right-3 z-30 flex md:hidden items-center gap-1.5">
@@ -369,14 +359,16 @@ export function StoriesViewerModal({
                 </button>
               </div>
 
-              <img
-                src={currentStory.imgUrl}
-                alt={currentStory.title}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&h=800&q=85';
-                }}
-                className="w-full h-full object-cover animate-in fade-in zoom-in-95 duration-500"
-              />
+              {currentStory && (
+                <img
+                  src={currentStory.imgUrl}
+                  alt={currentStory.title}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=120&h=800&q=85';
+                  }}
+                  className="w-full h-full object-cover animate-in fade-in zoom-in-95 duration-500"
+                />
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none" />
 
               {/* Navigation Click Zones for Mobile / Quick Tap */}
@@ -409,22 +401,22 @@ export function StoriesViewerModal({
             </div>
 
             {/* Story Editorial Details Half */}
-            <div className="w-full md:w-2/5 p-4 sm:p-6 flex flex-col justify-between bg-white dark:bg-[#0E121D] text-slate-900 dark:text-white border-t md:border-t-0 md:border-l border-black/10 dark:border-white/10 overflow-y-auto">
+            <div className="w-full md:w-[360px] lg:w-[400px] flex-shrink-0 p-4 sm:p-6 flex flex-col justify-between bg-white dark:bg-[#0E121D] text-slate-900 dark:text-white border-t md:border-t-0 md:border-l border-black/10 dark:border-white/10 overflow-y-auto">
               <div className="space-y-3">
                 {/* Dedicated Desktop Header Row: Badge on Left, Controls on Right — NEVER overlaps! */}
-                <div className="hidden md:flex items-center justify-between pb-2.5 border-b border-black/10 dark:border-white/10">
-                  <div className="flex items-center gap-1.5 text-amber-700 dark:text-vault-gold text-[11px] font-mono uppercase tracking-widest font-semibold">
+                <div className="hidden md:flex items-center justify-between pb-2.5 border-b border-black/10 dark:border-white/10 gap-2">
+                  <div className="flex items-center gap-1.5 text-amber-700 dark:text-vault-gold text-[11px] font-mono uppercase tracking-widest font-semibold flex-shrink-0">
                     <Sparkles className="w-3.5 h-3.5" />
                     <span>24h Ephemeral Story</span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={() => {
                         vaultAudio.playWhoosh();
                         setIsAddingStory(true);
                       }}
-                      className="px-3 py-1 rounded-full bg-vault-gold text-black font-semibold text-xs flex items-center gap-1 shadow-sm hover:brightness-110 transition-all cursor-pointer"
+                      className="px-3 py-1 rounded-full bg-vault-gold hover:bg-amber-400 text-black font-semibold text-xs flex items-center gap-1 shadow-sm transition-all cursor-pointer whitespace-nowrap"
                       title="Add a 24-Hour Story"
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -433,7 +425,7 @@ export function StoriesViewerModal({
 
                     <button
                       onClick={onClose}
-                      className="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/15 text-slate-500 dark:text-white/80 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+                      className="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/15 text-slate-500 dark:text-white/80 hover:text-black dark:hover:text-white transition-colors cursor-pointer flex-shrink-0"
                       title="Close Story Viewer"
                     >
                       <X className="w-4.5 h-4.5" />
@@ -443,6 +435,8 @@ export function StoriesViewerModal({
 
                 <div className="md:hidden flex items-center gap-1.5 text-amber-700 dark:text-vault-gold text-[11px] font-mono uppercase tracking-widest font-semibold pt-1">
                   <Sparkles className="w-3.5 h-3.5" />
+                  <span>24h Ephemeral Story</span>
+                </div>
                   <span>24h Ephemeral Story</span>
                 </div>
 
@@ -509,7 +503,7 @@ export function StoriesViewerModal({
                 </div>
               </div>
             </div>
-          </div>
+          )
         ) : (
           /* Add 24h Story Creation Panel (Clean Header, Multiple Upload Options) */
           <div className="p-5 sm:p-7 flex flex-col gap-4 bg-white dark:bg-[#0E121D] text-slate-900 dark:text-white overflow-y-auto max-h-[90vh]">

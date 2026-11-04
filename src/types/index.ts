@@ -127,6 +127,7 @@ export interface MemoryGlobe {
   ownerName?: string;
   description?: string;
   themeColor: CelestialTheme;
+  customColor?: string; // Hex color code e.g. #F59E0B, #A855F7, #38BDF8
   createdAt: string;
   totalSlots: number; // default 108 slots
 }

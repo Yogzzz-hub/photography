@@ -80,14 +80,12 @@ function generateSphereGrid(orientation: 'all' | 'landscape' | 'portrait' = 'all
   let ringConfigs: { lat: number; cols: number; shift: number }[];
 
   if (orientation === 'portrait') {
-    // Dedicated 54-slot Portrait Sphere: 5 balanced rings (9, 12, 12, 12, 9 = 54 slots)
-    // Distributed evenly across -30° to +30° latitude with running-bond offset
+    // Dedicated 54-slot Portrait Sphere: 3 rings x 18 cols = 54 slots
+    // 24° latitude step provides generous vertical clearance preventing card collisions
     ringConfigs = [
-      { lat: -30, cols:  9, shift: 0.0 },
-      { lat: -15, cols: 12, shift: 0.5 },
-      { lat:   0, cols: 12, shift: 0.0 },
-      { lat:  15, cols: 12, shift: 0.5 },
-      { lat:  30, cols:  9, shift: 0.0 },
+      { lat: -24, cols: 18, shift: 0.0 },
+      { lat:   0, cols: 18, shift: 0.5 },
+      { lat:  24, cols: 18, shift: 0.0 },
     ];
   } else if (orientation === 'landscape') {
     // Dedicated 54-slot Landscape Sphere: 5 balanced rings (9 + 12 + 12 + 12 + 9 = 54)
@@ -553,23 +551,23 @@ export function MyOrbDome({
             let itemHeight: string;
 
             if (orientationFilter === 'all') {
-              // Dense 108-slot geodesic mosaic (tight, snug gaps, large prominent cards)
+              // Geodesic 108-slot mosaic: calibrated heights strictly stay below 14° latitude step (0.244R)
               itemWidth = isPortrait
-                ? 'calc(var(--radius) * 0.220)'
-                : 'calc(var(--radius) * 0.260)';
+                ? 'calc(var(--radius) * 0.145)'
+                : 'calc(var(--radius) * 0.240)';
               itemHeight = isPortrait
-                ? 'calc(var(--radius) * 0.315)'
-                : 'calc(var(--radius) * 0.175)';
+                ? 'calc(var(--radius) * 0.210)'
+                : 'calc(var(--radius) * 0.145)';
             } else if (orientationFilter === 'portrait') {
-              // Dedicated 54-slot Portrait Sphere: 5 rings, 12 equator cols
-              // Grand, prominent vertical portrait cards with zero empty canyons
-              itemWidth = 'calc(var(--radius) * 0.360)';
-              itemHeight = 'calc(var(--radius) * 0.520)';
+              // Dedicated 54-slot Portrait Sphere: 3 rings, 18 cols with 24° step (0.419R)
+              // Height 0.360R gives generous ~0.059R (~50px) vertical clearance, eliminating collision
+              itemWidth = 'calc(var(--radius) * 0.220)';
+              itemHeight = 'calc(var(--radius) * 0.360)';
             } else {
-              // Dedicated 54-slot Landscape Sphere: 5 rings, 12 equator cols
-              // Snug, widescreen cinematic cards with tight, elegant ~12px gaps
-              itemWidth = 'calc(var(--radius) * 0.520)';
-              itemHeight = 'calc(var(--radius) * 0.320)';
+              // Dedicated 54-slot Landscape Sphere: 5 rings, 14° step (0.244R)
+              // Height 0.200R gives ~0.044R clearance with elegant 16:9 widescreen framing
+              itemWidth = 'calc(var(--radius) * 0.360)';
+              itemHeight = 'calc(var(--radius) * 0.200)';
             }
 
             return (

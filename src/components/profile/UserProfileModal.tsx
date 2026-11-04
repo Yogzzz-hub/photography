@@ -204,7 +204,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-2.5 sm:p-4 bg-black/60 dark:bg-black/85 backdrop-blur-xl animate-in fade-in">
       <div className="bg-white dark:bg-[#080B13] text-slate-900 dark:text-white border border-black/10 dark:border-white/15 rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[88vh]">
         {/* Decorative Top Cover Banner */}
-        <div className="relative h-20 sm:h-24 bg-gradient-to-r from-amber-400/20 via-purple-500/15 to-indigo-500/20 dark:from-amber-600/25 dark:via-purple-600/20 dark:to-indigo-700/25 border-b border-black/10 dark:border-white/10 px-4 sm:px-6 py-3 flex items-start justify-between flex-shrink-0">
+        <div className="relative h-24 sm:h-28 bg-gradient-to-r from-amber-400/20 via-purple-500/15 to-indigo-500/20 dark:from-amber-600/25 dark:via-purple-600/20 dark:to-indigo-700/25 border-b border-black/10 dark:border-white/10 px-4 sm:px-6 py-3 flex items-start justify-between flex-shrink-0">
           <div className="flex items-center gap-2 text-stone-700 dark:text-stone-300">
             <User className="w-4 h-4 text-vault-gold" />
             <span className="text-xs font-serif font-semibold tracking-wider uppercase">Vault Kin Identity</span>
@@ -222,7 +222,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
         {/* Floating Identity & Avatar Row */}
         <div className="px-4 sm:px-6 pt-0 pb-3 flex items-end justify-between -mt-10 sm:-mt-12 flex-shrink-0">
           <div className="flex items-end gap-3.5 sm:gap-4 min-w-0">
-            <div className="relative group flex-shrink-0">
+            <div className="relative group flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl overflow-hidden border-4 border-white dark:border-[#080B13] ring-2 ring-vault-gold/60 shadow-xl bg-slate-100 dark:bg-slate-900">
               <img
                 src={avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
                 alt={displayName}
@@ -230,14 +230,14 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                   e.currentTarget.onerror = null;
                   e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80';
                 }}
-                className="w-20 h-20 sm:w-24 sm:h-24 aspect-square rounded-2xl sm:rounded-3xl object-cover border-4 border-white dark:border-[#080B13] ring-2 ring-vault-gold/60 shadow-xl bg-slate-100 dark:bg-slate-900 group-hover:brightness-90 transition-all"
+                className="w-full h-full object-cover group-hover:brightness-90 transition-all"
               />
 
               {/* Native Upload Trigger via Camera Badge */}
               <label
                 htmlFor="user-profile-avatar-upload"
                 title="Upload Photo from Device"
-                className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
+                className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
               >
                 <Camera className="w-5 h-5 text-vault-gold mb-0.5" />
                 <span className="text-[10px] font-sans font-semibold">Change</span>
@@ -254,8 +254,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
               />
 
               {currentMember.role === 'owner' && (
-                <div className="absolute -top-1 -right-1 p-1 bg-amber-400 rounded-full text-slate-950 shadow-md">
-                  <Crown className="w-3 h-3" />
+                <div className="absolute top-1 right-1 p-1 bg-amber-400 rounded-full text-slate-950 shadow-md z-10 pointer-events-none">
+                  <Crown className="w-2.5 h-2.5" />
                 </div>
               )}
             </div>

@@ -71,8 +71,13 @@ interface VaultState {
       ownerName?: string;
       description?: string;
       themeColor?: CelestialTheme;
+      customColor?: string;
     }
   ) => MemoryGlobe;
+  updateGlobe: (
+    id: string,
+    updates: Partial<Pick<MemoryGlobe, 'name' | 'type' | 'description' | 'themeColor' | 'customColor'>>
+  ) => void;
   deleteGlobe: (id: string) => void;
   addPhotoToSlot: (photo: Photo, slotIndex: number, globeId?: string) => void;
   bulkAddPhotosToGlobe: (
@@ -324,8 +329,8 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     get().setTheme(next);
   },
 
-  // Data Collections
-  photos: INITIAL_SAMPLE_PHOTOS,
+  // Data Collections (Clean slate - zero mock data, ready for authenticated user memories)
+  photos: [],
   albums: initialAlbums,
   trashPhotos: [],
   globes: [
@@ -334,6 +339,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       name: 'Genesis Main Vault',
       type: 'main',
       themeColor: 'gold',
+      customColor: '#F59E0B',
       createdAt: '2024-01-15T09:00:00Z',
       totalSlots: 108,
     },
@@ -344,6 +350,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       ownerMemberId: 'mem_curator',
       ownerName: 'Vault Curator',
       themeColor: 'amethyst',
+      customColor: '#A855F7',
       createdAt: '2024-01-15T10:00:00Z',
       totalSlots: 108,
     },
@@ -354,6 +361,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       ownerMemberId: 'mem_marcus',
       ownerName: 'Marcus Chen',
       themeColor: 'sapphire',
+      customColor: '#0EA5E9',
       createdAt: '2024-01-16T12:00:00Z',
       totalSlots: 108,
     },
@@ -364,6 +372,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       ownerMemberId: 'mem_clara',
       ownerName: 'Clara Sorensen',
       themeColor: 'rose',
+      customColor: '#F43F5E',
       createdAt: '2024-02-01T15:00:00Z',
       totalSlots: 108,
     },
@@ -541,8 +550,23 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       ownerName?: string;
       description?: string;
       themeColor?: CelestialTheme;
+      customColor?: string;
     }
   ) => {
+    const defaultCustomColor =
+      options?.customColor ||
+      (options?.themeColor === 'amethyst'
+        ? '#A855F7'
+        : options?.themeColor === 'sapphire'
+        ? '#0EA5E9'
+        : options?.themeColor === 'emerald'
+        ? '#10B981'
+        : options?.themeColor === 'rose'
+        ? '#F43F5E'
+        : options?.themeColor === 'amber'
+        ? '#F97316'
+        : '#F59E0B');
+
     const newGlobe: MemoryGlobe = {
       id: `globe_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       name: name.trim() || 'New Memory Planet',
@@ -551,6 +575,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       ownerName: options?.ownerName,
       description: options?.description,
       themeColor: options?.themeColor || 'gold',
+      customColor: defaultCustomColor,
       createdAt: new Date().toISOString(),
       totalSlots: 108,
     };
@@ -569,6 +594,15 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     });
 
     return newGlobe;
+  },
+
+  updateGlobe: (
+    id: string,
+    updates: Partial<Pick<MemoryGlobe, 'name' | 'type' | 'description' | 'themeColor' | 'customColor'>>
+  ) => {
+    set((state) => ({
+      globes: state.globes.map((g) => (g.id === id ? { ...g, ...updates } : g)),
+    }));
   },
 
   deleteGlobe: (id: string) => {
