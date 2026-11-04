@@ -45,7 +45,7 @@ export function UniversePlanetBar({
   };
 
   return (
-    <div className="w-full flex items-center justify-between gap-3 px-3 sm:px-6 py-2 font-sans pointer-events-auto">
+    <div className="w-full flex items-center justify-between gap-3 px-3 sm:px-6 py-2.5 font-sans pointer-events-auto">
       {/* Left: View Mode Toggle (Galaxy Solar System vs Planet Dome) & Planet Carousel */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 flex-1 min-w-0">
         {/* Galaxy Solar System Visual Overview Toggle */}
@@ -55,17 +55,17 @@ export function UniversePlanetBar({
             onToggleViewTier();
           }}
           title={viewTier === 'galaxy' ? 'Switch to Planet Memory Dome' : 'Switch to Solar System Galaxy Overview'}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex-shrink-0 cursor-pointer backdrop-blur-xl border shadow-md active:scale-95 ${
+          className={`flex items-center gap-2 px-4 sm:px-4.5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all flex-shrink-0 cursor-pointer backdrop-blur-xl border shadow-md active:scale-95 ${
             viewTier === 'galaxy'
               ? 'bg-gradient-to-r from-amber-400 to-vault-gold text-black border-vault-gold ring-2 ring-vault-gold/40 shadow-glow font-extrabold'
               : 'bg-black/60 hover:bg-black/80 border-vault-gold/40 text-vault-gold hover:border-vault-gold'
           }`}
         >
-          <Sparkles className={`w-3.5 h-3.5 ${viewTier === 'galaxy' ? 'text-black' : 'text-vault-gold animate-pulse'}`} />
+          <Sparkles className={`w-4 h-4 ${viewTier === 'galaxy' ? 'text-black' : 'text-vault-gold animate-pulse'}`} />
           <span>{viewTier === 'galaxy' ? '🌌 Solar System (Active)' : '🌌 Solar System'}</span>
         </button>
 
-        <div className="h-4 w-[1px] bg-white/20 flex-shrink-0 mx-0.5 hidden sm:block" />
+        <div className="h-5 w-[1px] bg-white/20 flex-shrink-0 mx-1 hidden sm:block" />
 
         {/* Planet Carousel */}
         {globes.map((globe) => {
@@ -86,27 +86,27 @@ export function UniversePlanetBar({
                 }
               }}
               title={`${globe.name} (${globe.type.toUpperCase()}) — ${count}/108 Memories`}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all flex-shrink-0 cursor-pointer backdrop-blur-md border ${
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm transition-all flex-shrink-0 cursor-pointer backdrop-blur-md border ${
                 isActive
-                  ? 'bg-black/70 text-white border-vault-gold shadow-[0_0_20px_rgba(229,192,123,0.35)] ring-1 ring-vault-gold scale-102 font-bold'
-                  : 'bg-white/70 dark:bg-black/40 border-black/10 dark:border-white/10 text-stone-700 dark:text-slate-300 hover:text-black dark:hover:text-white hover:border-vault-gold/50'
+                  ? 'bg-black/80 text-white border-vault-gold shadow-[0_0_20px_rgba(229,192,123,0.4)] ring-1 ring-vault-gold scale-102 font-bold'
+                  : 'bg-white/70 dark:bg-black/50 border-black/10 dark:border-white/10 text-stone-700 dark:text-slate-300 hover:text-black dark:hover:text-white hover:border-vault-gold/50'
               }`}
             >
               <span
-                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                className="w-3 h-3 rounded-full flex-shrink-0"
                 style={{
                   backgroundColor: planetColor,
                   boxShadow: isActive ? `0 0 10px ${planetColor}` : 'none',
                 }}
               />
-              <span className="font-serif tracking-tight truncate max-w-[120px] sm:max-w-[170px]">
+              <span className="font-serif tracking-tight truncate max-w-[130px] sm:max-w-[180px]">
                 {globe.name}
               </span>
               <span
-                className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full ${
+                className={`text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded-full font-bold ${
                   isActive
-                    ? 'bg-black/50 text-vault-gold border border-vault-gold/40'
-                    : 'bg-black/20 dark:bg-white/10 text-stone-500 dark:text-slate-400'
+                    ? 'bg-black/60 text-vault-gold border border-vault-gold/40'
+                    : 'bg-black/20 dark:bg-white/10 text-stone-500 dark:text-slate-300'
                 }`}
               >
                 {count}/108
@@ -121,10 +121,10 @@ export function UniversePlanetBar({
             vaultAudio.playWhoosh();
             onOpenCreatePlanet();
           }}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold text-vault-gold hover:text-black bg-vault-gold/10 hover:bg-vault-gold border border-vault-gold/30 hover:border-vault-gold transition-all flex-shrink-0 cursor-pointer shadow-sm ml-1"
+          className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold text-vault-gold hover:text-black bg-vault-gold/10 hover:bg-vault-gold border border-vault-gold/30 hover:border-vault-gold transition-all flex-shrink-0 cursor-pointer shadow-sm ml-1"
         >
-          <Plus className="w-3.5 h-3.5" />
-          <span className="text-[11px] whitespace-nowrap">+ New Planet</span>
+          <Plus className="w-4 h-4" />
+          <span className="whitespace-nowrap">+ New Planet</span>
         </button>
       </div>
 
@@ -135,9 +135,9 @@ export function UniversePlanetBar({
             vaultAudio.playWhoosh();
             onOpenBulkUpload();
           }}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-vault-gold text-black text-xs font-bold hover:bg-amber-400 active:bg-amber-500 transition-all shadow-md cursor-pointer flex-shrink-0"
+          className="flex items-center gap-2 px-4 sm:px-4.5 py-2 sm:py-2.5 rounded-full bg-vault-gold text-black text-xs sm:text-sm font-bold hover:bg-amber-400 active:bg-amber-500 transition-all shadow-md cursor-pointer flex-shrink-0"
         >
-          <UploadCloud className="w-3.5 h-3.5 text-black" />
+          <UploadCloud className="w-4 h-4 text-black" />
           <span className="hidden sm:inline">Bulk Fill Planet</span>
           <span className="sm:hidden">Bulk</span>
         </button>

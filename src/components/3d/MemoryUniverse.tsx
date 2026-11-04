@@ -787,24 +787,24 @@ export function MemoryUniverse({
               </button>
             </div>
           ) : (
-            <div className="flex items-center bg-white/95 dark:bg-[#0a0d17]/90 backdrop-blur-2xl border border-stone-200/80 dark:border-white/15 rounded-full p-1 shadow-md dark:shadow-xl max-w-[94vw] overflow-x-auto no-scrollbar text-slate-900 dark:text-white">
+            <div className="flex items-center bg-white/95 dark:bg-[#0a0d17]/95 backdrop-blur-2xl border border-stone-200/80 dark:border-white/15 rounded-full p-1.5 shadow-md dark:shadow-2xl max-w-[94vw] overflow-x-auto no-scrollbar text-slate-900 dark:text-white gap-1 sm:gap-1.5">
               <button
                 onClick={() => {
                   vaultAudio.playWhoosh();
                   setOrientationFilter('all');
                 }}
-                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-sans transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-sans transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                   orientationFilter === 'all'
-                    ? 'bg-vault-gold text-black font-bold shadow-sm'
+                    ? 'bg-vault-gold text-black font-bold shadow-md'
                     : 'text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.08]'
                 }`}
                 title="All Memories (Interleaved Mosaic)"
               >
                 <span>✦ All</span>
-                <span className={`text-[10px] font-mono px-1 py-0.2 rounded font-semibold ${
+                <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full font-bold ${
                   orientationFilter === 'all'
-                    ? 'bg-black/10 text-black'
-                    : 'bg-stone-100 dark:bg-black/30 text-stone-700 dark:text-stone-300'
+                    ? 'bg-black/15 text-black'
+                    : 'bg-stone-100 dark:bg-black/40 text-stone-700 dark:text-vault-gold border border-white/5'
                 }`}>
                   {photos.filter((p) => !p.inTrash).length}
                 </span>
@@ -815,19 +815,19 @@ export function MemoryUniverse({
                   vaultAudio.playWhoosh();
                   setOrientationFilter('landscape');
                 }}
-                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-sans transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-sans transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                   orientationFilter === 'landscape'
-                    ? 'bg-vault-gold text-black font-bold shadow-sm'
+                    ? 'bg-vault-gold text-black font-bold shadow-md'
                     : 'text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.08]'
                 }`}
                 title="Filter Landscape Widescreen Memories (16:9)"
               >
-                <span className="text-sm leading-none">▱</span>
+                <span className="text-base leading-none">▱</span>
                 <span>Landscape</span>
-                <span className={`text-[10px] font-mono px-1 py-0.2 rounded font-semibold ${
+                <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full font-bold ${
                   orientationFilter === 'landscape'
-                    ? 'bg-black/10 text-black'
-                    : 'bg-stone-100 dark:bg-black/30 text-stone-700 dark:text-stone-300'
+                    ? 'bg-black/15 text-black'
+                    : 'bg-stone-100 dark:bg-black/40 text-stone-700 dark:text-vault-gold border border-white/5'
                 }`}>
                   {photos.filter((p) => !p.inTrash && p.width >= p.height && p.orientation !== 'portrait').length}
                 </span>
@@ -838,19 +838,19 @@ export function MemoryUniverse({
                   vaultAudio.playWhoosh();
                   setOrientationFilter('portrait');
                 }}
-                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-sans transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-sans transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                   orientationFilter === 'portrait'
-                    ? 'bg-vault-gold text-black font-bold shadow-sm'
+                    ? 'bg-vault-gold text-black font-bold shadow-md'
                     : 'text-stone-600 dark:text-stone-300 hover:text-black dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.08]'
                 }`}
                 title="Filter Portrait Vertical Memories (9:16)"
               >
-                <span className="text-sm leading-none">▯</span>
+                <span className="text-base leading-none">▯</span>
                 <span>Portrait</span>
-                <span className={`text-[10px] font-mono px-1 py-0.2 rounded font-semibold ${
+                <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full font-bold ${
                   orientationFilter === 'portrait'
-                    ? 'bg-black/10 text-black'
-                    : 'bg-stone-100 dark:bg-black/30 text-stone-700 dark:text-stone-300'
+                    ? 'bg-black/15 text-black'
+                    : 'bg-stone-100 dark:bg-black/40 text-stone-700 dark:text-vault-gold border border-white/5'
                 }`}>
                   {photos.filter((p) => !p.inTrash && (p.height > p.width || p.orientation === 'portrait')).length}
                 </span>

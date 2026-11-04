@@ -84,35 +84,35 @@ export function Navbar({
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b border-black/10 dark:border-white/10 select-none bg-white/95 dark:bg-black/80 backdrop-blur-2xl text-slate-900 dark:text-white">
-      <div className="w-full px-3 sm:px-4 lg:px-5 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-2 lg:gap-3">
+    <header className="sticky top-0 z-40 w-full glass-panel border-b border-black/10 dark:border-white/10 select-none bg-white/95 dark:bg-[#070912]/90 backdrop-blur-2xl text-slate-900 dark:text-white shadow-sm">
+      <div className="w-full px-3 sm:px-5 lg:px-7 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4 lg:gap-6">
         {/* Brand Logo & Vault Name */}
         <div
-          className="flex items-center gap-2 sm:gap-3 flex-shrink-0 cursor-pointer group"
+          className="flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0 cursor-pointer group"
           onClick={() => onSelectTab('universe')}
         >
-          <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-tr from-amber-400 via-vault-gold to-purple-600 p-0.5 shadow-glow flex items-center justify-center group-hover:scale-105 transition-transform">
+          <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-amber-400 via-vault-gold to-purple-600 p-0.5 shadow-glow flex items-center justify-center group-hover:scale-105 transition-transform flex-shrink-0">
             <div className="w-full h-full bg-amber-50 dark:bg-[#080B13] rounded-[14px] flex items-center justify-center">
-              <Sparkles className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-vault-gold animate-pulse-subtle" />
+              <Sparkles className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-vault-gold animate-pulse-subtle" />
             </div>
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-serif font-extrabold text-xs sm:text-base tracking-wider bg-gradient-to-r from-amber-700 via-slate-900 to-slate-700 dark:from-amber-200 dark:via-white dark:to-slate-200 bg-clip-text text-transparent">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="font-serif font-extrabold text-sm sm:text-lg tracking-wider bg-gradient-to-r from-amber-700 via-slate-900 to-slate-700 dark:from-amber-200 dark:via-white dark:to-slate-200 bg-clip-text text-transparent">
                 MYORB
               </span>
-              <span className="text-[9px] uppercase font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-vault-gold/15 border border-amber-300 dark:border-vault-gold/30 text-amber-900 dark:text-vault-gold font-bold">
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-amber-100 dark:bg-vault-gold/15 border border-amber-300 dark:border-vault-gold/30 text-amber-900 dark:text-vault-gold font-bold">
                 VAULT
               </span>
             </div>
-            <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[110px] sm:max-w-xs font-sans">
+            <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate max-w-[120px] sm:max-w-xs font-sans mt-0.5">
               {currentFamily.name}
             </div>
           </div>
         </div>
 
-        {/* Center Desktop Navigation Tabs (Luxury Capsule Design - Never Wraps) */}
-        <nav className="hidden xl:flex items-center gap-0.5 bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-2xl p-0.5 shadow-inner backdrop-blur-md">
+        {/* Center Desktop Navigation Tabs (Luxury Capsule Design - Generous, Tactile & High-Contrast) */}
+        <nav className="hidden lg:flex items-center gap-1 sm:gap-1.5 bg-stone-100/90 dark:bg-black/70 border border-stone-300/80 dark:border-white/15 rounded-full p-1.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.6)] backdrop-blur-2xl">
           {navItems.map(({ tab, label, drawerLabel, icon: Icon }) => {
             const isActive = currentTab === tab;
             return (
@@ -120,13 +120,13 @@ export function Navbar({
                 key={tab}
                 onClick={() => onSelectTab(tab)}
                 title={drawerLabel}
-                className={`flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] 2xl:text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide whitespace-nowrap transition-all duration-200 cursor-pointer ${
                   isActive
-                    ? 'bg-vault-gold text-black font-bold shadow-md'
-                    : 'text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.08]'
+                    ? 'bg-gradient-to-r from-amber-400 via-vault-gold to-amber-500 text-black font-bold shadow-[0_0_20px_rgba(229,192,123,0.45)] scale-102 ring-1 ring-vault-gold/50'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 active:scale-95'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-black' : 'text-vault-gold/90'}`} />
+                <Icon className={`w-4 h-4 sm:w-4.5 sm:h-4.5 flex-shrink-0 ${isActive ? 'text-black stroke-[2.2]' : 'text-amber-700 dark:text-vault-gold'}`} />
                 <span>{label}</span>
               </button>
             );
@@ -134,10 +134,10 @@ export function Navbar({
         </nav>
 
         {/* Compact Expandable Search Bar (Desktop) */}
-        <div className="hidden xl:flex items-center relative">
+        <div className="hidden 2xl:flex items-center relative">
           {isSearchExpanded || searchQuery ? (
-            <div className="flex items-center relative w-40 2xl:w-48 animate-in fade-in duration-200">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <div className="flex items-center relative w-44 2xl:w-52 animate-in fade-in duration-200">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 autoFocus
@@ -147,42 +147,42 @@ export function Navbar({
                 onBlur={() => {
                   if (!searchQuery) setIsSearchExpanded(false);
                 }}
-                className="w-full pl-7 pr-6 py-1 rounded-xl text-xs bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-vault-gold/50"
+                className="w-full pl-9 pr-7 py-2 rounded-xl text-xs sm:text-sm bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-vault-gold/50"
               />
               <button
                 onClick={() => {
                   setSearchQuery('');
                   setIsSearchExpanded(false);
                 }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-black dark:hover:text-white"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-black dark:hover:text-white"
               >
-                <X className="w-3 h-3" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           ) : (
             <button
               onClick={() => setIsSearchExpanded(true)}
               title="Search memories..."
-              className="p-2 rounded-xl bg-black/5 dark:bg-white/[0.04] hover:bg-black/10 dark:hover:bg-white/[0.09] border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white transition-all cursor-pointer"
+              className="p-2.5 rounded-xl bg-black/5 dark:bg-white/[0.04] hover:bg-black/10 dark:hover:bg-white/[0.09] border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white transition-all cursor-pointer"
             >
-              <Search className="w-3.5 h-3.5" />
+              <Search className="w-4 h-4" />
             </button>
           )}
         </div>
 
         {/* Right Action Tools */}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
           {/* Quick Theme Toggle (Light / Dark) */}
           <button
             onClick={toggleTheme}
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             aria-label="Toggle Theme"
-            className="p-2 rounded-xl bg-black/5 dark:bg-white/[0.04] hover:bg-black/10 dark:hover:bg-white/[0.09] border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
+            className="p-2.5 rounded-xl bg-black/5 dark:bg-white/[0.04] hover:bg-black/10 dark:hover:bg-white/[0.09] border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white flex items-center justify-center transition-all cursor-pointer"
           >
             {theme === 'dark' ? (
-              <Sun className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-amber-500" />
+              <Sun className="w-4 h-4 text-amber-500" />
             ) : (
-              <Moon className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-indigo-500" />
+              <Moon className="w-4 h-4 text-indigo-500" />
             )}
           </button>
 
@@ -193,37 +193,37 @@ export function Navbar({
           <button
             onClick={() => setIsSlideshowActive(true)}
             title="Start Fullscreen Slideshow"
-            className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/5 dark:bg-white/[0.04] hover:bg-black/10 dark:hover:bg-white/[0.09] border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white text-xs font-medium transition-all cursor-pointer"
+            className="hidden xl:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black/5 dark:bg-white/[0.04] hover:bg-black/10 dark:hover:bg-white/[0.09] border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white text-xs sm:text-sm font-semibold transition-all cursor-pointer"
           >
-            <Play className="w-3.5 h-3.5 fill-current text-vault-gold" />
+            <Play className="w-4 h-4 fill-current text-vault-gold" />
             <span>Slideshow</span>
           </button>
 
-          {/* Bulk Upload Button (Visible on all devices - icon on mobile, label on desktop) */}
+          {/* Bulk Upload Button (Visible on all devices) */}
           <button
             onClick={() => {
               vaultAudio.playWhoosh();
               onOpenUpload();
             }}
-            className="flex items-center gap-1.5 p-2 sm:px-3.5 sm:py-1.5 rounded-xl bg-vault-gold hover:bg-amber-400 active:bg-amber-500 text-black text-xs font-bold shadow-md transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-2 p-2 sm:px-4 sm:py-2 rounded-xl bg-vault-gold hover:bg-amber-400 active:bg-amber-500 text-black text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer active:scale-95"
             title="Upload Memories to Vault"
             aria-label="Upload Memories"
           >
-            <UploadCloud className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+            <UploadCloud className="w-4.5 h-4.5 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">Upload</span>
           </button>
 
           {/* Cryptographic Key Lock / Unlock Status */}
           <button
             onClick={onOpenLockModal}
-            className={`p-1.5 sm:p-2 rounded-xl border text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`p-2 sm:p-2.5 rounded-xl border text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
               isVaultUnlocked
                 ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
                 : 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
             }`}
             title={isVaultUnlocked ? 'Vault Unlocked (AES-256-GCM Active)' : 'Vault Locked'}
           >
-            {isVaultUnlocked ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+            {isVaultUnlocked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
           </button>
 
           {/* User Avatar & Profile Quick Trigger */}
@@ -232,14 +232,14 @@ export function Navbar({
               if (onOpenProfile) onOpenProfile();
               else onSelectTab('members');
             }}
-            className="flex items-center gap-2 pl-1 border-l border-black/10 dark:border-white/10 cursor-pointer group"
+            className="flex items-center gap-2 pl-1.5 border-l border-black/10 dark:border-white/10 cursor-pointer group"
             title={`${currentMember.displayName} (${currentMember.role}) — Click to view profile & change avatar`}
           >
             <div className="relative">
               <img
                 src={currentMember.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}
                 alt={currentMember.displayName}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl object-cover border border-vault-gold/40 bg-slate-200 dark:bg-slate-900 group-hover:scale-105 transition-all shadow"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-vault-gold/50 bg-slate-200 dark:bg-slate-900 group-hover:scale-105 transition-all shadow"
               />
               <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-black dark:border-black" />
             </div>
@@ -248,17 +248,17 @@ export function Navbar({
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-1.5 sm:p-2 rounded-xl bg-black/5 dark:bg-white/[0.05] hover:bg-black/10 dark:hover:bg-white/[0.1] border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-black dark:hover:text-white xl:hidden transition-all cursor-pointer"
+            className="p-2 sm:p-2.5 rounded-xl bg-black/5 dark:bg-white/[0.05] hover:bg-black/10 dark:hover:bg-white/[0.1] border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-black dark:hover:text-white lg:hidden transition-all cursor-pointer"
             aria-label="Open Navigation Menu"
           >
-            {isMobileMenuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Drawer Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] xl:hidden flex flex-col animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] lg:hidden flex flex-col animate-in fade-in duration-200">
           {/* Backdrop */}
           <div
             onClick={() => setIsMobileMenuOpen(false)}
