@@ -697,63 +697,57 @@ export function StoriesViewerModal({
                   id="story-photo-file-input"
                 />
 
-                {/* Primary Upload Options Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {/* Button 1: Upload from Phone Camera / Device with Native Label Binding */}
-                  <label
-                    htmlFor="story-photo-file-input"
-                    onClick={() => vaultAudio.playWhoosh()}
-                    className="p-3 rounded-2xl bg-vault-gold/15 hover:bg-vault-gold/25 active:bg-vault-gold/30 border border-vault-gold/40 text-slate-900 dark:text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 select-none"
-                  >
-                    <Upload className="w-4 h-4 text-vault-gold flex-shrink-0" />
-                    <span>Upload from Device / Camera</span>
-                  </label>
-
-                  {/* Button 2: Pick from Existing Vault Memories */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      vaultAudio.playWhoosh();
-                      setShowVaultPicker(!showVaultPicker);
-                    }}
-                    className={`p-3 rounded-2xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 ${
-                      showVaultPicker
-                        ? 'bg-purple-600 text-white border-purple-500 shadow-md'
-                        : 'bg-black/5 dark:bg-white/[0.05] hover:bg-black/10 dark:hover:bg-white/[0.09] border-black/10 dark:border-white/15 text-slate-800 dark:text-slate-200'
-                    }`}
-                  >
-                    <FolderOpen className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                    <span>{showVaultPicker ? 'Hide Vault Picker' : `Pick Vault Photo (${photos.length})`}</span>
-                  </button>
-                </div>
-
-                {/* Drag-and-Drop Zone (If no photo selected yet) */}
+                {/* Unified Drag-and-Drop & Browse Area (No duplicate upload button) */}
                 {!newImgUrl && (
-                  <div
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setIsDragOver(true);
-                    }}
-                    onDragLeave={() => setIsDragOver(false)}
-                    onDrop={handleDrop}
-                    onClick={() => {
-                      if (fileInputRef.current) {
-                        fileInputRef.current.value = '';
-                        fileInputRef.current.click();
-                      }
-                    }}
-                    className={`p-5 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer ${
-                      isDragOver
-                        ? 'bg-vault-gold/20 border-vault-gold scale-[1.01]'
-                        : 'bg-black/[0.02] dark:bg-white/[0.02] border-black/15 dark:border-white/15 hover:border-vault-gold/60 hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
-                    }`}
-                  >
-                    <UploadCloud className="w-7 h-7 text-vault-gold animate-bounce" />
-                    <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                      Drag & drop your story photo here, or click to browse
-                    </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                      Supports JPG, PNG, WEBP, HEIC from phone gallery or camera
+                  <div className="space-y-2.5">
+                    <div
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setIsDragOver(true);
+                      }}
+                      onDragLeave={() => setIsDragOver(false)}
+                      onDrop={handleDrop}
+                      onClick={() => {
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = '';
+                          fileInputRef.current.click();
+                        }
+                      }}
+                      className={`p-6 sm:p-7 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer select-none ${
+                        isDragOver
+                          ? 'bg-vault-gold/20 border-vault-gold scale-[1.01]'
+                          : 'bg-black/[0.02] dark:bg-white/[0.02] border-black/15 dark:border-white/15 hover:border-vault-gold/60 hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <div className="w-11 h-11 rounded-2xl bg-vault-gold/15 text-vault-gold border border-vault-gold/30 flex items-center justify-center shadow-sm">
+                        <UploadCloud className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                          Click to upload from device, or drag & drop here
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          Supports phone camera, gallery, JPG, PNG, WebP, HEIC
+                        </div>
+                      </div>
+
+                      {/* Secondary Choice: Pick from Vault Photos */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          vaultAudio.playWhoosh();
+                          setShowVaultPicker(!showVaultPicker);
+                        }}
+                        className={`mt-1 px-3.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 ${
+                          showVaultPicker
+                            ? 'bg-purple-600 text-white border-purple-500 shadow-md'
+                            : 'bg-black/5 dark:bg-white/[0.06] hover:bg-black/10 dark:hover:bg-white/10 border-black/10 dark:border-white/15 text-slate-800 dark:text-slate-200'
+                        }`}
+                      >
+                        <FolderOpen className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        <span>{showVaultPicker ? 'Hide Vault Photos' : `Or pick from Vault (${photos.length})`}</span>
+                      </button>
                     </div>
                   </div>
                 )}
